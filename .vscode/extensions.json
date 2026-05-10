@@ -14,6 +14,9 @@
         "ms-vscode-remote.remote-containers",
         "ms-vscode-remote.remote-ssh",
         "fabric.vscode-fabric-functions",
-        "spylogsster.app-debug-helper"
+        "spylogsster.app-debug-helper",
+        "ms-vscode-remote.vscode-remote-extensionpack",
+        "ms-vscode-remote.remote-wsl",
+        "ms-dotnettools.csdevkit"
     ]
 }

@@ -144,9 +144,10 @@ interface INativeOrdersFeature is INativeOrdersEvents {
 
     /// @dev Mark what tx.origin addresses are allowed to fill an order that
     ///      specifies the message sender as its txOrigin.
+    /// @notice Registers or unregisters allowed RFQ origins for the caller.
     /// @param origins An array of origin addresses to update.
     /// @param allowed True to register, false to unregister.
-    function registerAllowedRfqOrigins(address[] memory origins, bool allowed) external;
+    function registerAllowedRfqOrigins(address[] calldata origins, bool allowed) external;
 
     /// @dev Cancel multiple limit orders. The caller must be the maker or a valid order signer.
     ///      Silently succeeds if the order has already been cancelled.

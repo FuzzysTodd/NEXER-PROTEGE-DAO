@@ -22,7 +22,9 @@
         "davidanson.vscode-markdownlint",
         "bierner.markdown-mermaid",
         "ms-vscode-remote.remote-containers",
-        "ms-vscode-remote.remote-ssh"
+        "ms-vscode-remote.remote-ssh",
+        "ms-vscode-remote.vscode-remote-extensionpack",
+        "ms-vscode-remote.remote-wsl"
       ]
     }
   }
