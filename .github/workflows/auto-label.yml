@@ -1,0 +1,103 @@
+name: "PR Auto-Label"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    name: "Apply labels based on changed files"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Get changed files
+        id: changes
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              per_page: 100,
+            });
+            return files.map(f => f.filename);
+
+      - name: Apply labels
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const files = ${{ steps.changes.outputs.result }};
+            const labels = new Set();
+
+            const rules = [
+              { pattern: /^contracts\/.*\.sol$/, label: "solidity" },
+              { pattern: /^\.github\/workflows\//, label: "ci/cd" },
+              { pattern: /\.html$/, label: "frontend" },
+              { pattern: /\.js$/, label: "javascript" },
+              { pattern: /^nexus\//, label: "python" },
+              { pattern: /^docs\//, label: "documentation" },
+              { pattern: /^mcp\//, label: "mcp" },
+              { pattern: /requirements.*\.txt$/, label: "dependencies" },
+              { pattern: /package(-lock)?\.json$/, label: "dependencies" },
+              { pattern: /^\.github\/dependabot\.yml$/, label: "dependencies" },
+              { pattern: /^GOVERNANCE\.md$/, label: "governance" },
+              { pattern: /SECURITY/, label: "security" },
+              { pattern: /contracts\/NexusDAO/, label: "governance" },
+              { pattern: /contracts\/NexusRWA|contracts\/NexusFractionalize/, label: "rwa" },
+              { pattern: /contracts\/NexusLP|contracts\/NexusFractal|contracts\/NexusOptions/, label: "defi" },
+              { pattern: /nexus-signal-bus|financial-ops/, label: "infrastructure" },
+            ];
+
+            for (const file of files) {
+              for (const rule of rules) {
+                if (rule.pattern.test(file)) labels.add(rule.label);
+              }
+            }
+
+            if (labels.size === 0) labels.add("misc");
+
+            // Ensure labels exist (create if missing)
+            const labelColors = {
+              "solidity":       "e4a853",
+              "ci/cd":          "0075ca",
+              "frontend":       "7057ff",
+              "javascript":     "f1e05a",
+              "python":         "3572A5",
+              "documentation":  "0075ca",
+              "mcp":            "e4e669",
+              "dependencies":   "0075ca",
+              "governance":     "d93f0b",
+              "security":       "ee0701",
+              "rwa":            "0e8a16",
+              "defi":           "1d76db",
+              "infrastructure": "84b6eb",
+              "misc":           "cccccc",
+            };
+
+            for (const label of labels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  name:  label,
+                  color: labelColors[label] || "cccccc",
+                });
+              } catch (e) {
+                if (e.status !== 422) throw e; // 422 = already exists, ignore
+              }
+            }
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              labels: Array.from(labels),
+            });
+            core.notice("Applied labels: " + Array.from(labels).join(", "));

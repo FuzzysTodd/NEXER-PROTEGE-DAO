@@ -1,0 +1,15 @@
+{
+  "extends": "solhint:recommended",
+  "rules": {
+    "compiler-version": ["warn", "^0.8.20"],
+    "avoid-suicide": "error",
+    "avoid-sha3": "warn",
+    "no-unused-vars": "warn",
+    "func-visibility": ["warn", {"ignoreConstructors": true}],
+    "reentrancy": "error",
+    "no-inline-assembly": "warn",
+    "gas-custom-errors": "off",
+    "reason-string": "off",
+    "no-global-import": "off"
+  }
+}

@@ -1,0 +1,15 @@
+%load_ext cuml.accel
+from sklearn.cluster import KMeans
+from sklearn.datasets import make_blobs
+from sklearn.metrics import silhouette_score
+
+n_samples = 1000
+n_features = 2
+n_clusters = 3
+X, _ = make_blobs(n_samples=n_samples, n_features=n_features, centers=n_clusters, random_state=42)
+
+kmeans = KMeans(n_clusters=n_clusters, max_iter=100)
+kmeans.fit(X)
+
+labels = kmeans.labels_
+print(silhouette_score(X, labels))

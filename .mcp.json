@@ -1,0 +1,219 @@
+{
+  "inputs": [
+    {
+      "id": "arg0",
+      "type": "promptString",
+      "description": "The URL of your Dynatrace environment (e.g. 'https://abc12345.apps.dynatrace.com'). Do not use Dynatrace classic URLs.",
+      "default": ""
+    },
+    {
+      "id": "arg1",
+      "type": "promptString",
+      "description": "[OPTIONAL] Dynatrace Platform Token for authentication. Alternative to OAuth authentication.",
+      "default": ""
+    },
+    {
+      "id": "arg2",
+      "type": "promptString",
+      "description": "[OPTIONAL] OAuth Client ID for advanced authentication scenarios. Use with OAUTH_CLIENT_SECRET.",
+      "default": ""
+    },
+    {
+      "id": "arg3",
+      "type": "promptString",
+      "description": "[OPTIONAL] OAuth Client Secret for advanced authentication scenarios. Use with OAUTH_CLIENT_ID.",
+      "default": ""
+    },
+    {
+      "id": "arg4",
+      "type": "promptString",
+      "description": "[OPTIONAL] Budget limit in GB for Grail query bytes scanned per session. Default: 1000. Set to -1 to disable budget tracking.",
+      "default": ""
+    },
+    {
+      "id": "arg5",
+      "type": "promptString",
+      "description": "Client type: ephemeral (default), persistent, cloud, or http.",
+      "default": ""
+    },
+    {
+      "id": "arg6",
+      "type": "promptString",
+      "description": "Optional path to .env (defaults to ./.chroma_env).",
+      "default": ""
+    },
+    {
+      "id": "arg7",
+      "type": "promptString",
+      "description": "Data directory for persistent client.",
+      "default": ""
+    },
+    {
+      "id": "arg8",
+      "type": "promptString",
+      "description": "Chroma Cloud tenant ID.",
+      "default": ""
+    },
+    {
+      "id": "arg9",
+      "type": "promptString",
+      "description": "Chroma Cloud database name.",
+      "default": ""
+    },
+    {
+      "id": "arg10",
+      "type": "promptString",
+      "description": "Chroma Cloud API key.",
+      "default": "",
+      "password": true
+    },
+    {
+      "id": "arg11",
+      "type": "promptString",
+      "description": "Self-hosted Chroma host.",
+      "default": ""
+    },
+    {
+      "id": "arg12",
+      "type": "promptString",
+      "description": "Self-hosted Chroma port.",
+      "default": ""
+    },
+    {
+      "id": "arg13",
+      "type": "promptString",
+      "description": "Custom auth credentials for self-hosted Chroma.",
+      "default": "",
+      "password": true
+    },
+    {
+      "id": "arg14",
+      "type": "promptString",
+      "description": "Use SSL (true/false) for self-hosted HTTP.",
+      "default": ""
+    }
+  ],
+  "servers": {
+    "io.github.ChromeDevTools/chrome-devtools-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@0.20.2"
+      ],
+      "internalMetadata": {
+        "description": "MCP server for Chrome DevTools",
+        "version": "0.20.2",
+        "repository": "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+        "displayName": "Chrome DevTools MCP",
+        "owner_avatar_url": "https://avatars.githubusercontent.com/u/11260967?v=4",
+        "publishedDate": "3/18/2026 11:56:26 AM",
+        "registry": "https://api.mcp.github.com/v0.1/servers/"
+      }
+    },
+    "amplitude/mcp-server-guide": {
+      "type": "http",
+      "url": "https://mcp.amplitude.com/mcp",
+      "internalMetadata": {
+        "description": "Search, access, and get insights on your Amplitude data",
+        "version": "1.0.0",
+        "repository": "https://github.com/amplitude/mcp-server-guide",
+        "displayName": "Amplitude",
+        "owner_avatar_url": "https://avatars.githubusercontent.com/u/2291562?v=4",
+        "publishedDate": "9/9/2025 10:55:23 AM",
+        "registry": "https://api.mcp.github.com/v0.1/servers/"
+      }
+    },
+    "io.github.dynatrace-oss/Dynatrace-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@dynatrace-oss/dynatrace-mcp-server@1.7.0"
+      ],
+      "env": {
+        "DT_ENVIRONMENT": "${input:arg0}",
+        "DT_PLATFORM_TOKEN": "${input:arg1}",
+        "OAUTH_CLIENT_ID": "${input:arg2}",
+        "OAUTH_CLIENT_SECRET": "${input:arg3}",
+        "DT_GRAIL_QUERY_BUDGET_GB": "${input:arg4}"
+      },
+      "internalMetadata": {
+        "description": "Access Dynatrace observability data: logs, metrics, problems, vulnerabilities via DQL and Davis AI",
+        "version": "1.7.0",
+        "repository": "https://github.com/dynatrace-oss/Dynatrace-mcp",
+        "displayName": "Dynatrace",
+        "owner_avatar_url": "https://avatars.githubusercontent.com/u/58178984?v=4",
+        "publishedDate": "3/20/2026 8:33:52 AM",
+        "registry": "https://api.mcp.github.com/v0.1/servers/"
+      }
+    },
+    "huggingface/hf-mcp-server": {
+      "type": "http",
+      "url": "https://huggingface.co/mcp?login",
+      "internalMetadata": {
+        "description": "Access Hugging Face models, datasets, Spaces, papers, collections via MCP.",
+        "version": "1.0.0",
+        "repository": "https://github.com/huggingface/hf-mcp-server",
+        "displayName": "Hugging Face",
+        "owner_avatar_url": "https://avatars.githubusercontent.com/u/25720743?v=4",
+        "publishedDate": "8/20/2025 12:00:00 AM",
+        "registry": "https://api.mcp.github.com/v0.1/servers/"
+      }
+    },
+    "io.github.github/github-mcp-server": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "internalMetadata": {
+        "description": "Connect AI assistants to GitHub - manage repos, issues, PRs, and workflows through natural language.",
+        "version": "0.33.0",
+        "repository": "https://github.com/github/github-mcp-server",
+        "displayName": "GitHub",
+        "owner_avatar_url": "https://avatars.githubusercontent.com/u/9919?v=4",
+        "publishedDate": "3/9/2026 8:34:28 AM",
+        "registry": "https://api.mcp.github.com/v0.1/servers/"
+      }
+    },
+    "chroma-core/chroma-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "chroma-mcp==v0.2.6"
+      ],
+      "env": {
+        "CHROMA_CLIENT_TYPE": "${input:arg5}",
+        "CHROMA_DOTENV_PATH": "${input:arg6}",
+        "CHROMA_DATA_DIR": "${input:arg7}",
+        "CHROMA_TENANT": "${input:arg8}",
+        "CHROMA_DATABASE": "${input:arg9}",
+        "CHROMA_API_KEY": "${input:arg10}",
+        "CHROMA_HOST": "${input:arg11}",
+        "CHROMA_PORT": "${input:arg12}",
+        "CHROMA_CUSTOM_AUTH_CREDENTIALS": "${input:arg13}",
+        "CHROMA_SSL": "${input:arg14}"
+      },
+      "internalMetadata": {
+        "description": "Provides data retrieval capabilities powered by Chroma, enabling AI models to create collections over generated data and user inputs, and retrieve that data using vector search, full text search, metadata filtering, and more.",
+        "version": "1.0.0",
+        "repository": "https://github.com/chroma-core/chroma-mcp",
+        "displayName": "Chroma",
+        "owner_avatar_url": "https://avatars.githubusercontent.com/u/105881770?v=4",
+        "publishedDate": "9/9/2025 10:55:23 AM",
+        "registry": "https://api.mcp.github.com/v0.1/servers/"
+      }
+    },
+    "com.getguru/mcp-server": {
+      "type": "http",
+      "url": "https://mcp.api.getguru.com/mcp",
+      "internalMetadata": {
+        "description": "Guru MCP Server - Connect AI tools to your Guru knowledge base",
+        "version": "1.0.2",
+        "repository": "https://github.com/guruhq/remote-mcp-server",
+        "displayName": "Guru Remote MCP Server",
+        "owner_avatar_url": "https://avatars.githubusercontent.com/u/5881418?v=4",
+        "publishedDate": "1/13/2026 3:14:02 PM",
+        "registry": "https://api.mcp.github.com/v0.1/servers/"
+      }
+    }
+  }
+}

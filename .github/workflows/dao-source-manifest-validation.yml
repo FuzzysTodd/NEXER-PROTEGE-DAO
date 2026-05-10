@@ -1,0 +1,69 @@
+name: Validate DAO Source Manifest
+
+on:
+  pull_request:
+    paths:
+      - dao-data-source-manifest.json
+      - .github/workflows/dao-source-manifest-validation.yml
+  push:
+    branches: [ main ]
+    paths:
+      - dao-data-source-manifest.json
+
+jobs:
+  validate-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate JSON structure and metadata
+        run: |
+          python - <<'PY'
+          import json, re, sys
+          from pathlib import Path
+
+          manifest_path = Path('dao-data-source-manifest.json')
+          if not manifest_path.exists():
+              print('ERROR: dao-data-source-manifest.json missing')
+              sys.exit(1)
+
+          data = json.loads(manifest_path.read_text(encoding='utf-8'))
+
+          required_top = ['canonicalRepo', 'owner', 'policy', 'sources']
+          for key in required_top:
+              if key not in data:
+                  print(f'ERROR: missing top-level key: {key}')
+                  sys.exit(1)
+
+          if not isinstance(data['sources'], list) or len(data['sources']) == 0:
+              print('ERROR: sources must be a non-empty list')
+              sys.exit(1)
+
+          secret_pattern = re.compile(r'(private key|mnemonic|seed phrase)', re.IGNORECASE)
+          sha256_pattern = re.compile(r'^[a-fA-F0-9]{64}$')
+
+          for i, src in enumerate(data['sources']):
+              for key in ['type', 'locator', 'trust', 'scope', 'notes', 'metadata']:
+                  if key not in src:
+                      print(f'ERROR: source[{i}] missing key: {key}')
+                      sys.exit(1)
+
+              md = src['metadata']
+              for key in ['validationStatus', 'addedBy', 'addedAt']:
+                  if key not in md:
+                      print(f'ERROR: source[{i}].metadata missing key: {key}')
+                      sys.exit(1)
+
+              candidate_text = f"{src.get('locator','')} {src.get('notes','')}"
+              if secret_pattern.search(candidate_text):
+                  print(f'ERROR: source[{i}] contains prohibited secret-like text')
+                  sys.exit(1)
+
+              ph = md.get('provenanceHash', '')
+              if ph and not sha256_pattern.match(ph):
+                  print(f'ERROR: source[{i}].metadata.provenanceHash must be 64-char hex if provided')
+                  sys.exit(1)
+
+          print('Manifest validation passed.')
+          PY

@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Protocol - User Guide for Humans</title>
+    <style>
+        :root {
+            --primary: #38bdf8;
+            --primary-dark: #0ea5e9;
+            --bg-dark: #0f172a;
+            --bg-panel: #1e293b;
+            --bg-card: #334155;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #475569;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border-radius: 20px;
+            margin-bottom: 3rem;
+            box-shadow: 0 20px 60px rgba(56, 189, 248, 0.3);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.95);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .quick-nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .nav-card {
+            background: var(--bg-panel);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(56, 189, 248, 0.2);
+        }
+
+        .nav-card .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .nav-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .section {
+            background: var(--bg-panel);
+            border-radius: 15px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .section h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section h3 {
+            color: var(--text);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .step {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .step-number {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            width: 35px;
+            height: 35px;
+            line-height: 35px;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+
+        .step h4 {
+            display: inline;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .step p {
+            margin-top: 1rem;
+            color: var(--text-muted);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+        }
+
+        .info-box {
+            background: rgba(56, 189, 248, 0.1);
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .info-box.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--warning);
+        }
+
+        .info-box.success {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: var(--success);
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 0.8rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .faq {
+            margin-top: 1.5rem;
+        }
+
+        .faq-item {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .faq-question {
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-answer {
+            margin-top: 1rem;
+            color: var(--text-muted);
+            display: none;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        .faq-item.active .faq-toggle {
+            transform: rotate(180deg);
+        }
+
+        .faq-toggle {
+            transition: transform 0.3s ease;
+        }
+
+        .path-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .path-card {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .path-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 5px 20px rgba(56, 189, 248, 0.2);
+        }
+
+        .path-card .badge {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        code {
+            background: var(--bg-dark);
+            padding: 0.2rem 0.5rem;
+            border-radius: 5px;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+        }
+
+        .glossary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .glossary-term {
+            background: var(--bg-card);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .glossary-term strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .section {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Skip navigation link */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--primary);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 0 0 8px 0;
+            font-weight: bold;
+            z-index: 9999;
+            text-decoration: none;
+            transition: top 0.2s ease;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Screen-reader-only utility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Focus-visible styles for interactive non-button elements */
+        .nav-card:focus-visible,
+        .faq-item:focus-visible {
+            outline: 3px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .btn:focus-visible {
+            outline: 3px solid var(--primary);
+            outline-offset: 3px;
+        }
+    </style>
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <main id="main-content" class="container">
+        <!-- Hero Section -->
+        <header class="hero">
+            <h1>🌟 Welcome to Nexus Protocol</h1>
+            <p>Your friendly guide to navigating the decentralized future. No technical jargon, just simple steps.</p>
+        </header>
+
+        <!-- Quick Navigation -->
+        <nav class="quick-nav" aria-label="Page sections">
+            <div class="nav-card" role="button" tabindex="0"
+                 data-section="getting-started" onclick="scrollToSection('getting-started')">
+                <div class="icon" aria-hidden="true">🚀</div>
+                <h3>Getting Started</h3>
+                <p>Brand new? Start here!</p>
+            </div>
+            <div class="nav-card" role="button" tabindex="0"
+                 data-section="what-is-nexus" onclick="scrollToSection('what-is-nexus')">
+                <div class="icon" aria-hidden="true">💡</div>
+                <h3>What is Nexus?</h3>
+                <p>Understand the basics</p>
+            </div>
+            <div class="nav-card" role="button" tabindex="0"
+                 data-section="user-paths" onclick="scrollToSection('user-paths')">
+                <div class="icon" aria-hidden="true">🎯</div>
+                <h3>Choose Your Path</h3>
+                <p>Beginner to advanced</p>
+            </div>
+            <div class="nav-card" role="button" tabindex="0"
+                 data-section="faq" onclick="scrollToSection('faq')">
+                <div class="icon" aria-hidden="true">❓</div>
+                <h3>FAQ</h3>
+                <p>Common questions</p>
+            </div>
+        </nav>
+
+        <!-- What is Nexus Section -->
+        <section class="section" id="what-is-nexus">
+            <h2>💡 What is Nexus Protocol?</h2>
+            
+            <div class="info-box">
+                <p><strong>Nexus Protocol</strong> is like a Swiss Army knife for Web3 and decentralized finance (DeFi). Think of it as your gateway to:</p>
+                <ul class="feature-list">
+                    <li>Managing your crypto assets and smart contracts</li>
+                    <li>Participating in decentralized autonomous organizations (DAOs)</li>
+                    <li>Earning rewards through various DeFi strategies</li>
+                    <li>Accessing cutting-edge blockchain technology</li>
+                </ul>
+            </div>
+
+            <h3>🔑 Key Components</h3>
+            
+            <div class="glossary">
+                <div class="glossary-term">
+                    <strong>NGTT Token</strong>
+                    <p>The Nexus Game Theory Token - your key to the ecosystem with multiple ways to earn rewards.</p>
+                </div>
+                <div class="glossary-term">
+                    <strong>Smart Contracts</strong>
+                    <p>Self-executing agreements that run on the blockchain - no middlemen needed!</p>
+                </div>
+                <div class="glossary-term">
+                    <strong>Withdrawal Manager</strong>
+                    <p>A simple interface to manage withdrawals from your smart contracts.</p>
+                </div>
+                <div class="glossary-term">
+                    <strong>Web3 Directory</strong>
+                    <p>Your dashboard to navigate various DeFi protocols and services.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Getting Started Section -->
+        <section class="section" id="getting-started">
+            <h2>🚀 Getting Started (5 Minutes)</h2>
+            
+            <div class="info-box warning">
+                <strong>⚠️ Before You Begin:</strong> This is a real project. Always do your own research, verify addresses and networks, and never invest more than you can afford to lose in any crypto project.
+            </div>
+
+            <h3>Prerequisites</h3>
+            <div class="step">
+                <span class="step-number">1</span>
+                <h4>Install MetaMask Wallet</h4>
+                <p>MetaMask is a browser extension that acts as your digital wallet. Download it from <a href="https://metamask.io" target="_blank" rel="noopener noreferrer" style="color: var(--primary)">metamask.io <span class="sr-only">(opens in new tab)</span></a></p>
+                <div class="action-buttons">
+                    <a href="https://metamask.io" target="_blank" rel="noopener noreferrer" class="btn">Download MetaMask <span class="sr-only">(opens in new tab)</span></a>
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <h4>Get Some Test ETH</h4>
+                <p>To interact with smart contracts, you'll need some Ethereum (ETH). Start with test networks (testnets) that use free test ETH.</p>
+                <ul class="feature-list" style="margin-top: 1rem;">
+                    <li>Switch MetaMask to a testnet (like Sepolia or Goerli)</li>
+                    <li>Visit a faucet to get free test ETH</li>
+                    <li>Wait a few minutes for the ETH to arrive</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <h4>Connect to Nexus</h4>
+                <p>Now you're ready to explore! Choose one of our user interfaces:</p>
+                <div class="action-buttons">
+                    <a href="chimera.html" class="btn">Web3 Directory</a>
+                    <a href="withdraw.html" class="btn btn-secondary">Withdrawal Manager</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- User Paths Section -->
+        <section class="section" id="user-paths">
+            <h2>🎯 Choose Your Journey</h2>
+            
+            <p>Different users have different needs. Pick the path that matches your experience level:</p>
+
+            <div class="path-cards">
+                <div class="path-card">
+                    <div class="badge">Beginner</div>
+                    <h3>🌱 Just Exploring</h3>
+                    <p><strong>Perfect for:</strong> People new to crypto and DeFi</p>
+                    <ul class="feature-list">
+                        <li>Browse the Web3 Directory</li>
+                        <li>Read documentation</li>
+                        <li>Learn about DAOs and governance</li>
+                        <li>No wallet required!</li>
+                    </ul>
+                    <div class="action-buttons">
+                        <a href="chimera.html" class="btn">Start Exploring</a>
+                        <a href="GOVERNANCE.md" class="btn btn-secondary">Read About Governance</a>
+                    </div>
+                </div>
+
+                <div class="path-card">
+                    <div class="badge" style="background: var(--warning)">Intermediate</div>
+                    <h3>💼 Contract Manager</h3>
+                    <p><strong>Perfect for:</strong> Users who want to connect a wallet, add contracts they own, and withdraw ETH proceeds</p>
+                    <ul class="feature-list">
+                        <li>Connect your wallet</li>
+                        <li>Add your contracts</li>
+                        <li>Manage withdrawals</li>
+                        <li>Track balances</li>
+                    </ul>
+                    <div class="action-buttons">
+                        <a href="withdraw.html" class="btn">Open Withdrawal Manager</a>
+                    </div>
+                </div>
+
+                <div class="path-card">
+                    <div class="badge" style="background: var(--danger)">Advanced</div>
+                    <h3>🔧 Developer / Power User</h3>
+                    <p><strong>Perfect for:</strong> Developers and advanced users</p>
+                    <ul class="feature-list">
+                        <li>Deploy smart contracts</li>
+                        <li>Interact with protocols</li>
+                        <li>Contribute to the codebase</li>
+                        <li>Custom integrations</li>
+                    </ul>
+                    <div class="action-buttons">
+                        <a href="README.xml" class="btn">Technical Docs</a>
+                        <a href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">GitHub Repository <span class="sr-only">(opens in new tab)</span></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step-by-Step Guides -->
+        <section class="section" id="guides">
+            <h2>📚 Step-by-Step Guides</h2>
+
+            <h3>Guide 1: Using the Withdrawal Manager</h3>
+            <div class="step">
+                <span class="step-number">1</span>
+                <h4>Open the Interface</h4>
+                <p>Visit the <a href="withdraw.html" style="color: var(--primary)">Withdrawal Manager</a> page. You'll see a clean interface with a "Connect Wallet" button.</p>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <h4>Connect Your Wallet</h4>
+                <p>Click "Connect Wallet" and approve the connection in MetaMask. Your wallet address will appear at the top.</p>
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <h4>Add a Contract</h4>
+                <p>Enter your smart contract address in the "Add Contract" section. Give it a friendly label (like "My Staking Contract") so you can identify it easily.</p>
+            </div>
+
+            <div class="step">
+                <span class="step-number">4</span>
+                <h4>Choose Withdrawal Method</h4>
+                <p>The interface auto-detects common withdrawal functions like <code>withdraw()</code>, <code>withdrawAll()</code>, or <code>claimRewards()</code>. Select the one you need.</p>
+            </div>
+
+            <div class="step">
+                <span class="step-number">5</span>
+                <h4>Execute Withdrawal</h4>
+                <p>Click the "Execute" button. MetaMask will ask you to confirm the transaction. Review the gas fee and approve!</p>
+            </div>
+
+            <div class="info-box success">
+                <strong>✅ That's it!</strong> Your withdrawal will be processed on the blockchain. You can track it using the transaction hash that appears.
+            </div>
+
+            <h3>Guide 2: Exploring the Web3 Directory</h3>
+            <div class="step">
+                <span class="step-number">1</span>
+                <h4>Open the Directory</h4>
+                <p>Visit the <a href="chimera.html" style="color: var(--primary)">Web3 Directory</a>. This is your central hub for all things Nexus.</p>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <h4>Browse Categories</h4>
+                <p>You'll see different sections:</p>
+                <ul class="feature-list" style="margin-top: 1rem;">
+                    <li><strong>Verified Public Links:</strong> External Web3 ecosystems</li>
+                    <li><strong>Repository Entry Points:</strong> Local documentation</li>
+                    <li><strong>Governance Coverage:</strong> DAO information</li>
+                    <li><strong>Nexus Owner Map:</strong> Authority structure</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <h4>Click Around!</h4>
+                <p>Each card links to either external protocols (like Uniswap, Aave) or internal documentation. Feel free to explore!</p>
+            </div>
+        </section>
+
+        <section class="section" id="public-addresses">
+            <h2>📍 Public Addresses</h2>
+
+            <div class="info-box">
+                <strong>Use these public references to verify the repository owner and official Nexus-managed surfaces.</strong>
+            </div>
+
+            <div class="glossary">
+                <div class="glossary-term">
+                    <strong>Owner wallet</strong>
+                    <p>
+                        <code>0x33ffc308e693a5b49e0ee0241f41f03ccef495f2</code><br>
+                        <a href="https://etherscan.io/address/0x33ffc308e693a5b49e0ee0241f41f03ccef495f2" target="_blank" rel="noopener noreferrer" style="color: var(--primary)">View on Etherscan</a>
+                    </p>
+                </div>
+                <div class="glossary-term">
+                    <strong>GitHub owner</strong>
+                    <p><a href="https://github.com/FuzzysTodd" target="_blank" rel="noopener noreferrer" style="color: var(--primary)">@FuzzysTodd</a></p>
+                </div>
+                <div class="glossary-term">
+                    <strong>Canonical repository</strong>
+                    <p><a href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA" target="_blank" rel="noopener noreferrer" style="color: var(--primary)">FuzzysTodd/The-Nexus-Protocol-Token-DOA</a></p>
+                </div>
+                <div class="glossary-term">
+                    <strong>Published contract addresses</strong>
+                    <p>No additional official deployed contract addresses are published in this repository yet. Treat any others as unofficial unless they are added to the repository-authored docs.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Safety & Best Practices -->
+        <section class="section" id="safety">
+            <h2>🛡️ Safety & Best Practices</h2>
+            
+            <div class="info-box warning">
+                <strong>🔒 Security First!</strong>
+                <ul class="feature-list" style="margin-top: 1rem;">
+                    <li>Never share your seed phrase or private keys</li>
+                    <li>Always verify contract addresses before interacting</li>
+                    <li>Start with small amounts on testnets</li>
+                    <li>Double-check transaction details before confirming</li>
+                    <li>This is a real project, but not every component has been audited for mainnet or production use</li>
+                    <li>Keep your MetaMask and browser updated</li>
+                </ul>
+            </div>
+
+            <h3>Common Pitfalls to Avoid</h3>
+            <div class="glossary">
+                <div class="glossary-term">
+                    <strong>❌ Sending to Wrong Network</strong>
+                    <p>Always verify you're on the correct network (Ethereum mainnet, Polygon, etc.) before making transactions.</p>
+                </div>
+                <div class="glossary-term">
+                    <strong>❌ Ignoring Gas Fees</strong>
+                    <p>Transactions cost gas (fees). During network congestion, these can be high. Check fees before confirming.</p>
+                </div>
+                <div class="glossary-term">
+                    <strong>❌ Rushing Transactions</strong>
+                    <p>Take your time. Review everything. Blockchain transactions are permanent!</p>
+                </div>
+                <div class="glossary-term">
+                    <strong>❌ Not Backing Up</strong>
+                    <p>Write down your wallet's seed phrase and store it securely offline. If you lose it, your funds are gone forever.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="section" id="faq">
+            <h2>❓ Frequently Asked Questions</h2>
+
+            <div class="faq">
+                <div class="faq-item" role="button" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        What exactly is Nexus Protocol?
+                        <span class="faq-toggle" aria-hidden="true">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        Nexus Protocol is a real Web3 project combining decentralized finance (DeFi) tools, smart contract management, and DAO governance. The repository includes working interfaces, documentation, protocol integrations, and a token ecosystem (NGTT).
+                    </div>
+                </div>
+
+                <div class="faq-item" role="button" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        Do I need to pay to use Nexus?
+                        <span class="faq-toggle" aria-hidden="true">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        The interfaces themselves are free to use. However, interacting with blockchain networks requires paying "gas fees" in the native cryptocurrency (like ETH on Ethereum). These fees go to network validators, not to Nexus. You can start by exploring with testnets, which use free test tokens.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="button" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        Is my money safe with Nexus?
+                        <span class="faq-toggle" aria-hidden="true">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        Important: Nexus is a real project, but repository surfaces and smart-contract flows may not be fully audited for production use. Never invest money you can't afford to lose. Start with small amounts or testnets when verifying a workflow. If you choose to use mainnet, do so at your own risk. Your funds are controlled by smart contracts and your wallet - not by any centralized entity.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="button" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        What is NGTT?
+                        <span class="faq-toggle" aria-hidden="true">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        NGTT stands for "Nexus Game Theory Token". It's the ecosystem's utility token with features including governance rights, reward distribution, and staking capabilities. The token combines ERC20 and ERC721 functionality for unique use cases within the Nexus ecosystem.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="button" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        How do I get NGTT tokens?
+                        <span class="faq-toggle" aria-hidden="true">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        NGTT is part of the live Nexus project. To interact with tokens safely, review the technical documentation in README.xml, verify addresses and network settings, and prefer testnets or small-value transactions before using any mainnet flow.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="button" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        What's a DAO and how does it work here?
+                        <span class="faq-toggle" aria-hidden="true">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        DAO stands for "Decentralized Autonomous Organization". It's like a company run by code and community votes instead of traditional management. In Nexus, the DAO structure (documented in GOVERNANCE.md) allows token holders to participate in decisions about the protocol's future. The governance system includes roles like Owner (FuzzysTodd), Master Project Controller (MPC), and Super Delegates.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="button" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        Can I contribute to the project?
+                        <span class="faq-toggle" aria-hidden="true">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        Yes! The repository is open source on GitHub. You can contribute code, documentation, report bugs, or suggest improvements. Check the repository at github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA for contribution guidelines.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="button" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        What if I get stuck or need help?
+                        <span class="faq-toggle" aria-hidden="true">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        Start by reading the documentation files (README.xml, GOVERNANCE.md). Check the FAQ sections in the repository. For technical issues, you can open an issue on GitHub. Remember: always be cautious of anyone asking for your private keys or seed phrase - legitimate help never requires this information.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="button" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        What's the difference between testnet and mainnet?
+                        <span class="faq-toggle" aria-hidden="true">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <strong>Testnet:</strong> A practice blockchain where tokens have no real value. Perfect for learning! You can get free test tokens from "faucets".<br><br>
+                        <strong>Mainnet:</strong> The real blockchain where tokens have actual value and transactions cost real money. Only use mainnet when you fully understand what you're doing and accept the risks.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="button" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        What are gas fees and why do I need to pay them?
+                        <span class="faq-toggle" aria-hidden="true">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        Gas fees are payments to the blockchain network for processing your transactions. Think of them like postage stamps for sending mail. The fees compensate miners/validators who maintain the network. Fees vary based on network congestion - they can be cheap or expensive depending on demand. You can check current gas prices before making transactions.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Next Steps Section -->
+        <section class="section" id="next-steps">
+            <h2>🚀 Ready to Start?</h2>
+            
+            <div class="info-box success">
+                <strong>You're now equipped with the basics!</strong> Here's what to do next:
+            </div>
+
+            <div class="path-cards">
+                <div class="path-card">
+                    <h3>🌐 Explore Web3</h3>
+                    <p>Visit the Web3 Directory to see what's possible in the decentralized world.</p>
+                    <div class="action-buttons">
+                        <a href="chimera.html" class="btn">Open Directory</a>
+                    </div>
+                </div>
+
+                <div class="path-card">
+                    <h3>📖 Deep Dive</h3>
+                    <p>Read the technical documentation to understand the architecture.</p>
+                    <div class="action-buttons">
+                        <a href="README.xml" class="btn">Read Technical Docs</a>
+                        <a href="GOVERNANCE.md" class="btn btn-secondary">Governance Model</a>
+                    </div>
+                </div>
+
+                <div class="path-card">
+                    <h3>🛠️ Get Hands-On</h3>
+                    <p>Try the Withdrawal Manager with a testnet wallet.</p>
+                    <div class="action-buttons">
+                        <a href="withdraw.html" class="btn">Withdrawal Manager</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer style="text-align: center; margin-top: 3rem; padding: 2rem; color: var(--text-muted);">
+            <p>📚 Part of The Nexus Protocol Token DAO Project</p>
+            <p style="font-size: 0.9rem; margin-top: 1rem;">
+                Owner &amp; Primary Authority: <strong style="color: var(--primary)">FuzzysTodd</strong> ·
+                Public wallet: <code>0x33ffc308e693a5b49e0ee0241f41f03ccef495f2</code>
+            </p>
+            <p style="font-size: 0.8rem; margin-top: 1rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+                ⚠️ Real project - repository components and on-chain flows may not be fully audited for production use. 
+                Always do your own research. Blockchain transactions are permanent and irreversible.
+            </p>
+        </footer>
+    </main>
+
+    <script>
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function toggleFaq(element) {
+            const isExpanded = element.getAttribute('aria-expanded') === 'true';
+            element.classList.toggle('active');
+            element.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+        }
+
+        // Centralised keyboard activation for role="button" elements
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.nav-card[data-section]').forEach(function(card) {
+                card.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        scrollToSection(card.dataset.section);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.faq-item').forEach(function(item) {
+                item.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleFaq(item);
+                    }
+                });
+            });
+        });
+
+        // Add smooth reveal animations on scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(section);
+            });
+        });
+
+        // Add dynamic time-based greeting
+        document.addEventListener('DOMContentLoaded', function() {
+            const hour = new Date().getHours();
+            let greeting = '🌟 Welcome';
+            
+            if (hour < 12) greeting = '🌅 Good Morning';
+            else if (hour < 18) greeting = '☀️ Good Afternoon';
+            else greeting = '🌙 Good Evening';
+            
+            const heroTitle = document.querySelector('.hero h1');
+            if (heroTitle) {
+                heroTitle.textContent = `${greeting}, Welcome to Nexus Protocol`;
+            }
+        });
+    </script>
+</body>
+</html>

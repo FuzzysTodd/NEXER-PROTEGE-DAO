@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nexus – FuzzysTodd Dashboard</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #0a0e1a;
+            --panel: #111827;
+            --panel-alt: #1f2937;
+            --text: #e5e7eb;
+            --muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.3);
+            --danger: #f87171;
+            --success: #4ade80;
+            --success-glow: rgba(74, 222, 128, 0.3);
+            --warning: #fbbf24;
+            --border: rgba(148, 163, 184, 0.2);
+            --shadow: 0 20px 60px rgba(2, 6, 23, 0.5);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: linear-gradient(180deg, #020617 0%, var(--bg) 50%, #0f172a 100%);
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 6px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 1rem;
+            margin: 0 0 36px;
+        }
+
+        /* ── Panel ── */
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .panel h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0 0 20px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── GitHub card ── */
+        .gh-card {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .gh-avatar {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            flex-shrink: 0;
+            background: var(--panel-alt);
+        }
+
+        .gh-info { flex: 1; min-width: 180px; }
+
+        .gh-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0 0 4px;
+        }
+
+        .gh-login {
+            font-size: 0.95rem;
+            color: var(--muted);
+            margin: 0 0 10px;
+        }
+
+        .gh-bio {
+            font-size: 0.9rem;
+            color: var(--text);
+            margin: 0 0 12px;
+        }
+
+        .gh-meta {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin: 0 0 14px;
+        }
+
+        .gh-meta span { display: flex; align-items: center; gap: 4px; }
+
+        .gh-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--accent);
+            color: #000;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            padding: 7px 16px;
+            border-radius: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .gh-link:hover { opacity: 0.85; }
+
+        .gh-error { color: var(--danger); font-size: 0.9rem; }
+
+        /* ── Wallet ── */
+        .wallet-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-accent {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-accent:hover:not(:disabled) { opacity: 0.88; }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+
+        .connection-status {
+            font-size: 0.85rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--danger);
+        }
+
+        .connection-status.connected {
+            background: rgba(74, 222, 128, 0.15);
+            color: var(--success);
+        }
+
+        .wallet-detail {
+            background: var(--panel-alt);
+            border-radius: 10px;
+            padding: 16px 20px;
+            font-size: 0.88rem;
+        }
+
+        .wallet-detail table { border-collapse: collapse; width: 100%; }
+
+        .wallet-detail td {
+            padding: 6px 0;
+            vertical-align: top;
+        }
+
+        .wallet-detail td:first-child {
+            color: var(--muted);
+            width: 130px;
+            font-weight: 500;
+        }
+
+        .wallet-detail td:last-child {
+            color: var(--text);
+            word-break: break-all;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+        }
+
+        /* ── Withdraw link ── */
+        .withdraw-banner {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(74, 222, 128, 0.08));
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 14px;
+            padding: 24px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .withdraw-banner-text h3 {
+            margin: 0 0 6px;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .withdraw-banner-text p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .btn-large {
+            padding: 13px 28px;
+            font-size: 1rem;
+            border-radius: 12px;
+            white-space: nowrap;
+        }
+
+        /* ── Live signal feed ── */
+        .signal-feed {
+            max-height: 240px;
+            overflow-y: auto;
+            background: var(--panel-alt);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 0.82rem;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+        }
+
+        .signal-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(148,163,184,0.08);
+            display: flex;
+            gap: 10px;
+        }
+
+        .signal-entry:last-child { border-bottom: none; }
+
+        .signal-ts { color: var(--muted); flex-shrink: 0; }
+        .signal-source {
+            color: var(--accent);
+            flex-shrink: 0;
+            min-width: 90px;
+        }
+        .signal-name { color: var(--warning); flex-shrink: 0; }
+        .signal-data { color: var(--text); word-break: break-all; }
+
+        /* ── Stat grid ── */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-top: 6px;
+        }
+
+        .stat-card {
+            background: var(--panel-alt);
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+
+        .stat-card .label {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin: 0 0 6px;
+        }
+
+        .stat-card .value {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+            word-break: break-all;
+        }
+
+        .stat-card .value.accent { color: var(--accent); }
+        .stat-card .value.success { color: var(--success); }
+        .stat-card .value.warning { color: var(--warning); }
+
+        /* ── Bus status dot ── */
+        .bus-dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+            margin-right: 6px;
+            vertical-align: middle;
+            transition: background 0.4s;
+        }
+        .bus-dot.live { background: var(--success); }
+
+        /* ── Tab nav ── */
+        .tab-nav {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 7px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: #000;
+            border-color: transparent;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: var(--panel-alt);
+            color: var(--text);
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>⚡ Nexus Dashboard</h1>
+    <p class="subtitle">Owner overview &amp; Web3 control center — FuzzysTodd</p>
+
+    <!-- Tab Navigation -->
+    <nav class="tab-nav" aria-label="Dashboard sections">
+        <button class="tab-btn active" data-tab="overview" aria-label="Overview tab">🏠 Overview</button>
+        <button class="tab-btn" data-tab="portfolio" aria-label="Portfolio tab">💼 Portfolio</button>
+        <button class="tab-btn" data-tab="governance" aria-label="Governance tab">🗳️ Governance</button>
+        <button class="tab-btn" data-tab="treasury" aria-label="Treasury tab">🏦 Treasury</button>
+        <button class="tab-btn" data-tab="properties" aria-label="Properties tab">🏠 Properties</button>
+        <button class="tab-btn" data-tab="signals" aria-label="Live Signals tab">📡 Live Signals</button>
+        <button class="tab-btn" data-tab="config" aria-label="Contract configuration tab">⚙️ Config</button>
+    </nav>
+
+    <!-- Tab: Overview -->
+    <div class="tab-panel active" id="tab-overview">
+        <section class="panel" id="github-section">
+            <h2>🐙 GitHub Profile</h2>
+            <div class="gh-card" id="gh-card-content">
+                <img class="gh-avatar" id="gh-avatar" src="" alt="FuzzysTodd GitHub avatar" width="96" height="96">
+                <div class="gh-info">
+                    <p class="gh-name" id="gh-name">Loading…</p>
+                    <p class="gh-login" id="gh-login"></p>
+                    <p class="gh-bio" id="gh-bio"></p>
+                    <div class="gh-meta" id="gh-meta"></div>
+                    <a class="gh-link" id="gh-profile-link" href="https://github.com/FuzzysTodd" target="_blank" rel="noopener noreferrer" aria-label="Open FuzzysTodd GitHub profile">View on GitHub →</a>
+                </div>
+            </div>
+            <p class="gh-error" id="gh-error" style="display:none;"></p>
+        </section>
+        <section class="panel" id="wallet-section">
+            <h2>🔑 Web3 Wallet</h2>
+            <div class="wallet-row">
+                <button class="btn btn-accent" id="connect-btn" aria-label="Connect wallet"><span>🔌</span><span>Connect Wallet</span></button>
+                <!-- Wallet picker -->
+                <div id="wallet-picker" style="display:none;position:absolute;top:calc(100% + 8px);left:0;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;min-width:220px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+                    <p style="margin:0 0 10px;font-size:0.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Choose Wallet</p>
+                    <button id="pick-metamask" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--panel-alt);color:var(--text);font-size:0.9rem;cursor:pointer;margin-bottom:8px;">🦊 MetaMask</button>
+                    <button id="pick-coinbase" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--panel-alt);color:var(--text);font-size:0.9rem;cursor:pointer;">🔵 Coinbase Wallet</button>
+                </div>
+                <div class="connection-status disconnected" id="connection-status" aria-live="polite"><span>Disconnected</span></div>
+            </div>
+            <div class="wallet-detail" id="wallet-detail" style="display:none;">
+                <table>
+                    <tr><td>Address</td><td id="wd-address">—</td></tr>
+                    <tr><td>Network</td><td id="wd-network">—</td></tr>
+                    <tr><td>Chain ID</td><td id="wd-chainid">—</td></tr>
+                    <tr><td>ETH Balance</td><td id="wd-balance">—</td></tr>
+                    <tr><td>NGTT Balance</td><td id="wd-ngtt">—</td></tr>
+                    <tr><td>Voting Power</td><td id="wd-votes">—</td></tr>
+                </table>
+            </div>
+            <p id="wallet-error" style="color:var(--danger);font-size:0.88rem;margin:12px 0 0;display:none;"></p>
+        </section>
+        <div class="withdraw-banner">
+            <div class="withdraw-banner-text">
+                <h3>💸 Contract Withdrawal Manager</h3>
+                <p>Connect your wallet and withdraw ETH proceeds from owned contracts via the proxy interface.</p>
+            </div>
+            <a class="btn btn-accent btn-large" href="./index.html" aria-label="Open Withdraw page"><span>🚀</span><span>Open Withdraw Page</span></a>
+        </div>
+    </div>
+
+    <!-- Tab: Portfolio -->
+    <div class="tab-panel" id="tab-portfolio">
+        <section class="panel">
+            <h2>💼 Portfolio Summary</h2>
+            <div class="stat-grid" id="portfolio-stats">
+                <div class="stat-card"><p class="label">ETH Balance</p><p class="value accent" id="p-eth">—</p></div>
+                <div class="stat-card"><p class="label">NGTT Balance</p><p class="value success" id="p-ngtt">—</p></div>
+                <div class="stat-card"><p class="label">Voting Power</p><p class="value" id="p-votes">—</p></div>
+                <div class="stat-card"><p class="label">Claimable Profits</p><p class="value warning" id="p-profits">—</p></div>
+                <div class="stat-card"><p class="label">Games Completed</p><p class="value" id="p-games">—</p></div>
+                <div class="stat-card"><p class="label">Skill Level</p><p class="value" id="p-skill">—</p></div>
+            </div>
+            <p style="color:var(--muted);font-size:0.82rem;margin-top:16px;" id="portfolio-note">Connect your wallet to load live on-chain data.</p>
+        </section>
+        <section class="panel">
+            <h2>📈 Fractal Compound Projector</h2>
+            <p style="color:var(--muted);font-size:0.88rem;margin:0 0 18px;">Model exponential yield growth (MIT 15.401 / Kelly criterion).</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px;">
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem;">Principal (NGTT)<input type="number" id="fc-principal" value="10000" min="1" step="100" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--panel-alt);color:var(--text);" aria-label="Principal amount in NGTT"></label>
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem;">Per-Period Rate (%)<input type="number" id="fc-rate" value="1.5" min="0.01" step="0.1" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--panel-alt);color:var(--text);" aria-label="Per-period yield rate percentage"></label>
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem;">Periods<input type="number" id="fc-periods" value="52" min="1" step="1" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--panel-alt);color:var(--text);" aria-label="Number of compounding periods"></label>
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem;">Reinvest (bps)<input type="number" id="fc-bps" value="10000" min="0" max="10000" step="100" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--panel-alt);color:var(--text);" aria-label="Reinvestment fraction in basis points"></label>
+            </div>
+            <button class="btn btn-accent" id="fc-calc-btn" aria-label="Calculate fractal compound growth"><span>🔢</span><span>Calculate</span></button>
+            <div id="fc-result" style="margin-top:18px;display:none;">
+                <div class="stat-grid">
+                    <div class="stat-card"><p class="label">Final Value</p><p class="value success" id="fc-final">—</p></div>
+                    <div class="stat-card"><p class="label">Total Yield</p><p class="value accent" id="fc-yield">—</p></div>
+                    <div class="stat-card"><p class="label">Growth Multiple</p><p class="value warning" id="fc-multiple">—</p></div>
+                    <div class="stat-card"><p class="label">Kelly Fraction</p><p class="value" id="fc-kelly">—</p></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Tab: Governance -->
+    <div class="tab-panel" id="tab-governance">
+        <section class="panel">
+            <h2>🗳️ Governance Power</h2>
+            <div class="stat-grid">
+                <div class="stat-card"><p class="label">Voting Weight</p><p class="value accent" id="g-votes">—</p></div>
+                <div class="stat-card"><p class="label">Delegated To</p><p class="value" id="g-delegate">—</p></div>
+                <div class="stat-card"><p class="label">Proposal Threshold</p><p class="value" id="g-threshold">10 000 NGTT</p></div>
+                <div class="stat-card"><p class="label">Quorum</p><p class="value" id="g-quorum">4%</p></div>
+            </div>
+            <p style="color:var(--muted);font-size:0.82rem;margin-top:16px;">Delegate to yourself to activate voting power. Quorum is governable (1–20%).</p>
+            <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap;">
+                <button class="btn btn-accent" id="delegate-self-btn" disabled aria-label="Delegate votes to self"><span>✅</span><span>Delegate to Self</span></button>
+                <a class="btn btn-primary" href="./governance.html" aria-label="Open governance page"><span>🗳️</span><span>View Proposals</span></a>
+            </div>
+            <p id="delegate-msg" style="font-size:0.85rem;margin:10px 0 0;display:none;"></p>
+        </section>
+    </div>
+
+    <!-- Tab: Treasury -->
+    <div class="tab-panel" id="tab-treasury">
+        <section class="panel">
+            <h2>🏦 DAO Treasury</h2>
+            <div class="stat-grid">
+                <div class="stat-card"><p class="label">ETH Balance</p><p class="value accent" id="t-eth">—</p></div>
+                <div class="stat-card"><p class="label">NGTT Holdings</p><p class="value success" id="t-ngtt">—</p></div>
+                <div class="stat-card"><p class="label">USDC Holdings</p><p class="value" id="t-usdc">—</p></div>
+                <div class="stat-card"><p class="label">Paused</p><p class="value" id="t-paused">—</p></div>
+            </div>
+            <p style="color:var(--muted);font-size:0.82rem;margin-top:16px;">Multi-sig required for transfers above threshold. All transfers via NexusDAOTimelock.</p>
+            <div style="margin-top:18px;">
+                <a class="btn btn-primary" href="./financial-ops-dashboard.html" aria-label="Open financial ops dashboard"><span>📈</span><span>Financial Ops Dashboard</span></a>
+            </div>
+        </section>
+    </div>
+
+    <!-- Tab: Properties -->
+    <div class="tab-panel" id="tab-properties">
+        <section class="panel">
+            <h2>🏠 My Properties (RWA NFTs)</h2>
+            <p style="color:var(--muted);font-size:0.88rem;margin:0 0 18px;">Each property is a NexusRWA ERC-721 token backed by a Wyoming DAO LLC deed.</p>
+            <div id="rwa-list" style="color:var(--muted);font-size:0.88rem;">Connect your wallet to load RWA holdings.</div>
+            <div style="margin-top:18px;">
+                <button class="btn btn-accent" id="load-rwa-btn" disabled aria-label="Load RWA property holdings"><span>🔄</span><span>Load My Properties</span></button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Tab: Contract Config -->
+    <div class="tab-panel" id="tab-config">
+        <section class="panel">
+            <h2>⚙️ Contract Addresses</h2>
+            <p style="color:var(--muted);font-size:0.88rem;margin:0 0 20px;">Configure the deployed Nexus contract addresses. Values are saved to your browser's localStorage and loaded automatically on each visit.</p>
+            <div style="display:grid;gap:14px;">
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem;font-weight:600;">
+                    NGTT Token Address
+                    <input type="text" id="cfg-ngtt" placeholder="0x… NGTTGovernanceToken or NexusGameTheoryToken"
+                        style="padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--panel-alt);color:var(--text);font-family:monospace;font-size:0.88rem;"
+                        aria-label="NGTT token contract address">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem;font-weight:600;">
+                    Governor Address
+                    <input type="text" id="cfg-gov" placeholder="0x… NexusDAOGovernor"
+                        style="padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--panel-alt);color:var(--text);font-family:monospace;font-size:0.88rem;"
+                        aria-label="NexusDAOGovernor contract address">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem;font-weight:600;">
+                    Treasury Address
+                    <input type="text" id="cfg-treasury" placeholder="0x… NexusDAOTreasury"
+                        style="padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--panel-alt);color:var(--text);font-family:monospace;font-size:0.88rem;"
+                        aria-label="NexusDAOTreasury contract address">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem;font-weight:600;">
+                    RWA (NexusRWA) Address
+                    <input type="text" id="cfg-rwa" placeholder="0x… NexusRWA"
+                        style="padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--panel-alt);color:var(--text);font-family:monospace;font-size:0.88rem;"
+                        aria-label="NexusRWA contract address">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem;font-weight:600;">
+                    Signal Bus WebSocket URL
+                    <input type="text" id="cfg-bus" placeholder="ws://localhost:8790"
+                        style="padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--panel-alt);color:var(--text);font-family:monospace;font-size:0.88rem;"
+                        aria-label="Signal bus WebSocket URL">
+                </label>
+            </div>
+            <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;">
+                <button class="btn btn-accent" id="cfg-save-btn" aria-label="Save contract addresses to localStorage"><span>💾</span><span>Save &amp; Apply</span></button>
+                <button class="btn btn-primary" id="cfg-clear-btn" aria-label="Clear saved contract addresses"><span>🗑️</span><span>Clear Saved</span></button>
+            </div>
+            <p id="cfg-msg" style="font-size:0.85rem;margin:12px 0 0;display:none;"></p>
+            <div style="margin-top:20px;padding:14px 16px;background:var(--panel-alt);border-radius:10px;font-size:0.82rem;">
+                <p style="margin:0 0 6px;font-weight:600;color:var(--accent);">ℹ️ How to use</p>
+                <p style="margin:0;color:var(--muted);line-height:1.6;">Paste the deployed contract addresses above and click <strong>Save &amp; Apply</strong>. The dashboard will immediately use these addresses for all on-chain reads when you connect a wallet. The verified owner address is <code style="color:var(--accent)">0x33ffc308e693a5b49e0ee0241f41f03ccef495f2</code>.</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Tab: Live Signals -->
+    <div class="tab-panel" id="tab-signals">
+        <section class="panel">
+            <h2><span class="bus-dot" id="bus-dot"></span>📡 Live Signal Feed</h2>
+            <p style="color:var(--muted);font-size:0.82rem;margin:0 0 14px;" id="bus-status">Connecting to signal bus on ws://localhost:8790…</p>
+            <div class="stat-grid" style="margin-bottom:16px;">
+                <div class="stat-card"><p class="label">Bus Status</p><p class="value" id="sf-status">Offline</p></div>
+                <div class="stat-card"><p class="label">Events Received</p><p class="value accent" id="sf-count">0</p></div>
+                <div class="stat-card"><p class="label">Last Event</p><p class="value" id="sf-last">—</p></div>
+            </div>
+            <div class="signal-feed" id="signal-feed" aria-live="polite" aria-label="Live signal feed">
+                <div class="signal-entry" style="color:var(--muted);">Waiting for events…</div>
+            </div>
+        </section>
+    </div>
+
+</main>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@coinbase/wallet-sdk@4.3.0/dist/index.global.js"></script>
+<script src="./money-flow.js"></script>
+<script>
+(function () {
+    "use strict";
+    // Load from localStorage (overrides any page-level window globals)
+    var LS_KEYS = { ngtt: "nexus_cfg_ngtt", gov: "nexus_cfg_gov", treasury: "nexus_cfg_treasury", rwa: "nexus_cfg_rwa", bus: "nexus_cfg_bus" };
+    function lsGet(k) { try { return localStorage.getItem(LS_KEYS[k]) || ""; } catch(e) { console.error("localStorage read failed:", e); return ""; } }
+    function lsSet(k, v) { try { localStorage.setItem(LS_KEYS[k], v); } catch(e) { console.error("localStorage write failed:", e); } }
+    function lsClear() { try { Object.values(LS_KEYS).forEach(function(k) { localStorage.removeItem(k); }); } catch(e) { console.error("localStorage clear failed:", e); } }
+
+    var NGTT_ADDRESS     = lsGet("ngtt")     || (window.__NEXUS_NGTT__     || "");
+    var GOVERNOR_ADDRESS = lsGet("gov")      || (window.__NEXUS_GOV__      || "");
+    var TREASURY_ADDRESS = lsGet("treasury") || (window.__NEXUS_TREASURY__ || "");
+    var RWA_ADDRESS      = lsGet("rwa")      || (window.__NEXUS_RWA__      || "");
+    var SIGNAL_BUS_URL   = lsGet("bus")      || (window.__NEXUS_BUS__      || "ws://localhost:8790");
+    var NGTT_ABI = [
+        "function balanceOf(address) view returns (uint256)",
+        "function getVotes(address) view returns (uint256)",
+        "function delegates(address) view returns (address)",
+        "function userProfits(address) view returns (uint256)",
+        "function gamesCompleted(address) view returns (uint256)",
+        "function skillLevel(address) view returns (uint256)",
+    ];
+    var GOVERNOR_ABI_FRAG = [
+        "function quorumNumerator() view returns (uint256)",
+        "function proposalThreshold() view returns (uint256)",
+    ];
+    var TREASURY_ABI_FRAG = [
+        "function ethBalance() view returns (uint256)",
+        "function tokenBalance(address) view returns (uint256)",
+        "function paused() view returns (bool)",
+    ];
+    var RWA_ABI_FRAG = [
+        "function balanceOf(address) view returns (uint256)",
+        "function tokenOfOwnerByIndex(address,uint256) view returns (uint256)",
+    ];
+    var provider = null, signer = null, connectedAddress = null, signalBusWs = null, signalCount = 0;
+
+    // Tabs
+    document.querySelectorAll(".tab-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var tab = btn.getAttribute("data-tab");
+            document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
+            document.querySelectorAll(".tab-panel").forEach(function (p) { p.classList.remove("active"); });
+            btn.classList.add("active");
+            var panel = document.getElementById("tab-" + tab);
+            if (panel) panel.classList.add("active");
+        });
+    });
+
+    // GitHub Profile
+    async function loadGitHubProfile() {
+        try {
+            var resp = await fetch("https://api.github.com/users/FuzzysTodd", { headers: { Accept: "application/vnd.github+json" } });
+            if (!resp.ok) throw new Error("HTTP " + resp.status);
+            var data = await resp.json();
+            var avatar = document.getElementById("gh-avatar");
+            avatar.src = data.avatar_url || ""; avatar.alt = (data.name || "FuzzysTodd") + " avatar";
+            document.getElementById("gh-name").textContent = data.name || "FuzzysTodd";
+            document.getElementById("gh-login").textContent = "@" + data.login;
+            var bio = document.getElementById("gh-bio");
+            bio.textContent = data.bio || ""; bio.style.display = data.bio ? "block" : "none";
+            var meta = document.getElementById("gh-meta");
+            var items = [];
+            if (data.public_repos != null) items.push("📦 " + data.public_repos + " repos");
+            if (data.followers != null) items.push("👥 " + data.followers + " followers");
+            if (data.location) items.push("📍 " + data.location);
+            meta.innerHTML = items.map(function (t) { return "<span>" + escapeHtml(t) + "</span>"; }).join("");
+            document.getElementById("gh-profile-link").href = data.html_url || "https://github.com/FuzzysTodd";
+        } catch (err) {
+            var errEl = document.getElementById("gh-error");
+            errEl.textContent = "Could not load GitHub profile: " + err.message;
+            errEl.style.display = "block";
+            document.getElementById("gh-name").textContent = "FuzzysTodd";
+            document.getElementById("gh-login").textContent = "@FuzzysTodd";
+        }
+    }
+
+    function escapeHtml(str) {
+        return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    // Wallet
+    function openWalletPicker() {
+        var picker = document.getElementById("wallet-picker");
+        picker.style.display = picker.style.display === "none" ? "block" : "none";
+    }
+    function closeWalletPicker() {
+        document.getElementById("wallet-picker").style.display = "none";
+    }
+    async function connectWallet(type) {
+        closeWalletPicker();
+        var errEl = document.getElementById("wallet-error"); errEl.style.display = "none";
+        var rawProvider;
+        if (type === "coinbase") {
+            // Prefer Coinbase Wallet extension if already injected
+            if (typeof window.ethereum !== "undefined" && window.ethereum.isCoinbaseWallet) {
+                rawProvider = window.ethereum;
+            } else if (window.coinbaseWalletExtension) {
+                rawProvider = window.coinbaseWalletExtension;
+            } else if (typeof CoinbaseWalletSDK !== "undefined") {
+                var sdk = new CoinbaseWalletSDK({ appName: "Nexus Protocol DAO", appLogoUrl: "" });
+                rawProvider = sdk.makeWeb3Provider();
+            } else {
+                errEl.textContent = "Coinbase Wallet not detected. Install from coinbase.com/wallet or use the mobile app.";
+                errEl.style.display = "block"; return;
+            }
+        } else {
+            // MetaMask (default)
+            if (typeof window.ethereum === "undefined") { errEl.textContent = "MetaMask not installed."; errEl.style.display = "block"; return; }
+            rawProvider = window.ethereum;
+        }
+        try {
+            provider = new ethers.providers.Web3Provider(rawProvider, "any");
+            await provider.send("eth_requestAccounts", []);
+            await updateWalletUI();
+            rawProvider.on("accountsChanged", updateWalletUI);
+            rawProvider.on("chainChanged", function () { provider = new ethers.providers.Web3Provider(rawProvider, "any"); updateWalletUI(); });
+        } catch (err) { var e = document.getElementById("wallet-error"); e.textContent = "Connection failed: " + err.message; e.style.display = "block"; }
+    }
+
+    async function updateWalletUI() {
+        try {
+            signer = provider.getSigner(); connectedAddress = await signer.getAddress();
+            var network = await provider.getNetwork();
+            var balWei = await provider.getBalance(connectedAddress);
+            var ethStr = parseFloat(ethers.utils.formatEther(balWei)).toFixed(6) + " ETH";
+            var netName = network.name !== "unknown" ? network.name : "Chain " + network.chainId;
+            setText("wd-address", connectedAddress); setText("wd-network", netName);
+            setText("wd-chainid", network.chainId); setText("wd-balance", ethStr);
+            document.getElementById("wallet-detail").style.display = "block";
+            var st = document.getElementById("connection-status");
+            st.className = "connection-status connected"; st.innerHTML = "<span>Connected</span>";
+            var btn = document.getElementById("connect-btn"); btn.innerHTML = "<span>✓</span><span>Connected</span>"; btn.disabled = true;
+            document.getElementById("delegate-self-btn").disabled = false;
+            document.getElementById("load-rwa-btn").disabled = false;
+            await loadPortfolioData(connectedAddress);
+            await loadGovernanceData(connectedAddress);
+            await loadTreasuryData();
+        } catch (err) { var e = document.getElementById("wallet-error"); e.textContent = "Wallet error: " + err.message; e.style.display = "block"; }
+    }
+
+    async function loadPortfolioData(address) {
+        var ethBal = await provider.getBalance(address);
+        setText("p-eth", parseFloat(ethers.utils.formatEther(ethBal)).toFixed(6) + " ETH");
+        if (!NGTT_ADDRESS) { setText("portfolio-note", "Set window.__NEXUS_NGTT__ to load NGTT data."); return; }
+        try {
+            var ngtt = new ethers.Contract(NGTT_ADDRESS, NGTT_ABI, provider);
+            var r = await Promise.all([ngtt.balanceOf(address), ngtt.getVotes(address), ngtt.userProfits(address), ngtt.gamesCompleted(address), ngtt.skillLevel(address)]);
+            var fmtNgtt = parseFloat(ethers.utils.formatEther(r[0])).toFixed(2) + " NGTT";
+            setText("p-ngtt", fmtNgtt); setText("wd-ngtt", fmtNgtt);
+            setText("p-votes", parseFloat(ethers.utils.formatEther(r[1])).toFixed(2) + " votes"); setText("wd-votes", parseFloat(ethers.utils.formatEther(r[1])).toFixed(2) + " votes");
+            setText("p-profits", parseFloat(ethers.utils.formatEther(r[2])).toFixed(4) + " NGTT");
+            setText("p-games", r[3].toString()); setText("p-skill", r[4].toString());
+            setText("portfolio-note", "Live data from NGTT at " + NGTT_ADDRESS);
+        } catch (e) { setText("portfolio-note", "Error: " + e.message); }
+    }
+
+    async function loadGovernanceData(address) {
+        if (NGTT_ADDRESS) {
+            try {
+                var ngtt = new ethers.Contract(NGTT_ADDRESS, NGTT_ABI, provider);
+                var r = await Promise.all([ngtt.getVotes(address), ngtt.delegates(address)]);
+                setText("g-votes", parseFloat(ethers.utils.formatEther(r[0])).toFixed(2) + " NGTT");
+                var isSelf = r[1].toLowerCase() === address.toLowerCase();
+                setText("g-delegate", isSelf ? "Self (active)" : r[1].slice(0,8)+"…"+r[1].slice(-6));
+            } catch (_) {}
+        }
+        if (GOVERNOR_ADDRESS) {
+            try {
+                var gov = new ethers.Contract(GOVERNOR_ADDRESS, GOVERNOR_ABI_FRAG, provider);
+                var r2 = await Promise.all([gov.quorumNumerator(), gov.proposalThreshold()]);
+                setText("g-quorum", r2[0].toString() + "%");
+                setText("g-threshold", parseFloat(ethers.utils.formatEther(r2[1])).toLocaleString() + " NGTT");
+            } catch (_) {}
+        }
+    }
+
+    async function loadTreasuryData() {
+        if (!TREASURY_ADDRESS) return;
+        try {
+            var t = new ethers.Contract(TREASURY_ADDRESS, TREASURY_ABI_FRAG, provider);
+            var calls = [t.ethBalance(), t.paused()];
+            if (NGTT_ADDRESS) calls.push(t.tokenBalance(NGTT_ADDRESS));
+            var r = await Promise.all(calls);
+            setText("t-eth", parseFloat(ethers.utils.formatEther(r[0])).toFixed(6) + " ETH");
+            setText("t-paused", r[1] ? "⚠️ YES" : "No");
+            if (NGTT_ADDRESS && r[2]) setText("t-ngtt", parseFloat(ethers.utils.formatEther(r[2])).toFixed(2) + " NGTT");
+        } catch (e) { setText("t-eth", "Error: " + e.message); }
+    }
+
+    // RWA
+    document.getElementById("load-rwa-btn").addEventListener("click", async function () {
+        if (!connectedAddress || !RWA_ADDRESS) { document.getElementById("rwa-list").textContent = RWA_ADDRESS ? "Connect wallet first." : "Set window.__NEXUS_RWA__."; return; }
+        try {
+            var rwa = new ethers.Contract(RWA_ADDRESS, RWA_ABI_FRAG, provider);
+            var count = await rwa.balanceOf(connectedAddress);
+            if (count.toNumber() === 0) { document.getElementById("rwa-list").innerHTML = "<p style=\"color:var(--muted)\">No RWA properties found.</p>"; return; }
+            var html = "";
+            for (var i = 0; i < Math.min(count.toNumber(), 10); i++) {
+                try {
+                    var tokenId = await rwa.tokenOfOwnerByIndex(connectedAddress, i);
+                    html += "<div style=\"background:var(--panel-alt);border-radius:10px;padding:14px 16px;margin-bottom:10px;\"><p style=\"margin:0 0 4px;font-weight:700;\">Token #" + tokenId.toString() + "</p></div>";
+                } catch (_) {}
+            }
+            document.getElementById("rwa-list").innerHTML = html || "<p style=\"color:var(--muted)\">Could not load metadata.</p>";
+        } catch (e) { document.getElementById("rwa-list").textContent = "Error: " + e.message; }
+    });
+
+    // Delegate
+    document.getElementById("delegate-self-btn").addEventListener("click", async function () {
+        if (!signer || !NGTT_ADDRESS) { showDelegateMsg("Set NGTT address or connect wallet.", true); return; }
+        try {
+            showDelegateMsg("Sending delegation…", false);
+            var ngtt = new ethers.Contract(NGTT_ADDRESS, ["function delegate(address)"], signer);
+            var tx = await ngtt.delegate(connectedAddress);
+            showDelegateMsg("Sent: " + tx.hash, false); await tx.wait();
+            showDelegateMsg("✅ Delegated to self.", false);
+            await loadGovernanceData(connectedAddress);
+        } catch (e) { showDelegateMsg("Failed: " + e.message, true); }
+    });
+    function showDelegateMsg(msg, isError) {
+        var el = document.getElementById("delegate-msg");
+        el.textContent = msg; el.style.color = isError ? "var(--danger)" : "var(--success)"; el.style.display = "block";
+    }
+
+    // Fractal calculator
+    document.getElementById("fc-calc-btn").addEventListener("click", function () {
+        var principal = parseFloat(document.getElementById("fc-principal").value) || 10000;
+        var rate = (parseFloat(document.getElementById("fc-rate").value) || 1.5) / 100;
+        var periods = parseInt(document.getElementById("fc-periods").value) || 52;
+        var bps = parseInt(document.getElementById("fc-bps").value); bps = Number.isFinite(bps) ? bps : 10000;
+        var mf = window.NexusMoneyFlow;
+        var fc = (mf && mf.fractalCompound) ? mf.fractalCompound(principal, rate, periods, bps) : fallbackFC(principal, rate, periods, bps);
+        var kelly = (mf && mf.kellyFraction) ? mf.kellyFraction(0.6, 1 / rate) : 0;
+        setText("fc-final", fc.finalValue.toLocaleString("en-US",{maximumFractionDigits:2}) + " NGTT");
+        setText("fc-yield", fc.totalYield.toLocaleString("en-US",{maximumFractionDigits:2}) + " NGTT");
+        setText("fc-multiple", fc.growthMultiple.toFixed(4) + "×");
+        setText("fc-kelly", (kelly * 100).toFixed(2) + "% per cycle");
+        document.getElementById("fc-result").style.display = "block";
+    });
+    function fallbackFC(p, r, n, bps) {
+        var re = bps/10000, v = p;
+        for (var i = 0; i < n; i++) v += v * r * re;
+        return { finalValue: v, totalYield: v - p, growthMultiple: v / p };
+    }
+
+    // Signal Bus
+    function connectSignalBus() {
+        try {
+            signalBusWs = new WebSocket(SIGNAL_BUS_URL);
+            signalBusWs.onopen = function () { setSignalBusStatus(true, "Connected to " + SIGNAL_BUS_URL); };
+            signalBusWs.onmessage = function (evt) {
+                try {
+                    var msg = JSON.parse(evt.data); signalCount++;
+                    setText("sf-count", signalCount.toString());
+                    var ts = msg.timestamp ? msg.timestamp.slice(11,19) : new Date().toISOString().slice(11,19);
+                    setText("sf-last", ts);
+                    appendSignal(ts, msg.source||"bus", msg.event||"msg", JSON.stringify(msg.data||{}));
+                } catch (_) {}
+            };
+            signalBusWs.onclose = function () { setSignalBusStatus(false, "Disconnected. Retrying in 5s…"); setTimeout(connectSignalBus, 5000); };
+            signalBusWs.onerror = function () { setSignalBusStatus(false, "Error — bus may be offline."); };
+        } catch (e) { setSignalBusStatus(false, "WebSocket unavailable: " + e.message); }
+    }
+    function setSignalBusStatus(live, msg) {
+        var dot = document.getElementById("bus-dot"); if (dot) dot.className = "bus-dot" + (live ? " live" : "");
+        setText("bus-status", msg); setText("sf-status", live ? "Live" : "Offline");
+    }
+    function appendSignal(ts, src, evt, data) {
+        var feed = document.getElementById("signal-feed"); if (!feed) return;
+        var ph = feed.querySelector(".signal-entry[style]"); if (ph && ph.textContent.includes("Waiting")) ph.remove();
+        var el = document.createElement("div"); el.className = "signal-entry";
+        el.innerHTML = "<span class=\"signal-ts\">" + escapeHtml(ts) + "</span><span class=\"signal-source\">" + escapeHtml(src) + "</span><span class=\"signal-name\">" + escapeHtml(evt) + "</span><span class=\"signal-data\">" + escapeHtml(data.slice(0,120)) + "</span>";
+        feed.insertBefore(el, feed.firstChild);
+        while (feed.children.length > 50) feed.removeChild(feed.lastChild);
+    }
+
+    function setText(id, text) { var el = document.getElementById(id); if (el) el.textContent = text; }
+
+    document.getElementById("connect-btn").addEventListener("click", openWalletPicker);
+    document.getElementById("pick-metamask").addEventListener("click", function () { connectWallet("metamask"); });
+    document.getElementById("pick-coinbase").addEventListener("click", function () { connectWallet("coinbase"); });
+    // Close picker when clicking outside
+    document.addEventListener("click", function (evt) {
+        var picker = document.getElementById("wallet-picker");
+        if (picker.style.display !== "none" && !document.getElementById("wallet-section").contains(evt.target)) {
+            closeWalletPicker();
+        }
+    });
+
+    // Config tab — populate fields from current values
+    function populateConfigFields() {
+        document.getElementById("cfg-ngtt").value     = NGTT_ADDRESS;
+        document.getElementById("cfg-gov").value      = GOVERNOR_ADDRESS;
+        document.getElementById("cfg-treasury").value = TREASURY_ADDRESS;
+        document.getElementById("cfg-rwa").value      = RWA_ADDRESS;
+        document.getElementById("cfg-bus").value      = SIGNAL_BUS_URL;
+    }
+    document.getElementById("cfg-save-btn").addEventListener("click", function () {
+        NGTT_ADDRESS     = document.getElementById("cfg-ngtt").value.trim();
+        GOVERNOR_ADDRESS = document.getElementById("cfg-gov").value.trim();
+        TREASURY_ADDRESS = document.getElementById("cfg-treasury").value.trim();
+        RWA_ADDRESS      = document.getElementById("cfg-rwa").value.trim();
+        SIGNAL_BUS_URL   = document.getElementById("cfg-bus").value.trim() || "ws://localhost:8790";
+        lsSet("ngtt",     NGTT_ADDRESS);
+        lsSet("gov",      GOVERNOR_ADDRESS);
+        lsSet("treasury", TREASURY_ADDRESS);
+        lsSet("rwa",      RWA_ADDRESS);
+        lsSet("bus",      SIGNAL_BUS_URL);
+        var msg = document.getElementById("cfg-msg");
+        msg.textContent = "✅ Saved. Reconnect wallet to load live contract data.";
+        msg.style.color = "var(--success)"; msg.style.display = "block";
+        setTimeout(function() { msg.style.display = "none"; }, 4000);
+    });
+    document.getElementById("cfg-clear-btn").addEventListener("click", function () {
+        lsClear();
+        NGTT_ADDRESS = "";
+        GOVERNOR_ADDRESS = "";
+        TREASURY_ADDRESS = "";
+        RWA_ADDRESS = "";
+        SIGNAL_BUS_URL = "ws://localhost:8790";
+        populateConfigFields();
+        var msg = document.getElementById("cfg-msg");
+        msg.textContent = "Saved addresses cleared.";
+        msg.style.color = "var(--muted)"; msg.style.display = "block";
+        setTimeout(function() { msg.style.display = "none"; }, 3000);
+    });
+    populateConfigFields();
+
+    loadGitHubProfile();
+    connectSignalBus();
+}());
+</script>
+</body>
+</html>

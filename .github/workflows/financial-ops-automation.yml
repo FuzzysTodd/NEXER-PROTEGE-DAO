@@ -1,0 +1,93 @@
+name: Financial Ops Automation
+
+"on":
+  workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *"
+  push:
+    branches:
+      - "main"
+      - "copilot/**"
+      - "agent/**"
+    paths:
+      - ".github/agents/**"
+      - ".github/workflows/**"
+      - "mcp/**"
+      - "nexus/**"
+      - "docs/**"
+      - "*.html"
+
+permissions:
+  contents: read
+
+jobs:
+  finance-ops-scan:
+    name: Finance Ops Scan And Report
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.11"
+
+      - name: Generate Financial Ops Reports
+        run: |
+          python nexus/finance_ops_report.py \
+            --root . \
+            --manifest mcp/agents/financial-ops-bots.json \
+            --output-json ops/reports/financial-ops-report.json \
+            --output-md ops/reports/financial-ops-report.md
+
+      - name: Build Public Publication Index
+        run: |
+          python - <<'PYTHON'
+          from pathlib import Path
+
+          publication_index = Path('ops/reports/publication-index.md')
+          publication_index.parent.mkdir(parents=True, exist_ok=True)
+          publication_index.write_text(
+              '# DAO Public Publication Index\n\n'
+              'Generated reports and public surfaces produced by the automation layer.\n\n'
+              '## Report Artifacts\n\n'
+              '- `ops/reports/financial-ops-report.md`\n'
+              '- `ops/reports/financial-ops-report.json`\n'
+              '- `ops/reports/publication-index.md`\n\n'
+              '## Public Surfaces\n\n'
+              '- `financial-ops-dashboard.html`\n'
+              '- `approval-service.html`\n'
+              '- `governance.html`\n'
+              '- `withdraw.html`\n'
+              '- `index.html`\n\n'
+              '## REST Endpoints\n\n'
+              '- `GET /health`\n'
+              '- `GET /api/report`\n'
+              '- `POST /api/refresh`\n'
+              '- `GET /api/signals`\n'
+              '- `GET /api/summary`\n'
+              '- `GET /api/transactions?wallet=<address>`\n'
+          )
+          PYTHON
+
+      - name: Publish Financial Ops Summary
+        run: |
+          cat ops/reports/publication-index.md >> "$GITHUB_STEP_SUMMARY"
+          printf '\n' >> "$GITHUB_STEP_SUMMARY"
+          cat ops/reports/financial-ops-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Financial Ops Artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: dao-public-ops-pack
+          path: |
+            ops/reports/*
+            financial-ops-dashboard.html
+            approval-service.html
+            governance.html
+            withdraw.html
+            index.html
+            docs/DAO_AUTOMATION_ROADMAP.md
+          retention-days: 30

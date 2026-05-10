@@ -1,0 +1,19 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.flake8",
+        "dbaeumer.vscode-eslint",
+        "juanblanco.solidity",
+        "nomicfoundation.hardhat-solidity",
+        "ackeeblockchain.tools-for-solidity",
+        "cyfrin.aderyn",
+        "github.vscode-github-actions",
+        "davidanson.vscode-markdownlint",
+        "bierner.markdown-mermaid",
+        "ms-vscode-remote.remote-containers",
+        "ms-vscode-remote.remote-ssh",
+        "fabric.vscode-fabric-functions",
+        "spylogsster.app-debug-helper"
+    ]
+}

@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nexus Protocol — Games Arcade</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #020617;
+            --bg-alt: #0f172a;
+            --panel: rgba(15, 23, 42, 0.9);
+            --panel-alt: rgba(30, 41, 59, 0.92);
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent2: #818cf8;
+            --accent3: #34d399;
+            --warning: #fbbf24;
+            --border: rgba(148, 163, 184, 0.22);
+            --shadow: 0 24px 80px rgba(2, 6, 23, 0.45);
+        }
+
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background:
+                radial-gradient(circle at top, rgba(56, 189, 248, 0.18), transparent 35%),
+                linear-gradient(180deg, var(--bg) 0%, var(--bg-alt) 55%, #111827 100%);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(2, 6, 23, 0.92);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-inner {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 20px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            color: var(--accent);
+            font-weight: bold;
+            text-decoration: none;
+            margin-right: auto;
+        }
+
+        .nav-link {
+            color: var(--muted);
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 10px;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link:focus-visible {
+            color: var(--text);
+            background: rgba(148, 163, 184, 0.12);
+            outline: none;
+        }
+
+        main {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 36px 20px 80px;
+        }
+
+        .hero,
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .hero {
+            padding: 42px;
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: auto -10% -30% auto;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(129, 140, 248, 0.22), transparent 72%);
+            pointer-events: none;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: rgba(56, 189, 248, 0.14);
+            color: var(--accent);
+            border: 1px solid rgba(56, 189, 248, 0.28);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        h1,
+        h2,
+        h3,
+        p {
+            margin-top: 0;
+        }
+
+        .hero h1 {
+            margin: 20px 0 14px;
+            font-size: clamp(2.4rem, 4vw, 4rem);
+            line-height: 1.05;
+            max-width: 680px;
+        }
+
+        .hero p {
+            max-width: 720px;
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 1.04rem;
+        }
+
+        .hero-actions,
+        .stat-row,
+        .chip-row,
+        .tab-row,
+        .action-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .hero-actions {
+            margin-top: 26px;
+        }
+
+        .button,
+        .chip-button,
+        .tab-button,
+        .option-button,
+        .memory-card,
+        .action-button {
+            border: 0;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+            font: inherit;
+        }
+
+        .button,
+        .chip-button,
+        .tab-button,
+        .action-button,
+        .option-button {
+            padding: 12px 18px;
+            border-radius: 14px;
+        }
+
+        .button:hover,
+        .chip-button:hover,
+        .tab-button:hover,
+        .option-button:hover,
+        .memory-card:hover,
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.35);
+        }
+
+        .button-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #020617;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .button-secondary {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .stats-grid,
+        .content-grid,
+        .arcade-grid,
+        .featured-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            margin-bottom: 28px;
+        }
+
+        .stat-card,
+        .sub-panel,
+        .featured-card {
+            background: var(--panel-alt);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 22px;
+        }
+
+        .stat-card strong {
+            display: block;
+            font-size: 1.8rem;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .section-heading {
+            margin-bottom: 18px;
+        }
+
+        .section-heading p,
+        .sub-panel p,
+        .featured-card p,
+        .status-text,
+        .helper-text,
+        .list-note {
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .content-grid {
+            grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+            margin-bottom: 28px;
+        }
+
+        .panel {
+            padding: 28px;
+        }
+
+        .chip-button {
+            background: rgba(148, 163, 184, 0.12);
+            color: var(--text);
+        }
+
+        .chip-button.is-active {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.24), rgba(129, 140, 248, 0.24));
+            color: #fff;
+            border: 1px solid rgba(56, 189, 248, 0.34);
+        }
+
+        .summary-card {
+            padding: 22px;
+            border-radius: 20px;
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            margin-top: 20px;
+        }
+
+        .summary-card ul,
+        .catalog-list,
+        .history-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .summary-card li,
+        .history-list li {
+            padding: 10px 0;
+            border-top: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .summary-card li:first-child,
+        .history-list li:first-child {
+            border-top: 0;
+        }
+
+        .catalog-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .summary-card--plain {
+            padding: 0;
+            margin: 0;
+            background: transparent;
+            border: 0;
+        }
+
+        .score-box--full {
+            grid-column: 1 / -1;
+        }
+
+        .catalog-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .catalog-index {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(56, 189, 248, 0.16);
+            color: var(--accent);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .catalog-name {
+            font-weight: 600;
+        }
+
+        .featured-grid {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            margin-bottom: 28px;
+        }
+
+        .featured-card .eyebrow-small {
+            display: inline-block;
+            color: var(--accent3);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-size: 0.76rem;
+            margin-bottom: 10px;
+        }
+
+        .featured-card h3 {
+            margin-bottom: 10px;
+        }
+
+        .tab-row {
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            background: rgba(148, 163, 184, 0.12);
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .tab-button.is-active {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.28), rgba(52, 211, 153, 0.22));
+            color: #fff;
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .arcade-grid {
+            grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+            align-items: start;
+        }
+
+        .game-surface {
+            background: rgba(2, 6, 23, 0.48);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            border-radius: 22px;
+            padding: 24px;
+        }
+
+        .meta-panel {
+            background: rgba(30, 41, 59, 0.72);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: 22px;
+            padding: 22px;
+        }
+
+        .memory-board {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .memory-card {
+            min-height: 82px;
+            border-radius: 18px;
+            background: linear-gradient(145deg, rgba(51, 65, 85, 0.95), rgba(15, 23, 42, 0.95));
+            color: var(--text);
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .memory-card.is-visible {
+            background: linear-gradient(145deg, rgba(56, 189, 248, 0.22), rgba(129, 140, 248, 0.24));
+        }
+
+        .memory-card.is-matched {
+            background: linear-gradient(145deg, rgba(52, 211, 153, 0.26), rgba(56, 189, 248, 0.2));
+            color: #f8fafc;
+        }
+
+        .score-strip {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .score-box {
+            padding: 14px;
+            border-radius: 18px;
+            background: rgba(15, 23, 42, 0.72);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .score-box strong {
+            display: block;
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .action-button {
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--text);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            font-weight: 600;
+        }
+
+        .action-button.primary {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.95), rgba(129, 140, 248, 0.95));
+            color: #020617;
+        }
+
+        .action-button.success {
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.95), rgba(56, 189, 248, 0.9));
+            color: #020617;
+        }
+
+        .action-button.warning {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.92), rgba(56, 189, 248, 0.78));
+            color: #020617;
+        }
+
+        .action-button:disabled,
+        .option-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .option-grid {
+            display: grid;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .option-button {
+            text-align: left;
+            background: rgba(30, 41, 59, 0.84);
+            color: var(--text);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .status-text {
+            min-height: 28px;
+            margin: 12px 0 0;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 24px 20px 40px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 900px) {
+            .content-grid,
+            .arcade-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero,
+            .panel,
+            .sub-panel,
+            .featured-card {
+                padding: 20px;
+            }
+
+            .memory-board {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .score-strip {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <div class="nav-inner">
+        <a class="brand" href="./index.html">⬡ Nexus Protocol</a>
+        <a class="nav-link" href="./index.html">Home</a>
+        <a class="nav-link" href="./user-guide.html">User Guide</a>
+        <a class="nav-link" href="./chimera.html">Web3 Directory</a>
+        <a class="nav-link" href="./withdraw.html">Withdraw</a>
+        <a class="nav-link" href="./crypto-expert-guide.html">Crypto Expert</a>
+    </div>
+</nav>
+
+<main>
+    <section class="hero">
+        <span class="eyebrow">🎮 Playable Nexus arcade</span>
+        <h1>Play Nexus games in a polished browser arcade.</h1>
+        <p>
+            Browse all seven age-group tracks, jump into live mini-games, and explore how the
+            Nexus game-theory catalog turns token learning, strategy, and governance into play.
+        </p>
+        <div class="hero-actions">
+            <a class="button button-primary" href="#arcade">Launch the arcade</a>
+            <a class="button button-secondary" href="./index.html">Back to the portal</a>
+        </div>
+    </section>
+
+    <section class="stats-grid" aria-label="Games overview">
+        <div class="stat-card">
+            <strong>70</strong>
+            <span>game concepts mapped across the age-group catalog</span>
+        </div>
+        <div class="stat-card">
+            <strong>7</strong>
+            <span>player tracks from children through seniors</span>
+        </div>
+        <div class="stat-card">
+            <strong>3</strong>
+            <span>live browser demos ready to play instantly</span>
+        </div>
+        <div class="stat-card">
+            <strong>0</strong>
+            <span>downloads required — everything runs in the page</span>
+        </div>
+    </section>
+
+    <section class="content-grid">
+        <div class="panel">
+            <div class="section-heading">
+                <h2>Choose your player track</h2>
+                <p>Switch age groups to see the full game list and the recommended live demo.</p>
+            </div>
+            <div class="chip-row" id="age-group-buttons" aria-label="Age groups"></div>
+
+            <div class="summary-card">
+                <h3 id="group-name">Children (Ages 5-10)</h3>
+                <p class="helper-text" id="group-meta"></p>
+                <ul id="group-highlights"></ul>
+                <div class="hero-actions">
+                    <button class="action-button primary" id="recommended-launch" type="button">
+                        Launch Memory Match MCP
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <aside class="sub-panel">
+            <h2>Catalog notes</h2>
+            <p>
+                The live arcade below focuses on three browser-first experiences. The full catalog on
+                this page mirrors the broader Nexus game-theory roadmap for future expansion.
+            </p>
+            <p class="list-note">
+                Every group keeps a 10-token allocation and one-hour development target in the source
+                game-theory plan.
+            </p>
+        </aside>
+    </section>
+
+    <section class="panel">
+        <div class="section-heading">
+            <h2>Full game catalog</h2>
+            <p>Each active player track exposes ten games from the Nexus game-theory set.</p>
+        </div>
+        <ul class="catalog-list" id="catalog-list"></ul>
+    </section>
+
+    <section class="featured-grid" aria-label="Featured playable games">
+        <article class="featured-card">
+            <span class="eyebrow-small">Fast browser play</span>
+            <h3>Memory Match MCP</h3>
+            <p>Quick symbol matching for focus, pattern recall, and a clean start for younger players.</p>
+        </article>
+        <article class="featured-card">
+            <span class="eyebrow-small">Portfolio challenge</span>
+            <h3>Token Trading Academy</h3>
+            <p>Practice buy, hold, and sell timing across a six-round simulated token market.</p>
+        </article>
+        <article class="featured-card">
+            <span class="eyebrow-small">Decision game</span>
+            <h3>DAO Governance Sprint</h3>
+            <p>Test your instincts on treasury, approval, rollout, and transparency scenarios.</p>
+        </article>
+    </section>
+
+    <section class="panel" id="arcade">
+        <div class="section-heading">
+            <h2>Nexus Arcade</h2>
+            <p>Swap game modes instantly and keep playing without leaving the page.</p>
+        </div>
+
+        <div class="tab-row" id="game-tabs" role="tablist" aria-label="Playable games">
+            <button class="tab-button is-active" type="button" data-game-target="memory">Memory Match MCP</button>
+            <button class="tab-button" type="button" data-game-target="trader">Token Trading Academy</button>
+            <button class="tab-button" type="button" data-game-target="governance">DAO Governance Sprint</button>
+        </div>
+
+        <div class="arcade-grid">
+            <section class="game-surface" data-game-panel="memory">
+                <h3>Memory Match MCP</h3>
+                <p class="helper-text">
+                    Reveal pairs, clear all six matches, and chase a lower move count every round.
+                </p>
+                <div class="action-row">
+                    <button class="action-button" id="memory-reset" type="button">Reset board</button>
+                </div>
+                <p class="status-text" id="memory-status"></p>
+                <div class="memory-board" id="memory-board"></div>
+                <p class="status-text" id="memory-feedback"></p>
+            </section>
+
+            <aside class="meta-panel" data-game-panel="memory">
+                <h3>How it plays</h3>
+                <p class="helper-text">Perfect for quick sessions, pattern building, and family-friendly play.</p>
+                <ul class="summary-card summary-card--plain">
+                    <li>12 cards total</li>
+                    <li>6 symbol pairs to match</li>
+                    <li>Immediate replay loop</li>
+                </ul>
+            </aside>
+
+            <section class="game-surface" data-game-panel="trader" hidden>
+                <h3>Token Trading Academy</h3>
+                <p class="helper-text">
+                    Build the strongest closing treasury over six market rounds.
+                </p>
+                <div class="score-strip">
+                    <div class="score-box">
+                        <strong id="trader-round"></strong>
+                        <span>Current round</span>
+                    </div>
+                    <div class="score-box">
+                        <strong id="trader-price"></strong>
+                        <span>Token price</span>
+                    </div>
+                    <div class="score-box">
+                        <strong id="trader-cash"></strong>
+                        <span>Cash</span>
+                    </div>
+                    <div class="score-box">
+                        <strong id="trader-tokens"></strong>
+                        <span>Tokens held</span>
+                    </div>
+                    <div class="score-box score-box--full">
+                        <strong id="trader-worth"></strong>
+                        <span>Net worth</span>
+                    </div>
+                </div>
+                <div class="action-row">
+                    <button class="action-button success" type="button" data-trader-action="buy">Buy</button>
+                    <button class="action-button" type="button" data-trader-action="hold">Hold</button>
+                    <button class="action-button warning" type="button" data-trader-action="sell">Sell</button>
+                    <button class="action-button" id="trader-reset" type="button">Reset run</button>
+                </div>
+                <p class="status-text" id="trader-feedback"></p>
+            </section>
+
+            <aside class="meta-panel" data-game-panel="trader" hidden>
+                <h3>Run log</h3>
+                <p class="helper-text">Each action is recorded so you can review how the treasury evolved.</p>
+                <ul class="history-list" id="trader-history"></ul>
+            </aside>
+
+            <section class="game-surface" data-game-panel="governance" hidden>
+                <h3>DAO Governance Sprint</h3>
+                <p class="helper-text">
+                    Choose the healthiest governance action in each scenario.
+                </p>
+                <div class="score-strip">
+                    <div class="score-box">
+                        <strong id="governance-progress"></strong>
+                        <span>Scenario progress</span>
+                    </div>
+                    <div class="score-box">
+                        <strong id="governance-score"></strong>
+                        <span>Correct answers</span>
+                    </div>
+                </div>
+                <h4 id="governance-prompt"></h4>
+                <div class="option-grid" id="governance-options"></div>
+                <div class="action-row" style="margin-top: 18px;">
+                    <button class="action-button primary" id="governance-next" type="button" hidden>Next scenario</button>
+                    <button class="action-button" id="governance-reset" type="button">Restart sprint</button>
+                </div>
+                <p class="status-text" id="governance-feedback"></p>
+            </section>
+
+            <aside class="meta-panel" data-game-panel="governance" hidden>
+                <h3>What this trains</h3>
+                <p class="helper-text">
+                    Governance play reinforces approval discipline, risk control, and transparent communication.
+                </p>
+                <ul class="summary-card summary-card--plain">
+                    <li>4 decision scenarios</li>
+                    <li>Instant feedback after every answer</li>
+                    <li>Replayable score chase</li>
+                </ul>
+            </aside>
+        </div>
+    </section>
+</main>
+
+<footer>
+    Built for The Nexus Protocol Token DAO — explore the <a href="./index.html">portal</a>,
+    open the <a href="./user-guide.html">user guide</a>, or return to the
+    <a href="./chimera.html">Web3 directory</a>.
+</footer>
+
+<script src="./games.js"></script>
+</body>
+</html>

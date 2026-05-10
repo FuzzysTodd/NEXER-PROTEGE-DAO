@@ -1,0 +1,28 @@
+name: "Dependency Review"
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "requirements*.txt"
+      - "package*.json"
+      - ".github/dependabot.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependency-review:
+    name: "Review dependency changes for vulnerabilities"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48
+        with:
+          fail-on-severity: high
+          allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, Python-2.0, Unlicense
+          comment-summary-in-pr: always

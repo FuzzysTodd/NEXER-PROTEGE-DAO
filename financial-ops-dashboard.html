@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nexus Financial Ops Dashboard</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #07111b;
+            --panel: rgba(10, 25, 41, 0.88);
+            --panel-strong: rgba(10, 25, 41, 0.96);
+            --line: rgba(148, 163, 184, 0.18);
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --primary: #22c55e;
+            --primary-soft: rgba(34, 197, 94, 0.14);
+            --accent: #f59e0b;
+            --accent-soft: rgba(245, 158, 11, 0.14);
+            --danger: #fb7185;
+            --danger-soft: rgba(251, 113, 133, 0.14);
+            --glow: radial-gradient(circle at top right, rgba(34, 197, 94, 0.22), transparent 45%);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+            background:
+                var(--glow),
+                linear-gradient(180deg, #030712 0%, #07111b 48%, #102235 100%);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        main {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 32px 0 64px;
+        }
+
+        .hero,
+        .panel {
+            background: var(--panel);
+            backdrop-filter: blur(18px);
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            box-shadow: 0 24px 60px rgba(2, 6, 23, 0.45);
+        }
+
+        .hero {
+            padding: 32px;
+            margin-bottom: 24px;
+            display: grid;
+            gap: 20px;
+            grid-template-columns: 2fr 1fr;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--primary-soft);
+            color: #86efac;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        h1, h2, h3, p { margin: 0; }
+
+        h1 {
+            font-size: clamp(2rem, 4vw, 3.4rem);
+            line-height: 1.02;
+            margin-top: 10px;
+        }
+
+        .hero p {
+            margin-top: 14px;
+            color: var(--muted);
+            max-width: 60ch;
+            line-height: 1.65;
+        }
+
+        .hero-links {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+        }
+
+        .chip-link {
+            text-decoration: none;
+            color: var(--text);
+            padding: 11px 16px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: rgba(15, 23, 42, 0.62);
+        }
+
+        button.chip-link {
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .hero-note {
+            padding: 18px;
+            border-radius: 18px;
+            background: var(--panel-strong);
+            border: 1px solid var(--line);
+            display: grid;
+            gap: 10px;
+        }
+
+        .hero-note strong {
+            color: #86efac;
+            font-size: 1.1rem;
+        }
+
+        .hero-note .status {
+            display: grid;
+            gap: 8px;
+            padding-top: 10px;
+            border-top: 1px solid var(--line);
+        }
+
+        .hero-note .status strong {
+            font-size: 0.95rem;
+        }
+
+        .hero-note .status p {
+            margin: 0;
+        }
+
+        .hero-note .snapshot {
+          display: grid;
+          gap: 6px;
+          padding-top: 10px;
+          border-top: 1px solid var(--line);
+        }
+
+        .hero-note .snapshot p {
+          margin: 0;
+          color: var(--muted);
+          line-height: 1.55;
+        }
+
+        .chain-outputs {
+          display: grid;
+          gap: 12px;
+          margin-top: 12px;
+          padding-top: 12px;
+          border-top: 1px solid var(--line);
+        }
+
+        .chain-output-group {
+          display: grid;
+          gap: 8px;
+        }
+
+        .chain-output-group h3 {
+          margin: 0;
+          font-size: 0.95rem;
+        }
+
+        .chain-output-list {
+          display: grid;
+          gap: 8px;
+        }
+
+        .chain-output-item {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 10px 12px;
+          border-radius: 14px;
+          background: rgba(15, 23, 42, 0.55);
+          border: 1px solid var(--line);
+        }
+
+        .chain-output-item span {
+          color: var(--muted);
+        }
+
+        .grid {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            margin-bottom: 24px;
+        }
+
+        .metric {
+            padding: 22px;
+            border-radius: 22px;
+            background: var(--panel);
+            border: 1px solid var(--line);
+        }
+
+        .metric span {
+            display: block;
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .metric strong {
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .metric.success strong { color: #86efac; }
+        .metric.warn strong { color: #fcd34d; }
+        .metric.danger strong { color: #fda4af; }
+
+        .layout {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: 1.2fr 0.8fr;
+        }
+
+        .stack {
+            display: grid;
+            gap: 20px;
+        }
+
+        .panel {
+            padding: 24px;
+        }
+
+        .panel h2 {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+        }
+
+        .bot-list,
+        .finding-list,
+        .signal-list,
+        .log-list,
+        .action-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .item {
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid var(--line);
+        }
+
+        .item small,
+        .item p {
+            color: var(--muted);
+            margin-top: 6px;
+            line-height: 1.55;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            margin-bottom: 8px;
+        }
+
+        .pill.success { background: var(--primary-soft); color: #86efac; }
+        .pill.warn { background: var(--accent-soft); color: #fcd34d; }
+        .pill.danger { background: var(--danger-soft); color: #fda4af; }
+
+        code {
+            color: #fcd34d;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 1px 6px;
+            border-radius: 6px;
+        }
+
+        @media (max-width: 980px) {
+            .hero,
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <section class="hero">
+        <div>
+            <span class="eyebrow">Financial Ops Automation</span>
+            <h1>Repo-wide monitoring for pre-errors, withdrawals, placements, and success reporting.</h1>
+            <p>
+                This operator dashboard summarizes the additional financial automation bots, the latest scan output,
+                and the documentation/report surfaces generated for human review. Treasury and withdrawal execution
+                remain approval-gated.
+            </p>
+            <div class="hero-links">
+                <a class="chip-link" href="./dashboard.html">⚡ Dashboard</a>
+                <a class="chip-link" href="./ops/reports/financial-ops-report.md">Open Markdown Report</a>
+                <a class="chip-link" href="./docs/FINANCIAL_AUTOMATION_OPERATIONS.md">Open Operations Runbook</a>
+                <a class="chip-link" href="./docs/AUTOMATION_AUTHORITY.md">Open Authority Policy</a>
+                <a class="chip-link" href="./withdraw.html">Open Withdraw Interface</a>
+                <a class="chip-link" href="./builder-fund.html">Builder Fund Dashboard</a>
+              <a class="chip-link" href="http://127.0.0.1:8788/" target="_blank" rel="noopener noreferrer">Open REST Adapter</a>
+               <a class="chip-link" href="http://localhost:8787/approval-service.html">Open Approval Service</a>
+               <button class="chip-link" id="refresh-report" type="button">Refresh now</button>
+            </div>
+        </div>
+        <aside class="hero-note">
+            <strong id="approval-gate">Approval gate active</strong>
+            <p id="generated-at">Report timestamp loading…</p>
+            <p>Automation can code, scan, document, and prepare repo changes. It does not execute fund movement without review.</p>
+            <div class="status" aria-live="polite">
+                <strong id="live-status">Live monitoring offline</strong>
+                <p id="last-checked">Waiting for first refresh…</p>
+            </div>
+          <div class="snapshot">
+            <p id="source-snapshot">No live source configured.</p>
+            <p id="chain-snapshot">Waiting for chain snapshot.</p>
+          </div>
+          <div class="chain-outputs" id="chain-outputs" aria-live="polite"></div>
+        </aside>
+    </section>
+
+    <section class="grid" aria-label="summary metrics">
+        <article class="metric success">
+            <span>Files Scanned</span>
+            <strong id="files-scanned">0</strong>
+        </article>
+        <article class="metric danger">
+            <span>Pre-Error Findings</span>
+            <strong id="preerrors">0</strong>
+        </article>
+        <article class="metric warn">
+            <span>Withdrawal Signals</span>
+            <strong id="withdrawals">0</strong>
+        </article>
+        <article class="metric success">
+            <span>Placement Signals</span>
+            <strong id="placements">0</strong>
+        </article>
+    </section>
+
+    <section class="layout">
+        <div class="stack">
+            <article class="panel">
+                <h2>Bot Roster</h2>
+                <div class="bot-list" id="bot-list"></div>
+            </article>
+            <article class="panel">
+                <h2>Top Pre-Error Findings</h2>
+                <div class="finding-list" id="finding-list"></div>
+            </article>
+            <article class="panel">
+                <h2>Signal Inventory</h2>
+                <div class="signal-list" id="signal-list"></div>
+            </article>
+        </div>
+        <div class="stack">
+            <article class="panel">
+                <h2>Success Journal</h2>
+                <div class="log-list" id="log-list"></div>
+            </article>
+            <article class="panel">
+                <h2>Operator Actions</h2>
+                <div class="action-list" id="action-list"></div>
+            </article>
+        </div>
+    </section>
+</main>
+<script>
+const fallbackReport = {
+  generatedAt: "2026-04-06T00:00:00+00:00",
+  summary: {
+    filesScanned: 312,
+    preErrorCount: 6,
+    withdrawSignalCount: 42,
+    placementSignalCount: 57,
+    approvalGate: "required for any fund movement or treasury action"
+  },
+  bots: [
+    {
+      id: "mcp-fin-011",
+      name: "Pre-Error Remediation Bot",
+      role: "Detect early failures, malformed configs, syntax drift, and low-risk workflow regressions before they become blocking incidents."
+    },
+    {
+      id: "mcp-fin-012",
+      name: "Withdrawal Placement Scanner",
+      role: "Track withdrawal paths, payout logic, capital-allocation opportunities, and financial automation gaps across the repository."
+    },
+    {
+      id: "mcp-fin-013",
+      name: "Success Documentation Reporter",
+      role: "Convert successful scans and fixes into markdown reports, dashboard payloads, and operator-ready documentation."
+    }
+  ],
+  preErrorFindings: [
+    {
+      severity: "low",
+      category: "naming-drift",
+      file: "KELLEre.py`",
+      message: "Suspicious filename pattern can make automation and review harder."
+    }
+  ],
+  withdrawSignals: [
+    { file: "withdraw.html", count: 12, matches: ["withdraw", "claim", "payout"] },
+    { file: "withdraw.js", count: 10, matches: ["withdraw", "claim"] }
+  ],
+  placementSignals: [
+    { file: "CRYPTO_REVENUE_GUIDE.md", count: 16, matches: ["revenue", "yield", "apy", "profit"] }
+  ],
+  successLog: [
+    {
+      time: "2026-04-06T00:00:00+00:00",
+      title: "Financial ops dashboard initialized",
+      details: "Seed markdown and JSON reports were created for operator review.",
+      status: "success"
+    }
+  ],
+  recommendedActions: [
+    "Review suspicious filenames before widening autofix scope.",
+    "Keep treasury and withdrawal automations approval-gated.",
+    "Use the remediation bot for code fixes and the dashboard for operator review."
+  ],
+  liveChain: null
+};
+
+const REPORT_URL = './ops/reports/financial-ops-report.json';
+const REPORT_ADAPTER_URL = 'http://127.0.0.1:8788/api/report';
+const REFRESH_INTERVAL_MS = 15000;
+
+let latestRenderedTimestamp = null;
+
+function renderItem(container, html) {
+  const node = document.createElement('div');
+  node.className = 'item';
+  node.innerHTML = html;
+  container.appendChild(node);
+}
+
+function render(report) {
+  document.getElementById('files-scanned').textContent = report.summary.filesScanned;
+  document.getElementById('preerrors').textContent = report.summary.preErrorCount;
+  document.getElementById('withdrawals').textContent = report.summary.withdrawSignalCount;
+  document.getElementById('placements').textContent = report.summary.placementSignalCount;
+  document.getElementById('approval-gate').textContent = `Approval gate: ${report.summary.approvalGate}`;
+  document.getElementById('generated-at').textContent = `Report generated at ${report.generatedAt}`;
+
+  const sourceSnapshot = document.getElementById('source-snapshot');
+  const chainSnapshot = document.getElementById('chain-snapshot');
+  const chainOutputs = document.getElementById('chain-outputs');
+  if (report.duneSnapshot) {
+    const dune = report.duneSnapshot;
+    sourceSnapshot.textContent = `Dune snapshot for ${dune.walletAddress || 'an unspecified wallet'} loaded from ${report.sourceType || 'dune-snapshot'}.`;
+    chainSnapshot.textContent = `${dune.balanceCount || 0} balances · ${dune.chainCount || 0} chains · total ${formatCurrency(dune.totalValueUsd)} · low-liquidity ${dune.lowLiquidityCount || 0}`;
+    const topHoldings = Array.isArray(dune.topHoldings) && dune.topHoldings.length > 0
+      ? dune.topHoldings.map((holding) => `
+        <div class="chain-output-item">
+          <strong>${holding.symbol || holding.name || 'Unknown'}</strong>
+          <span>${formatCurrency(holding.valueUsd)}${holding.lowLiquidity ? ' · low liquidity' : ''}</span>
+        </div>
+      `).join('')
+      : '<div class="chain-output-item"><strong>No holdings</strong><span>Waiting for Dune data</span></div>';
+
+    const chainBreakdown = dune.chainBreakdown && Object.keys(dune.chainBreakdown).length > 0
+      ? Object.entries(dune.chainBreakdown).map(([chain, count]) => `
+        <div class="chain-output-item">
+          <strong>${chain}</strong>
+          <span>${count} balance${count === 1 ? '' : 's'}</span>
+        </div>
+      `).join('')
+      : '<div class="chain-output-item"><strong>No chain breakdown</strong><span>Waiting for Dune data</span></div>';
+
+    chainOutputs.innerHTML = `
+      <div class="chain-output-group">
+        <h3>Top holdings</h3>
+        <div class="chain-output-list">${topHoldings}</div>
+      </div>
+      <div class="chain-output-group">
+        <h3>Chain breakdown</h3>
+        <div class="chain-output-list">${chainBreakdown}</div>
+      </div>
+    `;
+  } else if (report.liveChain && report.liveChain.sourceKind === 'dune') {
+    const chain = report.liveChain;
+    sourceSnapshot.textContent = `Live source: Dune snapshot at ${report.sourceUrl || report.source}`;
+    chainSnapshot.textContent = `${chain.networkName || 'Dune snapshot'} · ${chain.balanceCount ?? 'unknown'} balances · total ${formatCurrency(chain.portfolioValueUsd)} · low-liquidity ${chain.lowLiquidityCount ?? 'unknown'}`;
+    chainOutputs.innerHTML = `
+      <div class="chain-output-group">
+        <h3>Top holdings</h3>
+        <div class="chain-output-list">${(Array.isArray(chain.topHoldings) ? chain.topHoldings : []).slice(0, 5).map((holding) => `
+          <div class="chain-output-item">
+            <strong>${holding.symbol || holding.name || 'Unknown'}</strong>
+            <span>${formatCurrency(holding.valueUsd)}${holding.lowLiquidity ? ' · low liquidity' : ''}</span>
+          </div>
+        `).join('') || '<div class="chain-output-item"><strong>No holdings</strong><span>Waiting for live Dune data</span></div>'}</div>
+      </div>
+      <div class="chain-output-group">
+        <h3>Chain breakdown</h3>
+        <div class="chain-output-list">${chain.chainBreakdown && Object.keys(chain.chainBreakdown).length > 0
+          ? Object.entries(chain.chainBreakdown).map(([chainName, count]) => `
+            <div class="chain-output-item">
+              <strong>${chainName}</strong>
+              <span>${count} balance${count === 1 ? '' : 's'}</span>
+            </div>
+          `).join('')
+          : '<div class="chain-output-item"><strong>No chain breakdown</strong><span>Waiting for live Dune data</span></div>'}
+        </div>
+      </div>
+    `;
+  } else if (report.liveChain) {
+    const chain = report.liveChain;
+    if (chain.error) {
+      sourceSnapshot.textContent = `Live source unavailable: ${chain.error}`;
+      chainSnapshot.textContent = `Fallback snapshot using ${report.sourceType || 'local-file'} data for wallet ${chain.walletAddress || 'unset'}.`;
+      chainOutputs.innerHTML = '<div class="chain-output-item"><strong>Live chain outputs unavailable</strong><span>Source error</span></div>';
+    } else {
+      const sourceLabel = chain.sourceKind === 'dune'
+        ? 'Dune snapshot'
+        : report.sourceType === 'rpc' ? 'RPC' : report.sourceType;
+      sourceSnapshot.textContent = `Live source: ${sourceLabel} at ${report.sourceUrl || report.source}`;
+      chainSnapshot.textContent = chain.sourceKind === 'dune'
+        ? `${chain.networkName || 'Dune snapshot'} · ${chain.balanceCount ?? 'unknown'} balances · total ${formatCurrency(chain.portfolioValueUsd)} · low-liquidity ${chain.lowLiquidityCount ?? 'unknown'}`
+        : `${chain.networkName || 'Live network'} · block ${chain.blockNumber ?? 'unknown'} · gas ${chain.gasPriceGwei ?? 'unknown'} gwei · wallet ${chain.walletAddress || 'unset'} · balance ${chain.walletBalanceEth ?? 'unknown'} ETH`;
+      chainOutputs.innerHTML = chain.sourceKind === 'dune'
+        ? `
+          <div class="chain-output-group">
+            <h3>Top holdings</h3>
+            <div class="chain-output-list">${(Array.isArray(chain.topHoldings) ? chain.topHoldings : []).slice(0, 5).map((holding) => `
+              <div class="chain-output-item">
+                <strong>${holding.symbol || holding.name || 'Unknown'}</strong>
+                <span>${formatCurrency(holding.valueUsd)}${holding.lowLiquidity ? ' · low liquidity' : ''}</span>
+              </div>
+            `).join('') || '<div class="chain-output-item"><strong>No holdings</strong><span>Waiting for live Dune data</span></div>'}</div>
+          </div>
+        `
+        : '<div class="chain-output-item"><strong>Live chain outputs</strong><span>Use a Dune source to show holdings</span></div>';
+    }
+  } else {
+    sourceSnapshot.textContent = report.sourceUrl ? `Source: ${report.sourceType} at ${report.sourceUrl}` : 'No live source configured.';
+    chainSnapshot.textContent = 'Waiting for chain snapshot.';
+    chainOutputs.innerHTML = '<div class="chain-output-item"><strong>Live chain outputs</strong><span>Waiting for Dune data</span></div>';
+  }
+
+  const botList = document.getElementById('bot-list');
+  const findingList = document.getElementById('finding-list');
+  const signalList = document.getElementById('signal-list');
+  const logList = document.getElementById('log-list');
+  const actionList = document.getElementById('action-list');
+
+  botList.innerHTML = '';
+  findingList.innerHTML = '';
+  signalList.innerHTML = '';
+  logList.innerHTML = '';
+  actionList.innerHTML = '';
+
+  report.bots.forEach((bot) => {
+    renderItem(botList, `<span class="pill success">${bot.id}</span><h3>${bot.name}</h3><p>${bot.role}</p>`);
+  });
+
+  (report.preErrorFindings.length ? report.preErrorFindings : [{ severity: 'success', file: 'none', message: 'No pre-error findings.' }]).forEach((finding) => {
+    const pillClass = finding.severity === 'high' ? 'danger' : finding.severity === 'medium' ? 'warn' : 'success';
+    renderItem(findingList, `<span class="pill ${pillClass}">${finding.severity}</span><h3>${finding.file}</h3><p>${finding.message}</p>`);
+  });
+
+  [...report.withdrawSignals, ...report.placementSignals].slice(0, 6).forEach((signal) => {
+    renderItem(signalList, `<span class="pill warn">${signal.count} hits</span><h3>${signal.file}</h3><small>${signal.matches.join(', ')}</small>`);
+  });
+
+  report.successLog.forEach((entry) => {
+    renderItem(logList, `<span class="pill success">${entry.status}</span><h3>${entry.title}</h3><small>${entry.time}</small><p>${entry.details}</p>`);
+  });
+
+  report.recommendedActions.forEach((action) => {
+    renderItem(actionList, `<h3>Operator action</h3><p>${action}</p>`);
+  });
+
+  latestRenderedTimestamp = report.generatedAt || null;
+}
+
+function setLiveStatus(message, detail) {
+  document.getElementById('live-status').textContent = message;
+  document.getElementById('last-checked').textContent = detail;
+}
+
+function formatCheckedAt(date) {
+  return `Last checked at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+}
+
+async function loadReport() {
+  const checkedAt = new Date();
+
+  try {
+    const report = await fetchReportSnapshot();
+    const hasNewSnapshot = latestRenderedTimestamp && report.generatedAt && report.generatedAt !== latestRenderedTimestamp;
+
+    render(report);
+    setLiveStatus(
+      hasNewSnapshot ? 'Live monitoring active — new report detected' : 'Live monitoring active',
+      `${formatCheckedAt(checkedAt)} • Auto-refresh every ${REFRESH_INTERVAL_MS / 1000}s`
+    );
+  } catch (error) {
+    const showingFallbackData = !latestRenderedTimestamp;
+
+    if (showingFallbackData) {
+      render(fallbackReport);
+    }
+
+    setLiveStatus(
+      showingFallbackData
+        ? 'Live monitoring degraded — showing fallback data'
+        : 'Live monitoring degraded — showing latest available snapshot',
+      `${formatCheckedAt(checkedAt)} • Refresh failed`
+    );
+  }
+}
+
+async function fetchReportSnapshot() {
+  const endpoints = [REPORT_ADAPTER_URL, REPORT_URL];
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, { cache: 'no-store' });
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (_) {
+      // Try the next source.
+    }
+  }
+
+  return fallbackReport;
+}
+
+function formatCurrency(value) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) {
+    return 'unknown';
+  }
+
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 2
+  }).format(numericValue);
+}
+
+document.getElementById('refresh-report').addEventListener('click', () => {
+  setLiveStatus('Refreshing report…', 'Checking for the latest dashboard data now.');
+  loadReport();
+});
+
+loadReport();
+window.setInterval(loadReport, REFRESH_INTERVAL_MS);
+</script>
+</body>
+</html>

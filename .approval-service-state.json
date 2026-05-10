@@ -1,0 +1,69 @@
+{
+  "serviceUrl": "http://localhost:8787",
+  "audit": [
+    {
+      "action": "service-started",
+      "serviceUrl": "http://localhost:8787",
+      "ok": true,
+      "message": "Approval service started.",
+      "timestamp": "2026-04-14T16:48:58.402Z"
+    },
+    {
+      "action": "save-url",
+      "serviceUrl": "http://localhost:8787",
+      "ok": true,
+      "message": "Saved service URL: http://localhost:8787",
+      "timestamp": "2026-04-14T16:48:58.403Z"
+    },
+    {
+      "action": "test-service",
+      "serviceUrl": "http://localhost:8787",
+      "ok": false,
+      "message": "Service responded with 404 Not Found",
+      "timestamp": "2026-04-14T16:49:03.081Z",
+      "status": 404,
+      "statusText": "Not Found",
+      "durationMs": 168,
+      "finalUrl": "http://localhost:8787/"
+    },
+    {
+      "action": "test-service",
+      "serviceUrl": "http://localhost:8787",
+      "ok": true,
+      "message": "Service reachable: 200 OK",
+      "timestamp": "2026-04-14T16:50:26.164Z",
+      "status": 200,
+      "statusText": "OK",
+      "durationMs": 40,
+      "finalUrl": "http://localhost:8787/"
+    },
+    {
+      "action": "export-audit",
+      "serviceUrl": "http://localhost:8787",
+      "ok": true,
+      "message": "Exported audit as md",
+      "timestamp": "2026-04-14T16:50:32.944Z"
+    },
+    {
+      "action": "test-service",
+      "serviceUrl": "http://localhost:8787",
+      "ok": true,
+      "message": "Service reachable: 200 OK",
+      "timestamp": "2026-04-14T21:16:02.291Z",
+      "status": 200,
+      "statusText": "OK",
+      "durationMs": 50,
+      "finalUrl": "http://localhost:8787/"
+    }
+  ],
+  "lastTest": {
+    "ok": true,
+    "status": 200,
+    "statusText": "OK",
+    "durationMs": 50,
+    "finalUrl": "http://localhost:8787/",
+    "serviceUrl": "http://localhost:8787",
+    "timestamp": "2026-04-14T21:16:02.291Z"
+  },
+  "lastError": null
+}

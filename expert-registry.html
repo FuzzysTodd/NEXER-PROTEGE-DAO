@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expert Registry | Nexus Protocol</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            border: 1px solid var(--border);
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.75rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        
+        .filter-select {
+            padding: 0.75rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            min-width: 150px;
+        }
+        
+        .category-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tab.active, .tab:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .experts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .expert-card {
+            background: var(--bg-card);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        
+        .expert-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .expert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .expert-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .expert-category {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        
+        .cat-expertise { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .cat-pr { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .cat-ideation { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+        .cat-general { background: rgba(99, 102, 241, 0.2); color: #6366f1; }
+        
+        .expert-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .expert-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.625rem;
+            background: var(--bg-input);
+            border-radius: 0.25rem;
+            color: var(--text-secondary);
+        }
+        
+        .expert-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+        
+        .expert-stats {
+            display: flex;
+            gap: 1rem;
+            color: var(--text-secondary);
+        }
+        
+        .expert-rating {
+            color: var(--warning);
+        }
+        
+        .availability-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+        
+        .avail-available { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .avail-busy { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .avail-unavailable { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .modal {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 2000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            padding: 3rem;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .experts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 Expert Registry</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="refreshData()">↻ Refresh</button>
+                <button class="btn btn-primary" onclick="openModal('add')">+ Add Expert</button>
+            </div>
+        </header>
+        
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-label">Total Experts</div>
+                <div class="stat-value" id="statTotal">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Available Now</div>
+                <div class="stat-value" id="statAvailable">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Engagements</div>
+                <div class="stat-value" id="statEngagements">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Expertise Domains</div>
+                <div class="stat-value" id="statDomains">-</div>
+            </div>
+        </div>
+        
+        <div class="search-bar">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search experts by name, skill, or tag..." oninput="debounceSearch()">
+            <select class="filter-select" id="categoryFilter" onchange="loadExperts()">
+                <option value="">All Categories</option>
+                <option value="expertise">🎯 Expertise</option>
+                <option value="pr">📣 PR Consultant</option>
+                <option value="ideation">💡 Ideation</option>
+                <option value="general">🔧 General</option>
+            </select>
+            <select class="filter-select" id="availabilityFilter" onchange="loadExperts()">
+                <option value="">Any Availability</option>
+                <option value="available">Available</option>
+                <option value="busy">Busy</option>
+                <option value="unavailable">Unavailable</option>
+            </select>
+        </div>
+        
+        <div class="category-tabs" id="categoryTabs">
+            <div class="tab active" data-category="" onclick="selectCategory(this)">All</div>
+            <div class="tab" data-category="expertise" onclick="selectCategory(this)">🎯 Expertise</div>
+            <div class="tab" data-category="pr" onclick="selectCategory(this)">📣 PR</div>
+            <div class="tab" data-category="ideation" onclick="selectCategory(this)">💡 Ideas</div>
+            <div class="tab" data-category="general" onclick="selectCategory(this)">🔧 General</div>
+        </div>
+        
+        <div class="experts-grid" id="expertsGrid">
+            <div class="loading"><div class="spinner"></div></div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="expertModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Add Expert</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="expertForm">
+                    <input type="hidden" id="expertId">
+                    
+                    <div class="form-group">
+                        <label class="form-label">Name *</label>
+                        <input type="text" class="form-input" id="expertName" required placeholder="Full name">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Category *</label>
+                            <select class="form-select" id="expertCategory" required>
+                                <option value="">Select category</option>
+                                <option value="expertise">🎯 Expertise</option>
+                                <option value="pr">📣 PR Consultant</option>
+                                <option value="ideation">💡 Ideation</option>
+                                <option value="general">🔧 General</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Availability</label>
+                            <select class="form-select" id="expertAvailability">
+                                <option value="available">Available</option>
+                                <option value="busy">Busy</option>
+                                <option value="unavailable">Unavailable</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Expertise Areas * (comma-separated)</label>
+                        <input type="text" class="form-input" id="expertExpertise" required placeholder="e.g., blockchain, smart contracts, defi">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" id="expertDescription" placeholder="Brief description of background and specializations"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="expertEmail" placeholder="contact@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contact Info</label>
+                            <input type="text" class="form-input" id="expertContact" placeholder="Phone, Telegram, etc.">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Rate</label>
+                            <input type="number" class="form-input" id="expertRate" min="0" step="0.01" placeholder="100">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Currency</label>
+                            <select class="form-select" id="expertCurrency">
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="ETH">ETH</option>
+                                <option value="USDC">USDC</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Tags (comma-separated)</label>
+                        <input type="text" class="form-input" id="expertTags" placeholder="e.g., senior, remote, fast-response">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveExpert()">Save Expert</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Engage Modal -->
+    <div class="modal-overlay" id="engageModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Log Engagement</h2>
+                <button class="modal-close" onclick="closeEngageModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="engageForm">
+                    <input type="hidden" id="engageExpertId">
+                    
+                    <div class="form-group">
+                        <label class="form-label">Engagement Type</label>
+                        <select class="form-select" id="engageType">
+                            <option value="consultation">Consultation</option>
+                            <option value="project">Project Work</option>
+                            <option value="review">Code/Content Review</option>
+                            <option value="ideation">Ideation Session</option>
+                            <option value="pr_campaign">PR Campaign</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Purpose</label>
+                        <textarea class="form-textarea" id="engagePurpose" placeholder="What is this engagement for?"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Requested By</label>
+                        <input type="text" class="form-input" id="engageRequestedBy" placeholder="Your name or team">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Rating (1-5)</label>
+                        <select class="form-select" id="engageRating">
+                            <option value="">Not yet rated</option>
+                            <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                            <option value="4">⭐⭐⭐⭐ Good</option>
+                            <option value="3">⭐⭐⭐ Average</option>
+                            <option value="2">⭐⭐ Below Average</option>
+                            <option value="1">⭐ Poor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-textarea" id="engageNotes" placeholder="Additional notes about the engagement"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEngageModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="submitEngagement()">Log Engagement</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        const API_BASE = 'http://localhost:8790/api/v1';
+        let searchTimeout = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadExperts();
+        });
+        
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        // Load statistics
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_BASE}/stats`);
+                const data = await res.json();
+                
+                if (data.ok) {
+                    document.getElementById('statTotal').textContent = data.data.counts.totalExperts;
+                    document.getElementById('statAvailable').textContent = data.data.counts.availableExperts;
+                    document.getElementById('statEngagements').textContent = data.data.counts.totalEngagements;
+                    document.getElementById('statDomains').textContent = Object.keys(data.data.expertiseDomains).length;
+                }
+            } catch (err) {
+                console.error('Failed to load stats:', err);
+            }
+        }
+        
+        // Load experts
+        async function loadExperts() {
+            const grid = document.getElementById('expertsGrid');
+            grid.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            try {
+                const params = new URLSearchParams();
+                const search = document.getElementById('searchInput').value;
+                const category = document.getElementById('categoryFilter').value;
+                const availability = document.getElementById('availabilityFilter').value;
+                
+                let endpoint = `${API_BASE}/experts`;
+                
+                if (search) {
+                    endpoint = `${API_BASE}/experts/search`;
+                    params.set('q', search);
+                }
+                
+                if (category) params.set('category', category);
+                if (availability) params.set('availability', availability);
+                
+                const url = params.toString() ? `${endpoint}?${params}` : endpoint;
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                if (data.ok) {
+                    renderExperts(data.data);
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                grid.innerHTML = `<div class="empty-state">
+                    <div class="empty-state-icon">⚠️</div>
+                    <p>Failed to load experts. Make sure the server is running.</p>
+                    <p style="font-size:0.8rem; margin-top:0.5rem;">node expert-registry-server.js</p>
+                </div>`;
+            }
+        }
+        
+        // Render expert cards
+        function renderExperts(experts) {
+            const grid = document.getElementById('expertsGrid');
+            
+            if (!experts || experts.length === 0) {
+                grid.innerHTML = `<div class="empty-state">
+                    <div class="empty-state-icon">👤</div>
+                    <p>No experts found</p>
+                    <button class="btn btn-primary" style="margin-top:1rem" onclick="openModal('add')">Add First Expert</button>
+                </div>`;
+                return;
+            }
+            
+            grid.innerHTML = experts.map(expert => `
+                <div class="expert-card" data-id="${expert.id}">
+                    <div class="expert-header">
+                        <div>
+                            <div class="expert-name">${escapeHtml(expert.name)}</div>
+                            <span class="expert-category cat-${expert.category}">${getCategoryLabel(expert.category)}</span>
+                        </div>
+                        <span class="availability-badge avail-${expert.availability}">${expert.availability}</span>
+                    </div>
+                    ${expert.description ? `<p class="expert-description">${escapeHtml(expert.description)}</p>` : ''}
+                    <div class="expert-tags">
+                        ${expert.expertise.slice(0, 4).map(e => `<span class="tag">${escapeHtml(e)}</span>`).join('')}
+                        ${expert.expertise.length > 4 ? `<span class="tag">+${expert.expertise.length - 4}</span>` : ''}
+                    </div>
+                    <div class="expert-meta">
+                        <div class="expert-stats">
+                            <span>📊 ${expert.engagementCount} engagements</span>
+                            ${expert.rating ? `<span class="expert-rating">⭐ ${expert.rating}</span>` : ''}
+                        </div>
+                        <div>
+                            <button class="btn btn-secondary" style="padding:0.4rem 0.75rem;font-size:0.75rem" onclick="openEngageModal('${expert.id}')">Engage</button>
+                            <button class="btn btn-secondary" style="padding:0.4rem 0.75rem;font-size:0.75rem" onclick="openModal('edit', '${expert.id}')">Edit</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function getCategoryLabel(cat) {
+            const labels = {
+                expertise: '🎯 Expertise',
+                pr: '📣 PR',
+                ideation: '💡 Ideation',
+                general: '🔧 General'
+            };
+            return labels[cat] || cat;
+        }
+        
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
+        // Search with debounce
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(loadExperts, 300);
+        }
+        
+        // Category tab selection
+        function selectCategory(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('categoryFilter').value = tab.dataset.category;
+            loadExperts();
+        }
+        
+        // Refresh data
+        function refreshData() {
+            loadStats();
+            loadExperts();
+            showToast('Data refreshed');
+        }
+        
+        // Modal handling
+        function openModal(mode, expertId = null) {
+            document.getElementById('modalTitle').textContent = mode === 'add' ? 'Add Expert' : 'Edit Expert';
+            document.getElementById('expertForm').reset();
+            document.getElementById('expertId').value = expertId || '';
+            
+            if (mode === 'edit' && expertId) {
+                loadExpertForEdit(expertId);
+            }
+            
+            document.getElementById('expertModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('expertModal').classList.remove('active');
+        }
+        
+        async function loadExpertForEdit(id) {
+            try {
+                const res = await fetch(`${API_BASE}/experts/${id}`);
+                const data = await res.json();
+                
+                if (data.ok) {
+                    const e = data.data;
+                    document.getElementById('expertId').value = e.id;
+                    document.getElementById('expertName').value = e.name;
+                    document.getElementById('expertCategory').value = e.category;
+                    document.getElementById('expertAvailability').value = e.availability;
+                    document.getElementById('expertExpertise').value = e.expertise.join(', ');
+                    document.getElementById('expertDescription').value = e.description || '';
+                    document.getElementById('expertEmail').value = e.email || '';
+                    document.getElementById('expertContact').value = e.contact || '';
+                    document.getElementById('expertRate').value = e.rate || '';
+                    document.getElementById('expertCurrency').value = e.currency || 'USD';
+                    document.getElementById('expertTags').value = (e.tags || []).join(', ');
+                }
+            } catch (err) {
+                showToast('Failed to load expert', 'error');
+            }
+        }
+        
+        async function saveExpert() {
+            const id = document.getElementById('expertId').value;
+            const isEdit = !!id;
+            
+            const expertiseStr = document.getElementById('expertExpertise').value;
+            const tagsStr = document.getElementById('expertTags').value;
+            
+            const payload = {
+                name: document.getElementById('expertName').value,
+                category: document.getElementById('expertCategory').value,
+                availability: document.getElementById('expertAvailability').value,
+                expertise: expertiseStr.split(',').map(s => s.trim()).filter(Boolean),
+                description: document.getElementById('expertDescription').value,
+                email: document.getElementById('expertEmail').value || null,
+                contact: document.getElementById('expertContact').value || null,
+                rate: parseFloat(document.getElementById('expertRate').value) || null,
+                currency: document.getElementById('expertCurrency').value,
+                tags: tagsStr.split(',').map(s => s.trim()).filter(Boolean)
+            };
+            
+            try {
+                const url = isEdit ? `${API_BASE}/experts/${id}` : `${API_BASE}/experts`;
+                const method = isEdit ? 'PUT' : 'POST';
+                
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                
+                if (data.ok) {
+                    showToast(isEdit ? 'Expert updated' : 'Expert added');
+                    closeModal();
+                    refreshData();
+                } else {
+                    showToast(data.error || 'Failed to save', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to save expert', 'error');
+            }
+        }
+        
+        // Engagement modal
+        function openEngageModal(expertId) {
+            document.getElementById('engageForm').reset();
+            document.getElementById('engageExpertId').value = expertId;
+            document.getElementById('engageModal').classList.add('active');
+        }
+        
+        function closeEngageModal() {
+            document.getElementById('engageModal').classList.remove('active');
+        }
+        
+        async function submitEngagement() {
+            const expertId = document.getElementById('engageExpertId').value;
+            
+            const payload = {
+                type: document.getElementById('engageType').value,
+                purpose: document.getElementById('engagePurpose').value,
+                requestedBy: document.getElementById('engageRequestedBy').value,
+                rating: parseInt(document.getElementById('engageRating').value) || null,
+                notes: document.getElementById('engageNotes').value
+            };
+            
+            try {
+                const res = await fetch(`${API_BASE}/experts/${expertId}/engage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                
+                if (data.ok) {
+                    showToast('Engagement logged');
+                    closeEngageModal();
+                    refreshData();
+                } else {
+                    showToast(data.error || 'Failed to log engagement', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to log engagement', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

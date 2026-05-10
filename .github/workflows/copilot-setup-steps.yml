@@ -1,0 +1,35 @@
+name: Copilot Setup Steps
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+      - requirements-dev.txt
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+      - requirements-dev.txt
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        # Pinned to full-length commit SHA to satisfy "Require actions to be pinned" policy
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Setup Python
+        # Pinned to full-length commit SHA to satisfy "Require actions to be pinned" policy
+        uses: actions/setup-python@82c7ea9d1f7f17d6b78d14d7d3b8c2f95e5b3c8b
+        with:
+          python-version: "3.11"
+
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements-dev.txt ]; then
+            pip install -r requirements-dev.txt
+          fi

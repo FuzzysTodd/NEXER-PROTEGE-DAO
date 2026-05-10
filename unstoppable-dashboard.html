@@ -1,0 +1,1915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>⚡ Nexus — Unstoppable Dashboard</title>
+<style>
+:root {
+    color-scheme: dark;
+    --bg:          #050d18;
+    --panel:       rgba(9, 22, 40, 0.94);
+    --panel-alt:   #0f1e30;
+    --line:        rgba(148, 163, 184, 0.15);
+    --text:        #e2e8f0;
+    --muted:       #94a3b8;
+    --primary:     #22c55e;
+    --primary-s:   rgba(34, 197, 94, 0.14);
+    --accent:      #38bdf8;
+    --accent-s:    rgba(56, 189, 248, 0.13);
+    --warn:        #f59e0b;
+    --warn-s:      rgba(245, 158, 11, 0.13);
+    --danger:      #fb7185;
+    --danger-s:    rgba(251, 113, 133, 0.13);
+    --purple:      #a78bfa;
+    --purple-s:    rgba(167, 139, 250, 0.13);
+    --gold:        #fcd34d;
+    --cb-blue:     #0052ff;
+    --r:           16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: "Space Grotesk","Avenir Next","Segoe UI",sans-serif;
+    background:
+        radial-gradient(ellipse at 70% 0%, rgba(56,189,248,.09) 0%, transparent 55%),
+        radial-gradient(ellipse at 20% 90%, rgba(34,197,94,.07) 0%, transparent 50%),
+        linear-gradient(180deg, #020b14 0%, var(--bg) 50%, #0c1a28 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Layout ─────────────────────────────────────────────── */
+#root { max-width: 1240px; margin: 0 auto; padding: 24px 16px 80px; }
+
+/* ── Header ─────────────────────────────────────────────── */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding: 18px 24px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    backdrop-filter: blur(18px);
+}
+.header-brand { font-size: 1.35rem; font-weight: 800; letter-spacing: -.02em; }
+.header-brand span { color: var(--accent); }
+.header-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* ── Source pill ─────────────────────────────────────────── */
+.src-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 999px; font-size: .72rem; font-weight: 700;
+    letter-spacing: .05em; text-transform: uppercase;
+}
+.src-live   { background: var(--primary-s); color: #86efac; border: 1px solid rgba(34,197,94,.3); }
+.src-cache  { background: var(--warn-s);    color: var(--warn); border: 1px solid rgba(245,158,11,.3); }
+.src-static { background: var(--accent-s);  color: var(--accent); border: 1px solid rgba(56,189,248,.3); }
+.src-offline{ background: var(--danger-s);  color: var(--danger); border: 1px solid rgba(251,113,133,.3); }
+
+/* ── Nav tabs ────────────────────────────────────────────── */
+.nav {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 22px;
+}
+.nav-btn {
+    padding: 8px 16px; border-radius: 999px;
+    border: 1px solid var(--line); background: transparent;
+    color: var(--muted); font-size: .83rem; font-weight: 600;
+    cursor: pointer; transition: all .14s;
+}
+.nav-btn.active { background: var(--accent); color: #08192a; border-color: transparent; }
+.nav-btn:hover:not(.active) { color: var(--text); border-color: rgba(148,163,184,.35); }
+.tab-pane { display: none; }
+.tab-pane.active { display: grid; gap: 20px; }
+
+/* ── Panel ───────────────────────────────────────────────── */
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 22px 24px;
+    backdrop-filter: blur(18px);
+}
+.panel-title {
+    font-size: 1rem; font-weight: 700;
+    margin-bottom: 18px; display: flex; align-items: center; gap: 9px;
+    flex-wrap: wrap;
+}
+
+/* ── Stat grid ───────────────────────────────────────────── */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px,1fr)); gap: 12px; }
+.stat { background: var(--panel-alt); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.stat .lbl { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+.stat .val { font-size: 1.1rem; font-weight: 700; word-break: break-all; }
+.val-accent  { color: var(--accent); }
+.val-green   { color: #86efac; }
+.val-warn    { color: var(--warn); }
+.val-danger  { color: var(--danger); }
+.val-purple  { color: var(--purple); }
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 16px; border-radius: 10px; border: none;
+    font-size: .88rem; font-weight: 600; cursor: pointer;
+    transition: opacity .14s, transform .1s;
+}
+.btn:hover:not(:disabled) { opacity: .85; transform: translateY(-1px); }
+.btn:active:not(:disabled) { transform: none; }
+.btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.btn-primary { background: var(--primary); color: #052e16; }
+.btn-accent  { background: var(--accent);  color: #08192a; }
+.btn-warn    { background: var(--warn);    color: #1c1000; }
+.btn-danger  { background: var(--danger);  color: #1a0010; }
+.btn-ghost   { background: var(--panel-alt); color: var(--text); border: 1px solid var(--line); }
+.btn-purple  { background: var(--purple);  color: #1e0a44; }
+.btn-cb      { background: var(--cb-blue); color: #fff; }
+.btn-sm      { padding: 6px 12px; font-size: .8rem; border-radius: 8px; }
+
+/* ── Badge ───────────────────────────────────────────────── */
+.badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 999px; font-size: .74rem; font-weight: 700;
+}
+.badge-ok      { background: var(--primary-s); color: #86efac; border: 1px solid rgba(34,197,94,.3); }
+.badge-warn    { background: var(--warn-s);    color: var(--warn); border: 1px solid rgba(245,158,11,.3); }
+.badge-err     { background: var(--danger-s);  color: var(--danger); border: 1px solid rgba(251,113,133,.3); }
+.badge-info    { background: var(--accent-s);  color: var(--accent); border: 1px solid rgba(56,189,248,.3); }
+.badge-purple  { background: var(--purple-s);  color: var(--purple); border: 1px solid rgba(167,139,250,.3); }
+
+/* ── Forms ───────────────────────────────────────────────── */
+.fgroup { margin-bottom: 14px; }
+.flabel { display: block; font-size: .78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+.finput, .fselect {
+    width: 100%; padding: 9px 13px; border-radius: 9px;
+    border: 1px solid var(--line); background: var(--panel-alt);
+    color: var(--text); font-size: .88rem; outline: none; transition: border-color .14s;
+    font-family: inherit;
+}
+.finput:focus, .fselect:focus { border-color: var(--accent); }
+.finput.invalid { border-color: var(--danger); }
+.fhint { font-size: .76rem; color: var(--muted); margin-top: 4px; }
+
+/* ── Result box ──────────────────────────────────────────── */
+.result-box {
+    margin-top: 12px; padding: 11px 15px; border-radius: 10px; font-size: .87rem; display: none;
+}
+.result-box.ok   { background: var(--primary-s); border: 1px solid rgba(34,197,94,.3); color: #86efac; display: block; }
+.result-box.err  { background: var(--danger-s);  border: 1px solid rgba(251,113,133,.3); color: var(--danger); display: block; }
+.result-box.info { background: var(--accent-s);  border: 1px solid rgba(56,189,248,.3); color: var(--accent); display: block; }
+.result-box.warn { background: var(--warn-s);    border: 1px solid rgba(245,158,11,.3); color: var(--warn); display: block; }
+
+/* ── Wallet picker ───────────────────────────────────────── */
+.wallet-trigger { position: relative; }
+.wallet-picker {
+    display: none; position: absolute; top: calc(100% + 8px); left: 0;
+    min-width: 240px; background: #0a1a2c; border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px; z-index: 200;
+    box-shadow: 0 20px 50px rgba(2,6,23,.8);
+}
+.wallet-picker.open { display: block; }
+.wpick-btn {
+    width: 100%; display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px;
+    background: var(--panel-alt); color: var(--text); font-size: .88rem;
+    font-weight: 600; cursor: pointer; margin-bottom: 8px; transition: background .14s;
+}
+.wpick-btn:last-child { margin-bottom: 0; }
+.wpick-btn:hover { background: var(--accent-s); border-color: var(--accent); }
+
+/* ── Token table ─────────────────────────────────────────── */
+.token-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.token-table th { text-align: left; color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; padding: 0 10px 8px; border-bottom: 1px solid var(--line); }
+.token-table td { padding: 10px 10px; border-bottom: 1px solid rgba(148,163,184,.06); vertical-align: middle; }
+.token-table tr:last-child td { border-bottom: none; }
+.token-table tr:hover td { background: rgba(56,189,248,.04); }
+.addr-chip { font-family: "SF Mono","Monaco","Consolas",monospace; font-size: .77rem; color: var(--accent); background: var(--accent-s); padding: 2px 6px; border-radius: 5px; }
+
+/* ── Net tabs ────────────────────────────────────────────── */
+.net-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.net-btn { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .13s; }
+.net-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-s); }
+
+/* ── Signal feed ─────────────────────────────────────────── */
+.feed {
+    max-height: 260px; overflow-y: auto; background: var(--panel-alt);
+    border-radius: 10px; padding: 12px 14px; font-size: .8rem;
+    font-family: "SF Mono","Monaco","Consolas",monospace;
+}
+.feed-row { display: flex; gap: 10px; padding: 4px 0; border-bottom: 1px solid rgba(148,163,184,.07); }
+.feed-row:last-child { border-bottom: none; }
+.feed-ts  { color: var(--muted); flex-shrink: 0; min-width: 70px; }
+.feed-src { color: var(--accent); flex-shrink: 0; min-width: 80px; }
+.feed-key { color: var(--warn); flex-shrink: 0; }
+.feed-val { color: var(--text); word-break: break-all; }
+
+/* ── Mono box ────────────────────────────────────────────── */
+.mono-box {
+    font-family: "SF Mono","Monaco","Consolas",monospace; font-size: .8rem;
+    background: #040c15; border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; word-break: break-all; color: var(--primary);
+    min-height: 44px; margin-top: 8px; white-space: pre-wrap;
+}
+
+/* ── Contract card ───────────────────────────────────────── */
+.contract-card {
+    background: var(--panel-alt); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 10px;
+}
+.contract-card:last-child { margin-bottom: 0; }
+.cc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.cc-label { font-weight: 700; font-size: .92rem; }
+.cc-addr  { font-family: "SF Mono","Monaco","Consolas",monospace; font-size: .78rem; color: var(--muted); margin-top: 2px; word-break: break-all; }
+.cc-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+/* ── Accordion ───────────────────────────────────────────── */
+.acc-head {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; padding: 12px 16px; background: var(--panel-alt);
+    border-radius: 10px; border: 1px solid var(--line);
+    margin-bottom: 6px; font-weight: 600; font-size: .88rem; user-select: none;
+}
+.acc-head:hover { border-color: var(--accent); }
+.acc-body { display: none; padding: 16px; background: rgba(9,22,40,.6); border: 1px solid var(--line); border-radius: 0 0 10px 10px; margin-top: -6px; margin-bottom: 6px; }
+.acc-body.open { display: block; }
+
+/* ── Progress bar ────────────────────────────────────────── */
+.progress-wrap { height: 3px; background: var(--panel-alt); border-radius: 3px; overflow: hidden; margin-bottom: 20px; }
+.progress-bar  { height: 100%; background: linear-gradient(90deg, var(--accent), var(--primary)); width: 0%; transition: width .4s ease; border-radius: 3px; }
+
+/* ── 2-col grid ──────────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px,1fr)); gap: 18px; }
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px; }
+
+/* ── Spinner ─────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin .75s linear infinite; display: inline-block; }
+
+/* ── Dot ─────────────────────────────────────────────────── */
+.live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--danger); margin-right: 5px; transition: background .3s; vertical-align: middle; }
+.live-dot.on { background: var(--primary); box-shadow: 0 0 6px var(--primary); }
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(148,163,184,.25); border-radius: 10px; }
+
+@media (max-width: 640px) {
+    .header { flex-direction: column; align-items: flex-start; }
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div id="root">
+
+<!-- ── Header ─────────────────────────────────────────────── -->
+<header class="header">
+    <div>
+        <div class="header-brand">⚡ Nexus <span>Unstoppable</span> Dashboard</div>
+        <div style="font-size:.78rem; color:var(--muted); margin-top:3px;">
+            Multi-layer fallback · works offline · data never goes blank
+        </div>
+    </div>
+    <div class="header-meta">
+        <span id="global-src-pill" class="src-pill src-static">● Static</span>
+        <span id="clock" style="font-size:.8rem; color:var(--muted); font-family:monospace;"></span>
+    </div>
+</header>
+
+<!-- ── Progress ──────────────────────────────────────────── -->
+<div class="progress-wrap"><div class="progress-bar" id="prog"></div></div>
+
+<!-- ── Nav ───────────────────────────────────────────────── -->
+<nav class="nav" aria-label="Dashboard tabs">
+    <button class="nav-btn active" data-tab="overview">🏠 Overview</button>
+    <button class="nav-btn" data-tab="repo">🧭 Repo</button>
+    <button class="nav-btn" data-tab="wallet">🔌 Wallet</button>
+    <button class="nav-btn" data-tab="portfolio">💼 Portfolio</button>
+    <button class="nav-btn" data-tab="registry">🌐 Registry</button>
+    <button class="nav-btn" data-tab="withdraw">💸 Withdraw</button>
+    <button class="nav-btn" data-tab="governance">🗳 Governance</button>
+    <button class="nav-btn" data-tab="signals">📡 Signals</button>
+    <button class="nav-btn" data-tab="tools">🔐 Tools</button>
+    <button class="nav-btn" data-tab="config">⚙ Config</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB: OVERVIEW
+══════════════════════════════════════════════════════════ -->
+<div class="tab-pane active" id="tab-overview">
+
+    <!-- Summary metrics -->
+    <div class="grid-4" id="overview-metrics">
+        <div class="stat"><div class="lbl">Wallet</div><div class="val val-accent" id="ov-wallet">Not connected</div></div>
+        <div class="stat"><div class="lbl">Network</div><div class="val" id="ov-network">—</div></div>
+        <div class="stat"><div class="lbl">ETH Balance</div><div class="val val-green" id="ov-eth">—</div></div>
+        <div class="stat"><div class="lbl">NGTT Balance</div><div class="val val-warn" id="ov-ngtt">—</div></div>
+        <div class="stat"><div class="lbl">Voting Power</div><div class="val val-purple" id="ov-votes">—</div></div>
+        <div class="stat"><div class="lbl">Contracts Tracked</div><div class="val" id="ov-contracts">0</div></div>
+        <div class="stat"><div class="lbl">Signal Bus</div><div class="val" id="ov-bus"><span class="live-dot" id="ov-bus-dot"></span>Offline</div></div>
+        <div class="stat"><div class="lbl">Data Source</div><div class="val val-accent" id="ov-datasrc">Static</div></div>
+    </div>
+
+    <!-- Quick links -->
+    <div class="panel">
+        <div class="panel-title">🗺 Quick Navigation</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a class="btn btn-ghost btn-sm" href="./index.html">🏠 Home</a>
+            <a class="btn btn-ghost btn-sm" href="./withdraw.html">💸 Withdraw</a>
+            <a class="btn btn-ghost btn-sm" href="./financial-ops-dashboard.html">📈 Fin Ops</a>
+            <a class="btn btn-ghost btn-sm" href="./web3-interface.html">🌐 Web3</a>
+            <a class="btn btn-ghost btn-sm" href="./governance.html">🗳 Governance</a>
+            <a class="btn btn-ghost btn-sm" href="./builder-fund.html">🏗 Builder Fund</a>
+            <a class="btn btn-ghost btn-sm" href="./games.html">🎮 Games</a>
+            <a class="btn btn-ghost btn-sm" href="./marketing.html">📣 Marketing</a>
+        </div>
+    </div>
+
+    <!-- DAO snapshot -->
+    <div class="panel">
+        <div class="panel-title">🏛 DAO Snapshot <span id="snap-src-badge" class="badge badge-info">static</span></div>
+        <div class="grid-4">
+            <div class="stat"><div class="lbl">DAO Treasury ETH</div><div class="val val-green" id="snap-treasury-eth">—</div></div>
+            <div class="stat"><div class="lbl">NGTT Supply</div><div class="val val-accent" id="snap-ngtt-supply">—</div></div>
+            <div class="stat"><div class="lbl">Proposals Active</div><div class="val" id="snap-proposals">—</div></div>
+            <div class="stat"><div class="lbl">Quorum</div><div class="val val-warn" id="snap-quorum">4%</div></div>
+        </div>
+        <div id="snap-result" class="result-box"></div>
+        <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-accent btn-sm" id="btn-load-snap">🔄 Refresh On-Chain</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB: REPO
+══════════════════════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-repo">
+    <div class="panel">
+        <div class="panel-title">🧭 Repository Command Deck</div>
+        <p style="color:var(--muted); font-size:.86rem; line-height:1.7; margin-bottom:16px;">
+            This view treats the DAO as one operating surface: public pages, governance, smart contracts, Python modules,
+            ops artifacts, and the GitHub record that ties them together.
+        </p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a class="btn btn-accent btn-sm" href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA" target="_blank" rel="noopener noreferrer">GitHub Repo</a>
+            <a class="btn btn-ghost btn-sm" href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA/commits" target="_blank" rel="noopener noreferrer">Commit History</a>
+            <a class="btn btn-ghost btn-sm" href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA/actions" target="_blank" rel="noopener noreferrer">Actions</a>
+            <a class="btn btn-ghost btn-sm" href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA/tree/main/contracts" target="_blank" rel="noopener noreferrer">Contracts</a>
+            <a class="btn btn-ghost btn-sm" href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA/tree/main/nexus" target="_blank" rel="noopener noreferrer">Python Modules</a>
+            <a class="btn btn-ghost btn-sm" href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA/tree/main/docs" target="_blank" rel="noopener noreferrer">Docs</a>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div class="panel">
+            <div class="panel-title">📚 Source Of Truth</div>
+            <div class="stat-grid">
+                <div class="stat"><div class="lbl">Primary Guide</div><div class="val val-accent">README.md</div></div>
+                <div class="stat"><div class="lbl">Authority</div><div class="val val-purple">GOVERNANCE.md</div></div>
+                <div class="stat"><div class="lbl">Technical Spec</div><div class="val val-green">README.xml</div></div>
+                <div class="stat"><div class="lbl">Marketing Path</div><div class="val val-warn">MARKETING_PATH.md</div></div>
+            </div>
+            <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+                <a class="btn btn-ghost btn-sm" href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA/blob/main/README.md" target="_blank" rel="noopener noreferrer">Open README</a>
+                <a class="btn btn-ghost btn-sm" href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA/blob/main/GOVERNANCE.md" target="_blank" rel="noopener noreferrer">Open Governance</a>
+                <a class="btn btn-ghost btn-sm" href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA/blob/main/README.xml" target="_blank" rel="noopener noreferrer">Open Technical Doc</a>
+                <a class="btn btn-ghost btn-sm" href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA/blob/main/MARKETING_PATH.md" target="_blank" rel="noopener noreferrer">Open Marketing Path</a>
+            </div>
+            <div style="margin-top:14px; padding:14px; background:var(--panel-alt); border-radius:10px; font-size:.83rem; line-height:1.7; color:var(--muted);">
+                README frames the repository as one product spanning user pages, Web3 tooling, governance, contracts, and testing.
+                GOVERNANCE anchors authority in FuzzysTodd, with AI and MPC permitted to analyze and coordinate the total DAO while irreversible actions stay approval-bound.
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">🗂 Major Surfaces</div>
+            <div style="display:grid; gap:10px;">
+                <div class="stat"><div class="lbl">User Surfaces</div><div class="val">user-guide.html · marketing.html · games.html · chimera.html</div></div>
+                <div class="stat"><div class="lbl">Operations</div><div class="val">withdraw.html · financial-ops-dashboard.html · dashboard.html · live-map.html</div></div>
+                <div class="stat"><div class="lbl">Governance & Web3</div><div class="val">governance.html · web3-interface.html · network-registry.json</div></div>
+                <div class="stat"><div class="lbl">Code Zones</div><div class="val">contracts/ · nexus/ · docs/ · ops/ · .github/workflows/</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div class="panel">
+            <div class="panel-title">🕰 History & Provenance</div>
+            <div class="stat-grid">
+                <div class="stat"><div class="lbl">Canonical Repo</div><div class="val val-accent">FuzzysTodd/The-Nexus-Protocol-Token-DOA</div></div>
+                <div class="stat"><div class="lbl">Owner</div><div class="val val-purple">@FuzzysTodd</div></div>
+                <div class="stat"><div class="lbl">Public Pages</div><div class="val val-green">.github/workflows/public-pages.yml</div></div>
+                <div class="stat"><div class="lbl">Audit Trail</div><div class="val val-warn">GitHub commits, PRs, Actions</div></div>
+            </div>
+            <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+                <a class="btn btn-ghost btn-sm" href="https://github.com/FuzzysTodd" target="_blank" rel="noopener noreferrer">Owner Profile</a>
+                <a class="btn btn-ghost btn-sm" href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA/pulls" target="_blank" rel="noopener noreferrer">Pull Requests</a>
+                <a class="btn btn-ghost btn-sm" href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA/issues" target="_blank" rel="noopener noreferrer">Issues</a>
+                <a class="btn btn-ghost btn-sm" href="https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA/blob/main/.github/workflows/public-pages.yml" target="_blank" rel="noopener noreferrer">Pages Workflow</a>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">🚦 Operating Model</div>
+            <div style="display:grid; gap:10px;">
+                <div class="stat"><div class="lbl">Read The Repo As</div><div class="val">One DAO system, not isolated pages</div></div>
+                <div class="stat"><div class="lbl">Navigation Rule</div><div class="val">Public HTML surfaces for operations, GitHub tree for everything else</div></div>
+                <div class="stat"><div class="lbl">Safety Rule</div><div class="val">Analysis and orchestration are broad; irreversible actions stay owner-approved</div></div>
+                <div class="stat"><div class="lbl">Validation Rule</div><div class="val">Use tests, reports, workflows, and commit history as the change record</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB: WALLET
+══════════════════════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-wallet">
+    <div class="panel">
+        <div class="panel-title">
+            🔌 Wallet Connection
+            <span id="w-status-badge" class="badge badge-err">⬤ Disconnected</span>
+        </div>
+
+        <div style="margin-bottom:18px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <span style="padding:7px 14px; border-radius:999px; background:var(--cb-blue); color:#fff; font-weight:700; font-size:.88rem;">🔵 tenkrypt.cb.id</span>
+            <span class="badge badge-info" style="font-size:.72rem;">Coinbase Handle (display-only)</span>
+        </div>
+
+        <div style="display:flex; align-items:flex-start; gap:14px; flex-wrap:wrap;">
+            <div class="wallet-trigger" id="wallet-trigger">
+                <button class="btn btn-accent" id="connect-btn" onclick="toggleWalletPicker()" aria-label="Open wallet picker">🔌 Connect Wallet</button>
+                <div class="wallet-picker" id="wallet-picker">
+                    <div style="font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; margin-bottom:10px;">Choose Wallet</div>
+                    <button class="wpick-btn" onclick="connectWallet('metamask')">🦊 MetaMask</button>
+                    <button class="wpick-btn" onclick="connectWallet('coinbase')">🔵 Coinbase Wallet</button>
+                    <button class="wpick-btn" onclick="connectWallet('auto')">🔗 Auto-detect</button>
+                </div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="disconnectWallet()">Disconnect</button>
+        </div>
+
+        <div id="wallet-info" style="display:none; margin-top:18px;">
+            <div class="stat-grid">
+                <div class="stat"><div class="lbl">Address</div><div class="val val-accent" id="wi-addr" style="font-family:monospace;font-size:.8rem;">—</div></div>
+                <div class="stat"><div class="lbl">Network</div><div class="val" id="wi-net">—</div></div>
+                <div class="stat"><div class="lbl">Chain ID</div><div class="val" id="wi-chain">—</div></div>
+                <div class="stat"><div class="lbl">Wallet Type</div><div class="val" id="wi-type">—</div></div>
+                <div class="stat"><div class="lbl">ETH Balance</div><div class="val val-green" id="wi-eth">—</div></div>
+                <div class="stat"><div class="lbl">NGTT Balance</div><div class="val val-warn" id="wi-ngtt">—</div></div>
+            </div>
+        </div>
+
+        <div id="w-msg" class="result-box" style="margin-top:12px;"></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB: PORTFOLIO
+══════════════════════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-portfolio">
+    <div class="panel">
+        <div class="panel-title">💼 Portfolio <span id="port-src" class="badge badge-info">—</span></div>
+        <div class="stat-grid" id="port-stats">
+            <div class="stat"><div class="lbl">ETH Balance</div><div class="val val-accent" id="p-eth">—</div></div>
+            <div class="stat"><div class="lbl">NGTT Balance</div><div class="val val-green" id="p-ngtt">—</div></div>
+            <div class="stat"><div class="lbl">Voting Power</div><div class="val val-purple" id="p-votes">—</div></div>
+            <div class="stat"><div class="lbl">Delegated To</div><div class="val" id="p-delegate" style="font-family:monospace;font-size:.78rem;">—</div></div>
+            <div class="stat"><div class="lbl">USDC Balance</div><div class="val val-warn" id="p-usdc">—</div></div>
+            <div class="stat"><div class="lbl">Data Age</div><div class="val" id="p-age">—</div></div>
+        </div>
+        <div id="p-msg" class="result-box" style="margin-top:12px;"></div>
+        <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-accent btn-sm" id="btn-refresh-port">🔄 Refresh Portfolio</button>
+            <button class="btn btn-ghost btn-sm" id="btn-delegate-self" disabled>✅ Delegate to Self</button>
+        </div>
+    </div>
+
+    <!-- Fractal compounder -->
+    <div class="panel">
+        <div class="panel-title">📈 Fractal Compound Projector</div>
+        <p style="color:var(--muted); font-size:.85rem; margin-bottom:16px;">Model exponential yield (MIT 15.401 / Kelly criterion).</p>
+        <div class="grid-2" style="gap:12px; margin-bottom:14px;">
+            <div class="fgroup"><label class="flabel">Principal (NGTT)</label><input class="finput" type="number" id="fc-principal" value="10000" min="1" step="100" aria-label="Principal in NGTT"></div>
+            <div class="fgroup"><label class="flabel">Per-Period Rate (%)</label><input class="finput" type="number" id="fc-rate" value="1.5" min="0.01" step="0.1" aria-label="Yield rate %"></div>
+            <div class="fgroup"><label class="flabel">Periods</label><input class="finput" type="number" id="fc-periods" value="52" min="1" step="1" aria-label="Compounding periods"></div>
+            <div class="fgroup"><label class="flabel">Reinvest (bps)</label><input class="finput" type="number" id="fc-bps" value="10000" min="0" max="10000" step="100" aria-label="Reinvestment fraction bps"></div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="calcFractal()">🔢 Calculate</button>
+        <div id="fc-result" style="display:none; margin-top:14px;">
+            <div class="stat-grid">
+                <div class="stat"><div class="lbl">Final Value</div><div class="val val-green" id="fc-final">—</div></div>
+                <div class="stat"><div class="lbl">Total Yield</div><div class="val val-accent" id="fc-yield">—</div></div>
+                <div class="stat"><div class="lbl">Growth Multiple</div><div class="val val-warn" id="fc-mult">—</div></div>
+                <div class="stat"><div class="lbl">Kelly Fraction</div><div class="val" id="fc-kelly">—</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB: REGISTRY
+══════════════════════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-registry">
+    <div class="panel">
+        <div class="panel-title">🌐 Network &amp; Address Registry
+            <span id="reg-src" class="badge badge-info">inline</span>
+        </div>
+        <div class="net-tabs" id="net-tabs">
+            <button class="net-btn active" data-chain="1" onclick="selectNet(1)">Ethereum</button>
+            <button class="net-btn" data-chain="8453" onclick="selectNet(8453)">Base</button>
+            <button class="net-btn" data-chain="56" onclick="selectNet(56)">BSC</button>
+        </div>
+        <div id="reg-chain-warn" class="result-box warn" style="margin-bottom:14px;"></div>
+        <div id="reg-table-wrap">
+            <table class="token-table">
+                <thead><tr><th>Symbol</th><th>Name</th><th>Address</th><th>Decimals</th></tr></thead>
+                <tbody id="reg-tbody"></tbody>
+            </table>
+        </div>
+        <p style="font-size:.77rem; color:var(--muted); margin-top:12px;">
+            Source: <a href="./network-registry.json" target="_blank">network-registry.json</a> · loaded inline for zero-dependency operation.
+        </p>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB: WITHDRAW
+══════════════════════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-withdraw">
+
+    <!-- Add contract -->
+    <div class="panel">
+        <div class="panel-title">➕ Track a Contract</div>
+        <form id="add-contract-form" onsubmit="addContract(event)">
+            <div class="grid-2">
+                <div class="fgroup"><label class="flabel">Contract Address</label><input class="finput" id="wc-address" placeholder="0x…" aria-label="Contract address" required></div>
+                <div class="fgroup"><label class="flabel">Label</label><input class="finput" id="wc-label" placeholder="My Contract" aria-label="Contract label"></div>
+                <div class="fgroup"><label class="flabel">Withdraw Method</label>
+                    <select class="fselect" id="wc-method" onchange="onMethodChange()" aria-label="Withdraw method">
+                        <option value="withdraw()">withdraw()</option>
+                        <option value="withdrawAll()">withdrawAll()</option>
+                        <option value="release(address)">release(address)</option>
+                        <option value="withdrawEth()">withdrawEth()</option>
+                        <option value="claimRewards()">claimRewards()</option>
+                        <option value="collectProceeds()">collectProceeds()</option>
+                        <option value="custom">custom selector…</option>
+                    </select>
+                </div>
+                <div class="fgroup" id="custom-sel-row" style="display:none;"><label class="flabel">Custom Selector / Calldata</label><input class="finput" id="wc-custom" placeholder="0xABCD1234" aria-label="Custom 4-byte selector"></div>
+            </div>
+            <button class="btn btn-primary btn-sm" type="submit">Add Contract</button>
+        </form>
+        <div id="add-msg" class="result-box" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- Settlement destination -->
+    <div class="panel">
+        <div class="panel-title">🏦 Settlement Destination</div>
+        <div class="fgroup">
+            <label class="flabel">Destination Address</label>
+            <input class="finput" id="settlement-dest" placeholder="0x… Coinbase deposit address" aria-label="Settlement destination address">
+            <div class="fhint">Funds withdrawn via <code>release(address)</code> go here. Default: DAO treasury.</div>
+        </div>
+        <button class="btn btn-accent btn-sm" onclick="saveSettlementDest()">💾 Save</button>
+        <div id="dest-msg" class="result-box" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- Contract list -->
+    <div class="panel">
+        <div class="panel-title">📋 Tracked Contracts</div>
+        <div id="contract-list">
+            <div style="color:var(--muted); font-size:.88rem; padding:10px 0;">No contracts tracked. Add one above after connecting your wallet.</div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB: GOVERNANCE
+══════════════════════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-governance">
+    <div class="panel">
+        <div class="panel-title">🗳 Governance Power <span id="gov-src" class="badge badge-info">—</span></div>
+        <div class="stat-grid">
+            <div class="stat"><div class="lbl">Voting Weight</div><div class="val val-purple" id="gov-votes">—</div></div>
+            <div class="stat"><div class="lbl">Delegated To</div><div class="val" id="gov-delegate" style="font-family:monospace;font-size:.77rem;">—</div></div>
+            <div class="stat"><div class="lbl">Proposal Threshold</div><div class="val val-warn">10 000 NGTT</div></div>
+            <div class="stat"><div class="lbl">Quorum</div><div class="val">4%</div></div>
+        </div>
+        <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-accent btn-sm" id="btn-delegate-self-gov" onclick="delegateToSelf()" disabled>✅ Delegate to Self</button>
+            <a class="btn btn-ghost btn-sm" href="./governance.html">🗳 View Proposals</a>
+        </div>
+        <div id="gov-msg" class="result-box" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title">🏦 DAO Treasury</div>
+        <div class="stat-grid">
+            <div class="stat"><div class="lbl">ETH Balance</div><div class="val val-accent" id="treas-eth">—</div></div>
+            <div class="stat"><div class="lbl">NGTT Holdings</div><div class="val val-green" id="treas-ngtt">—</div></div>
+            <div class="stat"><div class="lbl">USDC Holdings</div><div class="val val-warn" id="treas-usdc">—</div></div>
+            <div class="stat"><div class="lbl">Paused</div><div class="val" id="treas-paused">—</div></div>
+        </div>
+        <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-accent btn-sm" id="btn-load-treasury" onclick="loadTreasury()">🔄 Load Treasury</button>
+            <a class="btn btn-ghost btn-sm" href="./financial-ops-dashboard.html">📈 Fin Ops Dashboard</a>
+        </div>
+        <div id="treas-msg" class="result-box" style="margin-top:10px;"></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB: SIGNALS
+══════════════════════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-signals">
+    <div class="panel">
+        <div class="panel-title">
+            <span class="live-dot" id="bus-dot-main"></span> 📡 Live Signal Bus
+            <span id="sig-status-badge" class="badge badge-err">Offline</span>
+        </div>
+        <div class="stat-grid" style="margin-bottom:16px;">
+            <div class="stat"><div class="lbl">Connection</div><div class="val" id="sig-conn">Offline</div></div>
+            <div class="stat"><div class="lbl">Events Received</div><div class="val val-accent" id="sig-count">0</div></div>
+            <div class="stat"><div class="lbl">Last Event</div><div class="val" id="sig-last">—</div></div>
+            <div class="stat"><div class="lbl">Bus URL</div><div class="val" id="sig-url" style="font-family:monospace;font-size:.75rem; word-break:break-all;">—</div></div>
+        </div>
+        <div class="feed" id="signal-feed" aria-live="polite">
+            <div class="feed-row"><span class="feed-ts">—</span><span class="feed-src">nexus</span><span class="feed-key">init</span><span class="feed-val">Waiting for signal bus…</span></div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-accent btn-sm" onclick="connectSignalBus()">🔄 Reconnect</button>
+            <button class="btn btn-ghost btn-sm" onclick="injectDemoSignal()">🎯 Inject Demo Signal</button>
+        </div>
+    </div>
+
+    <!-- Financial ops summary (pulled from report JSON with fallback) -->
+    <div class="panel">
+        <div class="panel-title">📊 Financial Ops Summary <span id="fops-src" class="badge badge-info">—</span></div>
+        <div class="stat-grid">
+            <div class="stat"><div class="lbl">Files Scanned</div><div class="val val-green" id="fops-files">—</div></div>
+            <div class="stat"><div class="lbl">Pre-Error Findings</div><div class="val val-danger" id="fops-preerr">—</div></div>
+            <div class="stat"><div class="lbl">Withdrawal Signals</div><div class="val val-warn" id="fops-wsig">—</div></div>
+            <div class="stat"><div class="lbl">Placement Signals</div><div class="val val-accent" id="fops-psig">—</div></div>
+        </div>
+        <div id="fops-msg" class="result-box" style="margin-top:10px;"></div>
+        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-accent btn-sm" onclick="loadFopsReport()">🔄 Refresh Report</button>
+            <a class="btn btn-ghost btn-sm" href="./financial-ops-dashboard.html">Open Full Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB: TOOLS
+══════════════════════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-tools">
+
+    <!-- Keccak256 -->
+    <div class="panel">
+        <div class="panel-title">🔐 Keccak256 &amp; Merkle Helper</div>
+        <p style="color:var(--muted); font-size:.85rem; margin-bottom:16px;">
+            Compute <code style="color:var(--gold);">keccak256</code> hashes consistent with Solidity
+            <code style="color:var(--gold);">abi.encodePacked</code> / <code style="color:var(--gold);">abi.encode</code> patterns.
+        </p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+            <button class="btn btn-ghost btn-sm" id="enc-packed" onclick="setEnc('packed')">encodePacked</button>
+            <button class="btn btn-ghost btn-sm" id="enc-encode" onclick="setEnc('encode')">abi.encode</button>
+            <button class="btn btn-ghost btn-sm" id="enc-double" onclick="setEnc('double')">double-hash</button>
+        </div>
+        <div class="fgroup">
+            <label class="flabel">Input Value</label>
+            <input class="finput" id="keccak-input" placeholder="address, bytes32, string, or hex 0x…" aria-label="Keccak256 input value">
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="computeKeccak()">Compute Hash</button>
+        <div class="mono-box" id="keccak-result">— result will appear here —</div>
+
+        <!-- Merkle verify accordion -->
+        <div style="margin-top:16px;">
+            <div class="acc-head" onclick="toggleAcc('merkle-acc')">
+                🌿 Merkle Proof Verifier
+                <span id="merkle-acc-arrow">▸</span>
+            </div>
+            <div class="acc-body" id="merkle-acc">
+                <div class="fgroup"><label class="flabel">Merkle Root</label><input class="finput" id="merkle-root" placeholder="0x…" aria-label="Merkle root"></div>
+                <div class="fgroup"><label class="flabel">Leaf (keccak hash)</label><input class="finput" id="merkle-leaf" placeholder="0x…" aria-label="Leaf hash"></div>
+                <div class="fgroup"><label class="flabel">Proof (JSON array of hex)</label><input class="finput" id="merkle-proof" placeholder='["0x…","0x…"]' aria-label="Proof array JSON"></div>
+                <button class="btn btn-purple btn-sm" onclick="verifyMerkle()">Verify Proof</button>
+                <div class="mono-box" id="merkle-result">— verify result —</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABI encoder -->
+    <div class="panel">
+        <div class="panel-title">🔧 Function Selector Calculator</div>
+        <p style="color:var(--muted); font-size:.85rem; margin-bottom:14px;">
+            Compute the 4-byte selector for any function signature.
+        </p>
+        <div class="fgroup">
+            <label class="flabel">Function Signature</label>
+            <input class="finput" id="sel-input" placeholder="transfer(address,uint256)" aria-label="Function signature">
+        </div>
+        <button class="btn btn-accent btn-sm" onclick="computeSelector()">Get Selector</button>
+        <div class="mono-box" id="sel-result">— 4-byte selector —</div>
+    </div>
+
+    <!-- Address checksum tool -->
+    <div class="panel">
+        <div class="panel-title">✅ Address Checksummer</div>
+        <div class="fgroup">
+            <label class="flabel">Ethereum Address</label>
+            <input class="finput" id="chk-input" placeholder="0x…" oninput="checksumAddress()" aria-label="Address to checksum">
+        </div>
+        <div class="mono-box" id="chk-result">— checksummed address —</div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB: CONFIG
+══════════════════════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-config">
+    <div class="panel">
+        <div class="panel-title">⚙ Contract &amp; Bus Configuration</div>
+        <p style="color:var(--muted); font-size:.85rem; margin-bottom:18px;">
+            Saved to <code style="color:var(--gold)">localStorage</code>. Loaded automatically on every visit. The dashboard functions without these — it falls back to static data.
+        </p>
+        <div style="display:grid; gap:14px;">
+            <div class="fgroup"><label class="flabel">NGTT Token Address</label><input class="finput" id="cfg-ngtt" placeholder="0xeCE999c86452c573Adfdd7F0C9226e673477973a" aria-label="NGTT token address"></div>
+            <div class="fgroup"><label class="flabel">Governor Address</label><input class="finput" id="cfg-gov" placeholder="0x… NexusDAOGovernor" aria-label="Governor contract address"></div>
+            <div class="fgroup"><label class="flabel">Treasury Address</label><input class="finput" id="cfg-treasury" placeholder="0x… NexusDAOTreasury" aria-label="Treasury contract address"></div>
+            <div class="fgroup"><label class="flabel">RWA Address (NexusRWA)</label><input class="finput" id="cfg-rwa" placeholder="0x… NexusRWA" aria-label="NexusRWA contract address"></div>
+            <div class="fgroup"><label class="flabel">Signal Bus WebSocket URL</label><input class="finput" id="cfg-bus" placeholder="ws://localhost:8790" aria-label="Signal bus WebSocket URL"></div>
+        </div>
+        <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-accent btn-sm" onclick="cfgSave()">💾 Save &amp; Apply</button>
+            <button class="btn btn-ghost btn-sm" onclick="cfgClear()">🗑 Clear Saved</button>
+        </div>
+        <div id="cfg-msg" class="result-box" style="margin-top:10px;"></div>
+        <div style="margin-top:18px; padding:14px; background:var(--panel-alt); border-radius:10px; font-size:.82rem;">
+            <p style="font-weight:600; color:var(--accent); margin-bottom:6px;">ℹ Data Source Waterfall</p>
+            <p style="color:var(--muted); line-height:1.65;">
+                1. <strong style="color:var(--primary)">Live RPC</strong> — reads from your connected wallet's provider.<br>
+                2. <strong style="color:var(--warn)">localStorage cache</strong> — last-known-good values survive page refresh.<br>
+                3. <strong style="color:var(--accent)">Static baked-in data</strong> — inline registry &amp; report fallback always available.<br>
+                Verified DAO owner: <code style="color:var(--gold)">0x33ffc308e693a5b49e0ee0241f41f03ccef495f2</code>
+            </p>
+        </div>
+    </div>
+</div>
+
+</div><!-- #root -->
+
+<!-- ethers.js v5 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"
+        integrity="sha512-FDcVY+g7vc5CXANbrTSg1K5qLyriCsGDYCE02Li1tXEYdNQPvLPHNE+rT2Mjei8N7fZbe0WLhw27j2SrGRpdMg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════
+const APP_NAME  = "Nexus Protocol DAO";
+const CB_HANDLE = "tenkrypt.cb.id";
+const DAO_OWNER = "0x33ffc308e693a5b49e0ee0241f41f03ccef495f2";
+const DEFAULT_SETTLEMENT = "0x1EF9950fc2d9433Ab9d253881fd461f8e2098Eac";
+
+const CB_SDK_CDN = "https://cdnjs.cloudflare.com/ajax/libs/coinbase-wallet-sdk/4.0.4/index.umd.js";
+const REPORT_URLS = [
+    "./ops/reports/financial-ops-report.json",
+    "http://127.0.0.1:8788/api/report"
+];
+
+const STORAGE = {
+    contracts:   "nexus_withdraw_contracts",
+    dest:        "nexus_settlement_destination",
+    history:     "nexus_local_transfer_history",
+    cache:       "nexus_dashboard_cache",
+    cfg_ngtt:    "nexus_cfg_ngtt",
+    cfg_gov:     "nexus_cfg_gov",
+    cfg_treasury:"nexus_cfg_treasury",
+    cfg_rwa:     "nexus_cfg_rwa",
+    cfg_bus:     "nexus_cfg_bus",
+};
+
+// ── Static fallback registry (mirrors network-registry.json) ──
+const REGISTRY = {
+    networks: {
+        1: {
+            name: "Ethereum Mainnet", shortName: "eth",
+            blockExplorerUrl: "https://etherscan.io",
+            tokens: {
+                ETH:  { symbol:"ETH",  name:"Ether",          address:"0x0000000000000000000000000000000000000000", decimals:18, native:true },
+                USDC: { symbol:"USDC", name:"USD Coin",        address:"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", decimals:6  },
+                USDT: { symbol:"USDT", name:"Tether USD",      address:"0xdAC17F958D2ee523a2206206994597C13D831ec7", decimals:6  },
+                WETH: { symbol:"WETH", name:"Wrapped Ether",   address:"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", decimals:18 },
+                DAI:  { symbol:"DAI",  name:"Dai Stablecoin",  address:"0x6B175474E89094C44Da98b954EedeAC495271d0F", decimals:18 },
+                NGTT: { symbol:"NGTT", name:"Nexus Game Theory Token", address:"0xeCE999c86452c573Adfdd7F0C9226e673477973a", decimals:18 }
+            }
+        },
+        8453: {
+            name: "Base Mainnet", shortName: "base",
+            blockExplorerUrl: "https://basescan.org",
+            tokens: {
+                ETH:  { symbol:"ETH",  name:"Ether",          address:"0x0000000000000000000000000000000000000000", decimals:18, native:true },
+                USDC: { symbol:"USDC", name:"USD Coin",        address:"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", decimals:6  },
+                WETH: { symbol:"WETH", name:"Wrapped Ether",   address:"0x4200000000000000000000000000000000000006", decimals:18 },
+                DAI:  { symbol:"DAI",  name:"Dai Stablecoin",  address:"0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb", decimals:18 }
+            }
+        },
+        56: {
+            name: "BNB Smart Chain", shortName: "bsc",
+            blockExplorerUrl: "https://bscscan.com",
+            tokens: {
+                BNB:  { symbol:"BNB",  name:"BNB",             address:"0x0000000000000000000000000000000000000000", decimals:18, native:true },
+                USDT: { symbol:"USDT", name:"Tether USD (BSC)", address:"0x55d398326f99059fF775485246999027B3197955", decimals:18 },
+                USDC: { symbol:"USDC", name:"USD Coin (BSC)",   address:"0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", decimals:18 },
+                WBNB: { symbol:"WBNB", name:"Wrapped BNB",      address:"0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", decimals:18 }
+            }
+        }
+    }
+};
+const SUPPORTED_CHAINS = new Set(Object.keys(REGISTRY.networks).map(Number));
+
+const NGTT_ABI = [
+    "function balanceOf(address) view returns (uint256)",
+    "function getVotes(address) view returns (uint256)",
+    "function delegates(address) view returns (address)",
+    "function delegate(address delegatee)",
+    "function totalSupply() view returns (uint256)"
+];
+const TREASURY_ABI = [
+    "function getEthBalance() view returns (uint256)",
+    "function paused() view returns (bool)"
+];
+const ERC20_ABI = [
+    "function balanceOf(address) view returns (uint256)",
+    "function decimals() view returns (uint8)",
+    "function symbol() view returns (string)",
+    "function transfer(address to, uint256 amount) returns (bool)"
+];
+const WITHDRAW_METHODS = {
+    "withdraw()":      "0x3ccfd60b",
+    "withdrawAll()":   "0x853828b6",
+    "withdrawEth()":   "0x690d8320",
+    "claimRewards()":  "0x372500ab",
+    "collectProceeds()":"0x55e9b9cc",
+};
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let provider    = null;
+let signer      = null;
+let account     = null;
+let chainId     = null;
+let rawProvider = null;
+let walletType  = null;
+let _connecting = false;
+let _viewChain  = 1;
+let _ws         = null;
+let _sigCount   = 0;
+let _enc        = "packed";
+
+// ── Config loaded from localStorage ──
+function lsGet(k){ try{ return localStorage.getItem(STORAGE[k]) || ""; } catch(_){ return ""; } }
+function lsSet(k, v){ try{ localStorage.setItem(STORAGE[k], v); } catch(_){} }
+
+let CFG = {
+    ngtt:     lsGet("cfg_ngtt")     || "0xeCE999c86452c573Adfdd7F0C9226e673477973a",
+    gov:      lsGet("cfg_gov")      || "",
+    treasury: lsGet("cfg_treasury") || "",
+    rwa:      lsGet("cfg_rwa")      || "",
+    bus:      lsGet("cfg_bus")      || "ws://localhost:8790",
+};
+
+// ═══════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════
+function escHtml(v){ return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+function shortAddr(a){ return (!a||a.length<10)?a : a.slice(0,6)+"…"+a.slice(-4); }
+function fmtEther(bn){ try{ return (+ethers.utils.formatEther(bn)).toFixed(4)+" ETH"; } catch(_){ return "—"; } }
+function fmtToken(bn, dec){ try{ const d=Number.isFinite(Number(dec))?Number(dec):18; return parseFloat(ethers.utils.formatUnits(bn, d)).toLocaleString(undefined,{maximumFractionDigits:4}); } catch(_){ return "—"; } }
+function nowTs(){ return new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"}); }
+function setProgress(pct){ const el=document.getElementById("prog"); if(el){ el.style.width=pct+"%"; if(pct>=100) setTimeout(()=>{ el.style.width="0%"; },900); } }
+function srcPill(mode){ const el=document.getElementById("global-src-pill"); if(!el) return; const map={live:["src-live","● Live"],cache:["src-cache","● Cached"],static:["src-static","● Static"],offline:["src-offline","● Offline"]}; const[cls,txt]=map[mode]||["src-static","● Static"]; el.className="src-pill "+cls; el.textContent=txt; document.getElementById("ov-datasrc").textContent=txt.slice(2); }
+function setBadge(id, mode, text){ const el=document.getElementById(id); if(!el) return; const map={ok:"badge-ok",warn:"badge-warn",err:"badge-err",info:"badge-info",purple:"badge-purple"}; el.className="badge "+(map[mode]||"badge-info"); el.textContent=text; }
+function showMsg(id, mode, text){ const el=document.getElementById(id); if(!el) return; el.className="result-box "+mode; el.textContent=text; el.style.display="block"; clearTimeout(el._t); if(mode!=="err"&&mode!=="warn") el._t=setTimeout(()=>{ el.style.display="none"; },7000); }
+
+function cacheWrite(key, val){ try{ const c=JSON.parse(localStorage.getItem(STORAGE.cache)||"{}"); c[key]={v:val,t:Date.now()}; localStorage.setItem(STORAGE.cache, JSON.stringify(c)); } catch(_){} }
+function cacheRead(key){ try{ const c=JSON.parse(localStorage.getItem(STORAGE.cache)||"{}"); return c[key]||null; } catch(_){ return null; } }
+function cacheAge(key){ const e=cacheRead(key); if(!e) return null; return Math.round((Date.now()-e.t)/1000); }
+
+// ═══════════════════════════════════════════════════════════
+// ABSTRACT DATA SOURCE — multi-layer waterfall
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * DataSource.fetch(key, liveLoader, staticFallback)
+ *  1. Try liveLoader() — if it resolves, cache and return as "live"
+ *  2. Try localStorage cache — return as "cache"
+ *  3. Return staticFallback — return as "static"
+ * Returns { value, source: "live"|"cache"|"static"|"offline" }
+ */
+const DataSource = {
+    async fetch(key, liveLoader, staticFallback) {
+        // Layer 1: live
+        try {
+            if (typeof liveLoader === "function") {
+                const val = await liveLoader();
+                if (val !== null && val !== undefined) {
+                    cacheWrite(key, val);
+                    return { value: val, source: "live" };
+                }
+            }
+        } catch (_) {}
+
+        // Layer 2: cache
+        const cached = cacheRead(key);
+        if (cached) {
+            return { value: cached.v, source: "cache" };
+        }
+
+        // Layer 3: static
+        if (staticFallback !== undefined) {
+            return { value: staticFallback, source: "static" };
+        }
+
+        return { value: null, source: "offline" };
+    },
+
+    async fetchJSON(url) {
+        const r = await fetch(url, { cache: "no-store" });
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+    }
+};
+
+// ═══════════════════════════════════════════════════════════
+// WALLET PROVIDER SELECTION
+// ═══════════════════════════════════════════════════════════
+function selectProvider(type) {
+    const eth = window.ethereum;
+
+    if (type === "metamask") {
+        if (!eth) throw new Error("MetaMask not detected. Install from metamask.io");
+        if (Array.isArray(eth.providers)) {
+            const mm = eth.providers.find(p => p.isMetaMask && !p.isCoinbaseWallet);
+            if (mm) return { raw: mm, type: "MetaMask" };
+        }
+        if (eth.isMetaMask) return { raw: eth, type: "MetaMask" };
+        throw new Error("MetaMask not found. Ensure it is installed and enabled.");
+    }
+
+    if (type === "coinbase") {
+        if (window.coinbaseWalletExtension) return { raw: window.coinbaseWalletExtension, type: "Coinbase Wallet (extension)" };
+        if (eth && eth.isCoinbaseWallet) return { raw: eth, type: "Coinbase Wallet (extension)" };
+        if (eth && Array.isArray(eth.providers)) {
+            const cb = eth.providers.find(p => p.isCoinbaseWallet);
+            if (cb) return { raw: cb, type: "Coinbase Wallet (extension)" };
+        }
+        throw new Error("LOAD_CB_SDK");
+    }
+
+    // auto
+    if (!eth) throw new Error("No wallet detected. Install MetaMask (metamask.io) or Coinbase Wallet.");
+    if (Array.isArray(eth.providers) && eth.providers.length > 0) {
+        const mm = eth.providers.find(p => p.isMetaMask && !p.isCoinbaseWallet);
+        if (mm) return { raw: mm, type: "MetaMask (auto)" };
+        const cb = eth.providers.find(p => p.isCoinbaseWallet);
+        if (cb) return { raw: cb, type: "Coinbase Wallet (auto)" };
+        return { raw: eth.providers[0], type: "Unknown Wallet (auto)" };
+    }
+    return {
+        raw: eth,
+        type: eth.isCoinbaseWallet ? "Coinbase Wallet (auto)" : eth.isMetaMask ? "MetaMask (auto)" : "Injected Wallet"
+    };
+}
+
+function loadCoinbaseSDK() {
+    return new Promise((resolve, reject) => {
+        if (typeof CoinbaseWalletSDK !== "undefined") { resolve(); return; }
+        const s = document.createElement("script");
+        s.src = CB_SDK_CDN;
+        s.onload  = () => resolve();
+        s.onerror = () => reject(new Error("Failed to load Coinbase Wallet SDK."));
+        document.head.appendChild(s);
+    });
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONNECT / DISCONNECT
+// ═══════════════════════════════════════════════════════════
+async function connectWallet(type) {
+    if (_connecting) return;
+    _connecting = true;
+    closeWalletPicker();
+    showMsg("w-msg", "info", "⏳ Connecting…");
+    setProgress(20);
+
+    try {
+        let sel;
+        try { sel = selectProvider(type); }
+        catch (e) {
+            if (e.message === "LOAD_CB_SDK") {
+                showMsg("w-msg", "info", "⏳ Loading Coinbase SDK…");
+                await loadCoinbaseSDK();
+                sel = selectProvider(type);
+            } else { throw e; }
+        }
+
+        if (rawProvider && rawProvider.removeListener) {
+            rawProvider.removeListener("accountsChanged", onAccountsChanged);
+            rawProvider.removeListener("chainChanged", onChainChanged);
+        }
+
+        rawProvider = sel.raw;
+        walletType  = sel.type;
+        provider    = new ethers.providers.Web3Provider(rawProvider, "any");
+
+        setProgress(50);
+        await provider.send("eth_requestAccounts", []);
+        signer  = provider.getSigner();
+        account = await signer.getAddress();
+        const net = await provider.getNetwork();
+        chainId = net.chainId;
+
+        rawProvider.on("accountsChanged", onAccountsChanged);
+        rawProvider.on("chainChanged", onChainChanged);
+
+        setProgress(80);
+        updateWalletUI();
+        await refreshPortfolio();
+        setProgress(100);
+        showMsg("w-msg", "ok", "✅ Connected: " + shortAddr(account));
+    } catch (err) {
+        setProgress(0);
+        showMsg("w-msg", "err", "❌ " + (err.message || String(err)));
+    } finally {
+        _connecting = false;
+    }
+}
+
+async function onAccountsChanged(accounts) {
+    if (_connecting) return;
+    if (!accounts || accounts.length === 0) { disconnectWallet(); return; }
+    _connecting = true;
+    try {
+        provider = new ethers.providers.Web3Provider(rawProvider, "any");
+        signer   = provider.getSigner();
+        account  = await signer.getAddress();
+        const net = await provider.getNetwork();
+        chainId = net.chainId;
+        updateWalletUI();
+        await refreshPortfolio();
+    } finally { _connecting = false; }
+}
+
+async function onChainChanged() {
+    if (_connecting) return;
+    _connecting = true;
+    try {
+        provider = new ethers.providers.Web3Provider(rawProvider, "any");
+        signer   = provider.getSigner();
+        const net = await provider.getNetwork();
+        chainId = net.chainId;
+        updateWalletUI();
+        await refreshPortfolio();
+    } finally { _connecting = false; }
+}
+
+function disconnectWallet() {
+    if (rawProvider && rawProvider.removeListener) {
+        rawProvider.removeListener("accountsChanged", onAccountsChanged);
+        rawProvider.removeListener("chainChanged", onChainChanged);
+    }
+    provider = signer = account = rawProvider = walletType = null;
+    chainId = null;
+    updateWalletUI();
+}
+
+// ═══════════════════════════════════════════════════════════
+// WALLET UI
+// ═══════════════════════════════════════════════════════════
+function updateWalletUI() {
+    const connected = !!account;
+    const badge = document.getElementById("w-status-badge");
+    const info  = document.getElementById("wallet-info");
+    const btn   = document.getElementById("connect-btn");
+
+    if (connected) {
+        setBadge("w-status-badge", "ok", "⬤ Connected");
+        info.style.display = "";
+        document.getElementById("wi-addr").textContent  = account;
+        document.getElementById("wi-chain").textContent = chainId;
+        document.getElementById("wi-type").textContent  = walletType || "—";
+        const netInfo = REGISTRY.networks[chainId];
+        document.getElementById("wi-net").textContent = netInfo ? netInfo.name : "Chain " + chainId;
+        btn.textContent = "🔌 Switch Wallet";
+
+        // overview
+        document.getElementById("ov-wallet").textContent  = shortAddr(account);
+        document.getElementById("ov-network").textContent = netInfo ? netInfo.name : "Chain " + chainId;
+
+        // governor / delegate buttons
+        const canGov = !!CFG.ngtt;
+        document.getElementById("btn-delegate-self").disabled     = !canGov;
+        document.getElementById("btn-delegate-self-gov").disabled = !canGov;
+
+        srcPill("live");
+
+        // chain warn on registry tab
+        const warn = document.getElementById("reg-chain-warn");
+        if (!SUPPORTED_CHAINS.has(chainId)) {
+            warn.textContent = "⚠ Connected wallet is on an unsupported chain. Registry showing Ethereum view.";
+            warn.style.display = "block";
+        } else { warn.style.display = "none"; }
+    } else {
+        setBadge("w-status-badge", "err", "⬤ Disconnected");
+        info.style.display = "none";
+        btn.textContent = "🔌 Connect Wallet";
+        document.getElementById("ov-wallet").textContent  = "Not connected";
+        document.getElementById("ov-network").textContent = "—";
+        document.getElementById("btn-delegate-self").disabled     = true;
+        document.getElementById("btn-delegate-self-gov").disabled = true;
+        document.getElementById("reg-chain-warn").style.display   = "none";
+        srcPill("static");
+    }
+
+    renderContracts();
+}
+
+// ═══════════════════════════════════════════════════════════
+// WALLET PICKER
+// ═══════════════════════════════════════════════════════════
+function toggleWalletPicker(){ document.getElementById("wallet-picker").classList.toggle("open"); }
+function closeWalletPicker(){ document.getElementById("wallet-picker").classList.remove("open"); }
+document.addEventListener("click", e => {
+    const t = document.getElementById("wallet-trigger");
+    if (t && !t.contains(e.target)) closeWalletPicker();
+});
+
+// ═══════════════════════════════════════════════════════════
+// PORTFOLIO — ABSTRACT DATASOURCE PATTERN
+// ═══════════════════════════════════════════════════════════
+async function refreshPortfolio() {
+    if (!account) return;
+    showMsg("p-msg", "info", "⏳ Loading portfolio…");
+    setProgress(30);
+
+    try {
+        // ETH balance — live from provider, cache fallback
+        const { value: ethBal, source: ethSrc } = await DataSource.fetch(
+            "eth_" + account,
+            async () => { const b = await provider.getBalance(account); return b.toString(); },
+            null
+        );
+        setProgress(50);
+
+        // NGTT balance + votes
+        let ngttBal = null, votes = null, delegate = "—";
+        if (CFG.ngtt && ethers.utils.isAddress(CFG.ngtt)) {
+            const { value: nb } = await DataSource.fetch(
+                "ngtt_" + account,
+                async () => {
+                    const c = new ethers.Contract(CFG.ngtt, NGTT_ABI, provider);
+                    const [b, v, d] = await Promise.all([
+                        c.balanceOf(account),
+                        c.getVotes(account),
+                        c.delegates(account)
+                    ]);
+                    return { b: b.toString(), v: v.toString(), d };
+                },
+                null
+            );
+            if (nb) { ngttBal = nb.b; votes = nb.v; delegate = nb.d; }
+        }
+        setProgress(70);
+
+        // USDC balance
+        let usdcBal = null;
+        const netInfo = REGISTRY.networks[chainId];
+        const usdcAddr = netInfo && netInfo.tokens.USDC ? netInfo.tokens.USDC.address : null;
+        if (usdcAddr) {
+            const { value: ub } = await DataSource.fetch(
+                "usdc_" + account,
+                async () => { const c = new ethers.Contract(usdcAddr, ERC20_ABI, provider); return (await c.balanceOf(account)).toString(); },
+                null
+            );
+            usdcBal = ub;
+        }
+        setProgress(90);
+
+        // Render
+        const ethDisplay = ethBal ? fmtEther(ethers.BigNumber.from(ethBal)) : "—";
+        const ngttDisplay = ngttBal ? fmtToken(ethers.BigNumber.from(ngttBal), 18) + " NGTT" : "—";
+        const votesDisplay = votes ? fmtToken(ethers.BigNumber.from(votes), 18) + " NGTT" : "—";
+        const usdcDisplay = usdcBal ? fmtToken(ethers.BigNumber.from(usdcBal), netInfo?.tokens?.USDC?.decimals || 6) + " USDC" : "—";
+        const age = cacheAge("eth_" + account);
+        const srcLabel = ethSrc === "live" ? "live" : ethSrc === "cache" ? `cached ${age}s ago` : "static fallback";
+
+        // Portfolio tab
+        document.getElementById("p-eth").textContent      = ethDisplay;
+        document.getElementById("p-ngtt").textContent     = ngttDisplay;
+        document.getElementById("p-votes").textContent    = votesDisplay;
+        document.getElementById("p-delegate").textContent = shortAddr(delegate);
+        document.getElementById("p-usdc").textContent     = usdcDisplay;
+        document.getElementById("p-age").textContent      = srcLabel;
+        setBadge("port-src", ethSrc === "live" ? "ok" : ethSrc === "cache" ? "warn" : "info", ethSrc);
+
+        // Overview tab
+        document.getElementById("ov-eth").textContent  = ethDisplay;
+        document.getElementById("ov-ngtt").textContent = ngttDisplay;
+        document.getElementById("ov-votes").textContent= votesDisplay;
+
+        // Wallet tab
+        document.getElementById("wi-eth").textContent  = ethDisplay;
+        document.getElementById("wi-ngtt").textContent = ngttDisplay;
+
+        // Governance tab
+        document.getElementById("gov-votes").textContent    = votesDisplay;
+        document.getElementById("gov-delegate").textContent = shortAddr(delegate);
+        setBadge("gov-src", ethSrc === "live" ? "ok" : "warn", ethSrc);
+
+        srcPill(ethSrc);
+        setProgress(100);
+        showMsg("p-msg", "ok", "✅ Portfolio loaded (" + ethSrc + ")");
+    } catch (err) {
+        setProgress(0);
+        showMsg("p-msg", "err", "❌ Portfolio load failed: " + (err.message || String(err)));
+    }
+}
+
+document.getElementById("btn-refresh-port").addEventListener("click", refreshPortfolio);
+
+// ═══════════════════════════════════════════════════════════
+// DAO SNAPSHOT
+// ═══════════════════════════════════════════════════════════
+async function loadSnapshot() {
+    const btn = document.getElementById("btn-load-snap");
+    btn.disabled = true;
+    showMsg("snap-result", "info", "⏳ Loading on-chain data…");
+
+    try {
+        let ngttSupply = null, treasuryEth = null;
+
+        if (provider) {
+            if (CFG.ngtt && ethers.utils.isAddress(CFG.ngtt)) {
+                const { value: ns } = await DataSource.fetch(
+                    "ngtt_supply",
+                    async () => { const c = new ethers.Contract(CFG.ngtt, NGTT_ABI, provider); return (await c.totalSupply()).toString(); },
+                    null
+                );
+                ngttSupply = ns;
+            }
+            if (CFG.treasury && ethers.utils.isAddress(CFG.treasury)) {
+                const { value: te } = await DataSource.fetch(
+                    "treasury_eth",
+                    async () => { const b = await provider.getBalance(CFG.treasury); return b.toString(); },
+                    null
+                );
+                treasuryEth = te;
+            }
+        }
+
+        document.getElementById("snap-ngtt-supply").textContent = ngttSupply ? fmtToken(ethers.BigNumber.from(ngttSupply), 18) + " NGTT" : "Configure NGTT address";
+        document.getElementById("snap-treasury-eth").textContent = treasuryEth ? fmtEther(ethers.BigNumber.from(treasuryEth)) : "Configure treasury";
+        setBadge("snap-src-badge", "ok", "live");
+        showMsg("snap-result", "ok", "✅ Snapshot loaded");
+    } catch (err) {
+        showMsg("snap-result", "err", "❌ " + (err.message || String(err)));
+    } finally {
+        btn.disabled = false;
+    }
+}
+document.getElementById("btn-load-snap").addEventListener("click", loadSnapshot);
+
+// ═══════════════════════════════════════════════════════════
+// TREASURY
+// ═══════════════════════════════════════════════════════════
+async function loadTreasury() {
+    const btn = document.getElementById("btn-load-treasury");
+    btn.disabled = true;
+    showMsg("treas-msg", "info", "⏳ Loading treasury…");
+
+    try {
+        if (!provider) { showMsg("treas-msg", "warn", "⚠ Connect wallet to load live data."); return; }
+
+        const netInfo = REGISTRY.networks[chainId];
+
+        // ETH balance
+        if (CFG.treasury && ethers.utils.isAddress(CFG.treasury)) {
+            const b = await provider.getBalance(CFG.treasury);
+            document.getElementById("treas-eth").textContent = fmtEther(b);
+        }
+
+        // NGTT holdings
+        if (CFG.ngtt && ethers.utils.isAddress(CFG.ngtt) && CFG.treasury && ethers.utils.isAddress(CFG.treasury)) {
+            const c = new ethers.Contract(CFG.ngtt, NGTT_ABI, provider);
+            const b = await c.balanceOf(CFG.treasury);
+            document.getElementById("treas-ngtt").textContent = fmtToken(b, 18) + " NGTT";
+        }
+
+        // USDC holdings
+        const usdcAddr = netInfo && netInfo.tokens.USDC ? netInfo.tokens.USDC.address : null;
+        if (usdcAddr && CFG.treasury && ethers.utils.isAddress(CFG.treasury)) {
+            const c = new ethers.Contract(usdcAddr, ERC20_ABI, provider);
+            const b = await c.balanceOf(CFG.treasury);
+            document.getElementById("treas-usdc").textContent = fmtToken(b, 6) + " USDC";
+        }
+
+        // Paused
+        if (CFG.treasury && ethers.utils.isAddress(CFG.treasury)) {
+            try {
+                const c = new ethers.Contract(CFG.treasury, TREASURY_ABI, provider);
+                const p = await c.paused();
+                document.getElementById("treas-paused").textContent = p ? "⚠ Yes" : "No";
+            } catch (_) { document.getElementById("treas-paused").textContent = "N/A"; }
+        }
+
+        showMsg("treas-msg", "ok", "✅ Treasury loaded");
+    } catch (err) {
+        showMsg("treas-msg", "err", "❌ " + (err.message || String(err)));
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// DELEGATE
+// ═══════════════════════════════════════════════════════════
+async function delegateToSelf() {
+    if (!signer || !CFG.ngtt || !ethers.utils.isAddress(CFG.ngtt)) {
+        showMsg("gov-msg", "err", "⚠ Connect wallet and configure NGTT address first.");
+        return;
+    }
+    showMsg("gov-msg", "info", "⏳ Sending delegate transaction…");
+    try {
+        const c = new ethers.Contract(CFG.ngtt, NGTT_ABI, signer);
+        const tx = await c.delegate(account);
+        showMsg("gov-msg", "info", "⏳ Awaiting confirmation…");
+        await tx.wait();
+        showMsg("gov-msg", "ok", "✅ Delegated to self: " + tx.hash);
+        await refreshPortfolio();
+    } catch (err) {
+        showMsg("gov-msg", "err", "❌ " + (err.reason || err.message || String(err)));
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// REGISTRY VIEW
+// ═══════════════════════════════════════════════════════════
+function selectNet(cid) {
+    _viewChain = Number(cid);
+    document.querySelectorAll(".net-btn").forEach(b => {
+        b.classList.toggle("active", Number(b.dataset.chain) === _viewChain);
+    });
+    renderRegistryTable(_viewChain);
+}
+
+function renderRegistryTable(cid) {
+    const info  = REGISTRY.networks[cid];
+    const tbody = document.getElementById("reg-tbody");
+    if (!info) { tbody.innerHTML = "<tr><td colspan='4' style='color:var(--muted);padding:12px;'>No data.</td></tr>"; return; }
+    const exp = info.blockExplorerUrl;
+    tbody.innerHTML = Object.entries(info.tokens).map(([sym, tok]) => `
+        <tr>
+            <td><strong>${escHtml(sym)}</strong></td>
+            <td style="color:var(--muted)">${escHtml(tok.name)}</td>
+            <td>
+                ${tok.native
+                    ? "<span style='color:var(--muted);font-size:.78rem;'>Native (no contract)</span>"
+                    : `<a class="addr-chip" href="${escHtml(exp)}/address/${escHtml(tok.address)}" target="_blank" rel="noopener noreferrer">${escHtml(tok.address)}</a>`
+                }
+            </td>
+            <td style="color:var(--muted)">${tok.decimals}</td>
+        </tr>
+    `).join("");
+}
+
+// ═══════════════════════════════════════════════════════════
+// WITHDRAW MANAGER
+// ═══════════════════════════════════════════════════════════
+function onMethodChange() {
+    const sel = document.getElementById("wc-method").value;
+    const row = document.getElementById("custom-sel-row");
+    if (row) { row.style.display = sel === "custom" ? "" : "none"; }
+}
+
+function loadContracts(){ try{ return JSON.parse(localStorage.getItem(STORAGE.contracts)||"[]"); } catch(_){ return []; } }
+function saveContracts(list){ try{ localStorage.setItem(STORAGE.contracts, JSON.stringify(list)); } catch(_){} }
+
+function loadSettlementDest() {
+    try { return localStorage.getItem(STORAGE.dest) || DEFAULT_SETTLEMENT; } catch(_){ return DEFAULT_SETTLEMENT; }
+}
+
+function saveSettlementDest() {
+    const input = document.getElementById("settlement-dest");
+    const val = input ? input.value.trim() : "";
+    if (!val) { showMsg("dest-msg","warn","⚠ Enter an address first."); return; }
+    if (!ethers.utils.isAddress(val)) { showMsg("dest-msg","err","⚠ Invalid Ethereum address."); return; }
+    try { localStorage.setItem(STORAGE.dest, val); } catch(_){}
+    showMsg("dest-msg","ok","✅ Destination saved: " + shortAddr(val));
+}
+
+function addContract(event) {
+    event.preventDefault();
+    const addr   = document.getElementById("wc-address").value.trim();
+    const label  = document.getElementById("wc-label").value.trim() || shortAddr(addr);
+    const method = document.getElementById("wc-method").value;
+    const custom = document.getElementById("wc-custom").value.trim();
+
+    if (!ethers.utils.isAddress(addr)) { showMsg("add-msg","err","⚠ Invalid Ethereum address."); return; }
+
+    const list = loadContracts();
+    if (list.find(c => c.address.toLowerCase() === addr.toLowerCase())) {
+        showMsg("add-msg","warn","⚠ Contract already tracked."); return;
+    }
+
+    list.push({ address: addr, label, method, customSelector: custom });
+    saveContracts(list);
+    document.getElementById("wc-address").value = "";
+    document.getElementById("wc-label").value   = "";
+    document.getElementById("wc-custom").value  = "";
+    renderContracts();
+    showMsg("add-msg","ok","✅ Added: " + label);
+    document.getElementById("ov-contracts").textContent = list.length;
+}
+
+function removeContract(addr) {
+    const list = loadContracts().filter(c => c.address.toLowerCase() !== addr.toLowerCase());
+    saveContracts(list);
+    renderContracts();
+    document.getElementById("ov-contracts").textContent = list.length;
+}
+
+async function renderContracts() {
+    const list = loadContracts();
+    const container = document.getElementById("contract-list");
+    if (!container) return;
+    document.getElementById("ov-contracts").textContent = list.length;
+
+    if (list.length === 0) {
+        container.innerHTML = `<div style="color:var(--muted);font-size:.88rem;padding:10px 0;">No contracts tracked.</div>`;
+        return;
+    }
+
+    container.innerHTML = list.map(c => `
+        <div class="contract-card" data-address="${escHtml(c.address)}">
+            <div class="cc-head">
+                <div>
+                    <div class="cc-label">${escHtml(c.label)}</div>
+                    <div class="cc-addr">${escHtml(c.address)}</div>
+                </div>
+                <span class="badge badge-info">${escHtml(c.method === "custom" ? (c.customSelector||"custom") : c.method)}</span>
+            </div>
+            <div style="font-size:.8rem;color:var(--muted);">Balance: <span id="cbal-${escHtml(c.address)}">⏳</span></div>
+            <div class="cc-actions">
+                <button class="btn btn-primary btn-sm" data-action="withdraw" data-addr="${escHtml(c.address)}" aria-label="Withdraw from ${escHtml(c.label)}">💰 Withdraw</button>
+                <button class="btn btn-danger btn-sm" data-action="remove" data-addr="${escHtml(c.address)}" aria-label="Remove ${escHtml(c.label)}">🗑</button>
+            </div>
+        </div>
+    `).join("");
+
+    // Fetch balances using DataSource waterfall
+    list.forEach(async c => {
+        const { value: bal } = await DataSource.fetch(
+            "cbal_" + c.address,
+            async () => {
+                if (!provider) return null;
+                const b = await provider.getBalance(c.address);
+                return b.toString();
+            },
+            null
+        );
+        const el = document.getElementById("cbal-" + escHtml(c.address));
+        if (el) {
+            el.textContent = bal ? fmtEther(ethers.BigNumber.from(bal)) : (provider ? "0 ETH" : "Connect wallet");
+        }
+    });
+}
+
+// event delegation for contract cards
+document.getElementById("contract-list").addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+    const addr   = btn.dataset.addr;
+    const action = btn.dataset.action;
+    if (action === "remove") { removeContract(addr); return; }
+    if (action === "withdraw") {
+        const list  = loadContracts();
+        const entry = list.find(c => c.address.toLowerCase() === addr.toLowerCase());
+        if (entry) await withdrawFromContract(entry);
+    }
+});
+
+async function withdrawFromContract(entry) {
+    if (!signer) { showMsg("add-msg","err","⚠ Connect wallet first."); return; }
+    const { address, method, customSelector } = entry;
+
+    let callData;
+    try {
+        if (method === "release(address)") {
+            const dest = loadSettlementDest();
+            if (!dest || !ethers.utils.isAddress(dest)) {
+                showMsg("add-msg","err","⚠ Configure a valid settlement destination first."); return;
+            }
+            const iface = new ethers.utils.Interface(["function release(address payee)"]);
+            callData = iface.encodeFunctionData("release", [dest]);
+        } else if (method === "custom" && customSelector) {
+            callData = customSelector.startsWith("0x") ? customSelector : "0x" + customSelector;
+        } else if (WITHDRAW_METHODS[method]) {
+            callData = WITHDRAW_METHODS[method];
+        } else {
+            showMsg("add-msg","err","⚠ No valid withdraw method."); return;
+        }
+
+        showMsg("add-msg","info","⏳ Sending withdrawal…");
+        const tx = await signer.sendTransaction({ to: address, data: callData });
+        showMsg("add-msg","info","⏳ Confirming: " + tx.hash);
+        await tx.wait();
+        showMsg("add-msg","ok","✅ Withdrawal confirmed: " + tx.hash);
+        renderContracts();
+    } catch (err) {
+        showMsg("add-msg","err","❌ " + (err.reason || err.message || String(err)));
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SIGNAL BUS — WebSocket with HTTP polling fallback
+// ═══════════════════════════════════════════════════════════
+function pushSignal(ts, source, key, val) {
+    _sigCount++;
+    document.getElementById("sig-count").textContent = _sigCount;
+    document.getElementById("sig-last").textContent  = nowTs();
+    document.getElementById("ov-bus").innerHTML       = `<span class="live-dot on" id="ov-bus-dot"></span>Online (${_sigCount})`;
+
+    const feed = document.getElementById("signal-feed");
+    const row  = document.createElement("div");
+    row.className = "feed-row";
+    row.innerHTML = `<span class="feed-ts">${escHtml(ts)}</span><span class="feed-src">${escHtml(source)}</span><span class="feed-key">${escHtml(key)}</span><span class="feed-val">${escHtml(String(val))}</span>`;
+    feed.insertBefore(row, feed.firstChild);
+
+    // Keep feed at 200 rows max
+    while (feed.children.length > 200) feed.removeChild(feed.lastChild);
+}
+
+function connectSignalBus() {
+    if (_ws) { try { _ws.close(); } catch (_) {} _ws = null; }
+
+    const busUrl = CFG.bus || "ws://localhost:8790";
+    document.getElementById("sig-url").textContent = busUrl;
+
+    try {
+        _ws = new WebSocket(busUrl);
+
+        _ws.addEventListener("open", () => {
+            document.getElementById("sig-conn").textContent = "Connected";
+            setBadge("sig-status-badge","ok","● Online");
+            document.getElementById("bus-dot-main").classList.add("on");
+            document.getElementById("ov-bus").innerHTML = `<span class="live-dot on" id="ov-bus-dot"></span>Online`;
+        });
+
+        _ws.addEventListener("message", (e) => {
+            let data;
+            try { data = JSON.parse(e.data); } catch(_){ data = { signal: e.data }; }
+            pushSignal(nowTs(), data.source || "bus", data.signal || "event", JSON.stringify(data).slice(0,120));
+        });
+
+        _ws.addEventListener("error", () => {
+            setBadge("sig-status-badge","warn","● WS Error");
+            // Fallback to HTTP polling
+            startHttpPolling();
+        });
+
+        _ws.addEventListener("close", () => {
+            document.getElementById("sig-conn").textContent = "Reconnecting…";
+            setBadge("sig-status-badge","warn","● Disconnected");
+            document.getElementById("bus-dot-main").classList.remove("on");
+        });
+    } catch (_) {
+        startHttpPolling();
+    }
+}
+
+let _pollTimer = null;
+function startHttpPolling() {
+    if (_pollTimer) return;
+    document.getElementById("sig-conn").textContent = "HTTP polling";
+    setBadge("sig-status-badge","warn","● Polling");
+    _pollTimer = setInterval(async () => {
+        try {
+            const r = await fetch("http://127.0.0.1:8788/api/signals", { cache: "no-store" });
+            if (r.ok) {
+                const events = await r.json();
+                if (Array.isArray(events)) {
+                    events.slice(-5).forEach(ev => pushSignal(ev.ts||nowTs(), ev.source||"poll", ev.signal||"event", JSON.stringify(ev)));
+                }
+            }
+        } catch (_) {}
+    }, 5000);
+}
+
+function injectDemoSignal() {
+    pushSignal(nowTs(), "demo", "heartbeat", "Dashboard alive — multi-layer fallback active");
+}
+
+// ═══════════════════════════════════════════════════════════
+// FINANCIAL OPS REPORT — DataSource waterfall
+// ═══════════════════════════════════════════════════════════
+const FOPS_STATIC = {
+    summary: { filesScanned: 312, preErrorCount: 6, withdrawSignalCount: 42, placementSignalCount: 57 }
+};
+
+async function loadFopsReport() {
+    showMsg("fops-msg","info","⏳ Loading report…");
+
+    const { value: report, source } = await DataSource.fetch(
+        "fops_report",
+        async () => {
+            for (const url of REPORT_URLS) {
+                try {
+                    const r = await fetch(url, { cache: "no-store" });
+                    if (r.ok) return await r.json();
+                } catch (_) {}
+            }
+            return null;
+        },
+        FOPS_STATIC
+    );
+
+    if (report && report.summary) {
+        document.getElementById("fops-files").textContent = report.summary.filesScanned  ?? "—";
+        document.getElementById("fops-preerr").textContent= report.summary.preErrorCount ?? "—";
+        document.getElementById("fops-wsig").textContent  = report.summary.withdrawSignalCount  ?? "—";
+        document.getElementById("fops-psig").textContent  = report.summary.placementSignalCount ?? "—";
+        setBadge("fops-src", source==="live"?"ok":source==="cache"?"warn":"info", source);
+        showMsg("fops-msg","ok","✅ Report loaded (" + source + ")");
+    } else {
+        showMsg("fops-msg","warn","⚠ Report unavailable — showing static fallback.");
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// KECCAK256 TOOLS
+// ═══════════════════════════════════════════════════════════
+function setEnc(enc) {
+    _enc = enc;
+    ["packed","encode","double"].forEach(e => {
+        const btn = document.getElementById("enc-"+e);
+        if (!btn) return;
+        const active = e === enc;
+        btn.style.borderColor = active ? "var(--accent)" : "";
+        btn.style.color       = active ? "var(--accent)" : "";
+        btn.style.background  = active ? "var(--accent-s)" : "";
+    });
+}
+
+function computeKeccak() {
+    const raw = document.getElementById("keccak-input").value.trim();
+    const out = document.getElementById("keccak-result");
+    if (!raw) { out.textContent = "⚠ Enter a value to hash."; return; }
+
+    try {
+        let hash, desc;
+        if (_enc === "packed") {
+            const bytes = ethers.utils.isHexString(raw) ? ethers.utils.arrayify(raw) : ethers.utils.toUtf8Bytes(raw);
+            hash = ethers.utils.keccak256(bytes);
+            desc = "keccak256(abi.encodePacked(input))";
+        } else if (_enc === "encode") {
+            // Detect if it looks like an address or bytes32 for typed ABI encode
+            let encoded;
+            if (ethers.utils.isAddress(raw)) {
+                encoded = ethers.utils.defaultAbiCoder.encode(["address"], [raw]);
+            } else if (ethers.utils.isHexString(raw, 32)) {
+                encoded = ethers.utils.defaultAbiCoder.encode(["bytes32"], [raw]);
+            } else {
+                encoded = ethers.utils.defaultAbiCoder.encode(["string"], [raw]);
+            }
+            hash = ethers.utils.keccak256(encoded);
+            desc = "keccak256(abi.encode(input))";
+        } else {
+            const bytes = ethers.utils.isHexString(raw) ? ethers.utils.arrayify(raw) : ethers.utils.toUtf8Bytes(raw);
+            const first = ethers.utils.keccak256(bytes);
+            hash = ethers.utils.keccak256(ethers.utils.arrayify(first));
+            desc = "keccak256(keccak256(input)) — double hash";
+        }
+
+        document.getElementById("merkle-leaf").value = hash;
+        out.textContent = desc + "\n\n" + hash;
+    } catch (err) {
+        out.textContent = "❌ Error: " + (err.message || String(err));
+    }
+}
+
+function verifyMerkle() {
+    const result = document.getElementById("merkle-result");
+    const root   = document.getElementById("merkle-root").value.trim();
+    const leaf   = document.getElementById("merkle-leaf").value.trim();
+    const proofStr = document.getElementById("merkle-proof").value.trim();
+
+    if (!root || !leaf) { result.textContent = "⚠ Root and leaf required."; return; }
+
+    let proof = [];
+    if (proofStr) {
+        try { proof = JSON.parse(proofStr); }
+        catch (_) { result.textContent = "⚠ Proof must be a valid JSON array of hex strings."; return; }
+    }
+
+    try {
+        let current = leaf.toLowerCase();
+        for (const sibling of proof) {
+            const sib = String(sibling).toLowerCase();
+            // Sort pair before hashing — matches OZ MerkleProof.sol
+            const [a, b] = current < sib ? [current, sib] : [sib, current];
+            current = ethers.utils.keccak256(ethers.utils.concat([
+                ethers.utils.arrayify(a),
+                ethers.utils.arrayify(b)
+            ]));
+        }
+        const valid = current.toLowerCase() === root.toLowerCase();
+        result.textContent = valid
+            ? "✅ VALID — computed root matches\n" + current
+            : "❌ INVALID — computed root does not match\n  Expected:  " + root + "\n  Computed: " + current;
+    } catch (err) {
+        result.textContent = "❌ Error: " + (err.message || String(err));
+    }
+}
+
+function computeSelector() {
+    const sig = document.getElementById("sel-input").value.trim();
+    const out = document.getElementById("sel-result");
+    if (!sig) { out.textContent = "⚠ Enter a function signature."; return; }
+    try {
+        const hash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(sig));
+        out.textContent = "Selector: " + hash.slice(0, 10) + "\n\nFull keccak256: " + hash;
+    } catch (err) {
+        out.textContent = "❌ " + (err.message || String(err));
+    }
+}
+
+function checksumAddress() {
+    const val = document.getElementById("chk-input").value.trim();
+    const out = document.getElementById("chk-result");
+    if (!val) { out.textContent = "—"; return; }
+    try {
+        out.textContent = ethers.utils.getAddress(val);
+    } catch (_) {
+        out.textContent = "⚠ Invalid address.";
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// FRACTAL COMPOUNDER
+// ═══════════════════════════════════════════════════════════
+function calcFractal() {
+    const P   = Number(document.getElementById("fc-principal").value) || 0;
+    const r   = Number(document.getElementById("fc-rate").value) / 100 || 0;
+    const n   = Math.floor(Number(document.getElementById("fc-periods").value)) || 1;
+    const bps = Math.min(10000, Math.max(0, Number(document.getElementById("fc-bps").value)));
+    const reinvest = bps / 10000;
+
+    // Partial reinvestment: effective rate = r * reinvest
+    const rEff = r * reinvest;
+    const finalVal = P * Math.pow(1 + rEff, n);
+    const totalYield = finalVal - P;
+    const multiple = finalVal / (P || 1);
+
+    // Kelly approximation (edge / odds)
+    const kellyFrac = r > 0 ? Math.min(1, r / (1 + r)) : 0;
+
+    document.getElementById("fc-final").textContent  = finalVal.toLocaleString(undefined, {maximumFractionDigits:2}) + " NGTT";
+    document.getElementById("fc-yield").textContent  = totalYield.toLocaleString(undefined, {maximumFractionDigits:2}) + " NGTT";
+    document.getElementById("fc-mult").textContent   = multiple.toFixed(3) + "×";
+    document.getElementById("fc-kelly").textContent  = (kellyFrac * 100).toFixed(2) + "%";
+    document.getElementById("fc-result").style.display = "";
+}
+
+// ═══════════════════════════════════════════════════════════
+// ACCORDION
+// ═══════════════════════════════════════════════════════════
+function toggleAcc(id) {
+    const body  = document.getElementById(id);
+    const arrow = document.getElementById(id + "-arrow");
+    const open  = body.classList.toggle("open");
+    if (arrow) arrow.textContent = open ? "▾" : "▸";
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+function cfgSave() {
+    const ngtt     = document.getElementById("cfg-ngtt").value.trim();
+    const gov      = document.getElementById("cfg-gov").value.trim();
+    const treasury = document.getElementById("cfg-treasury").value.trim();
+    const rwa      = document.getElementById("cfg-rwa").value.trim();
+    const bus      = document.getElementById("cfg-bus").value.trim();
+
+    const addressFields = { ngtt, gov, treasury, rwa };
+    for (const [name, val] of Object.entries(addressFields)) {
+        if (val && !ethers.utils.isAddress(val)) {
+            showMsg("cfg-msg","err",`⚠ Invalid address for ${name}: ${val}`); return;
+        }
+    }
+
+    lsSet("cfg_ngtt",     ngtt);
+    lsSet("cfg_gov",      gov);
+    lsSet("cfg_treasury", treasury);
+    lsSet("cfg_rwa",      rwa);
+    lsSet("cfg_bus",      bus);
+
+    // Apply live
+    CFG = { ngtt: ngtt||CFG.ngtt, gov: gov||CFG.gov, treasury: treasury||CFG.treasury, rwa, bus: bus||CFG.bus };
+
+    // Reconnect bus with new URL
+    if (bus) connectSignalBus();
+
+    showMsg("cfg-msg","ok","✅ Config saved and applied.");
+}
+
+function cfgClear() {
+    ["cfg_ngtt","cfg_gov","cfg_treasury","cfg_rwa","cfg_bus"].forEach(k => {
+        try { localStorage.removeItem(STORAGE[k]); } catch(_){}
+    });
+    showMsg("cfg-msg","ok","✅ Config cleared. Reload to reset to defaults.");
+}
+
+function cfgPopulateInputs() {
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    setVal("cfg-ngtt",     CFG.ngtt);
+    setVal("cfg-gov",      CFG.gov);
+    setVal("cfg-treasury", CFG.treasury);
+    setVal("cfg-rwa",      CFG.rwa);
+    setVal("cfg-bus",      CFG.bus);
+}
+
+// ═══════════════════════════════════════════════════════════
+// TAB NAVIGATION
+// ═══════════════════════════════════════════════════════════
+document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        const pane = document.getElementById("tab-" + btn.dataset.tab);
+        if (pane) pane.classList.add("active");
+    });
+});
+
+// ═══════════════════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════════════════
+function updateClock() {
+    const el = document.getElementById("clock");
+    if (el) el.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+(function init() {
+    // Populate config inputs
+    cfgPopulateInputs();
+
+    // Set settlement destination input
+    const destInput = document.getElementById("settlement-dest");
+    if (destInput) destInput.value = loadSettlementDest();
+
+    // Render registry
+    renderRegistryTable(1);
+
+    // Render contracts
+    renderContracts();
+
+    // Update wallet UI (disconnected state)
+    updateWalletUI();
+
+    // Encoding buttons
+    setEnc("packed");
+
+    // Connect signal bus
+    connectSignalBus();
+
+    // Load fops report with fallback
+    loadFopsReport();
+
+    // Inject initial demo signal after a short delay
+    setTimeout(() => {
+        injectDemoSignal();
+        pushSignal(nowTs(), "system", "init", "Unstoppable dashboard initialized — data waterfall: live → cache → static");
+    }, 800);
+})();
+</script>
+</body>
+</html>

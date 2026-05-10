@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "canonicalRepo": "FuzzysTodd/The-Nexus-Protocol-Token-DOA",
+  "owner": "@FuzzysTodd",
+  "policy": {
+    "sourceOfTruth": "repository-authored content in canonical repo",
+    "secretsProhibited": true,
+    "irreversibleActionsRequireApproval": true
+  },
+  "sources": [
+    {
+      "type": "canonical-repo",
+      "locator": "https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA",
+      "trust": "owner-authoritative",
+      "scope": "full-system",
+      "notes": "Primary governance, contracts, docs, and dashboard source",
+      "metadata": {
+        "validationStatus": "verified",
+        "addedBy": "@FuzzysTodd",
+        "addedAt": "2026-04-30T00:00:00Z",
+        "provenanceHash": ""
+      }
+    },
+    {
+      "type": "local-copy",
+      "locator": "C:/Users/fuzzy/",
+      "trust": "operator-local",
+      "scope": "browser-serving-and-runtime",
+      "notes": "Local served copies and runtime test artifacts",
+      "metadata": {
+        "validationStatus": "needs-review",
+        "addedBy": "@FuzzysTodd",
+        "addedAt": "2026-04-30T00:00:00Z",
+        "provenanceHash": ""
+      }
+    },
+    {
+      "type": "github-gist",
+      "locator": "https://gist.github.com/",
+      "trust": "external-reference",
+      "scope": "snippets-and-operator-notes",
+      "notes": "Reference only unless promoted into canonical repo",
+      "metadata": {
+        "validationStatus": "pending",
+        "addedBy": "@FuzzysTodd",
+        "addedAt": "2026-04-30T00:00:00Z",
+        "provenanceHash": ""
+      }
+    },
+    {
+      "type": "codespace-artifact",
+      "locator": ".devcontainer/",
+      "trust": "repo-verified",
+      "scope": "development-environment",
+      "notes": "Codespace and container-level context for builds/tests",
+      "metadata": {
+        "validationStatus": "verified",
+        "addedBy": "@FuzzysTodd",
+        "addedAt": "2026-04-30T00:00:00Z",
+        "provenanceHash": ""
+      }
+    }
+  ]
+}

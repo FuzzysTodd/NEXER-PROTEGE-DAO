@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nexus Builder Fund — Developer Payments Dashboard</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #07111b;
+            --panel: rgba(10, 25, 41, 0.88);
+            --panel-strong: rgba(10, 25, 41, 0.96);
+            --line: rgba(148, 163, 184, 0.18);
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --primary: #22c55e;
+            --primary-soft: rgba(34, 197, 94, 0.14);
+            --accent: #38bdf8;
+            --accent-soft: rgba(56, 189, 248, 0.14);
+            --warn: #f59e0b;
+            --warn-soft: rgba(245, 158, 11, 0.14);
+            --danger: #fb7185;
+            --danger-soft: rgba(251, 113, 133, 0.14);
+            --purple: #a78bfa;
+            --purple-soft: rgba(167, 139, 250, 0.14);
+            --glow: radial-gradient(circle at top right, rgba(34, 197, 94, 0.18), transparent 48%);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+            background:
+                var(--glow),
+                linear-gradient(180deg, #030712 0%, #07111b 48%, #102235 100%);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        main {
+            width: min(1200px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 32px 0 80px;
+        }
+
+        h1, h2, h3, p { margin: 0; }
+
+        /* ── Hero ─────────────────────────────────────────── */
+        .hero {
+            background: var(--panel);
+            backdrop-filter: blur(18px);
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            box-shadow: 0 24px 60px rgba(2, 6, 23, 0.45);
+            padding: 32px;
+            margin-bottom: 24px;
+            display: grid;
+            gap: 24px;
+            grid-template-columns: 2fr 1fr;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--primary-soft);
+            color: #86efac;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-size: clamp(1.8rem, 3.5vw, 3rem);
+            line-height: 1.05;
+        }
+
+        .hero-sub {
+            margin-top: 12px;
+            color: var(--muted);
+            max-width: 58ch;
+            line-height: 1.65;
+        }
+
+        .hero-links {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        /* ── Wallet connect sidebar ──────────────────────── */
+        .wallet-card {
+            background: var(--panel-strong);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 22px;
+            display: grid;
+            gap: 14px;
+        }
+
+        .wallet-card strong {
+            font-size: 1.05rem;
+            color: #86efac;
+        }
+
+        .wallet-address {
+            font-family: monospace;
+            font-size: 0.82rem;
+            color: var(--muted);
+            word-break: break-all;
+        }
+
+        .network-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 0.75rem;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* ── Buttons ─────────────────────────────────────── */
+        button, .chip-link {
+            cursor: pointer;
+            font: inherit;
+            border: none;
+            outline: none;
+        }
+
+        .btn {
+            padding: 11px 20px;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 1px solid transparent;
+            transition: opacity 0.15s, transform 0.1s;
+        }
+
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.38; cursor: not-allowed; }
+
+        .btn-primary { background: #166534; color: #86efac; border-color: #15803d; }
+        .btn-accent  { background: var(--accent-soft); color: var(--accent); border-color: rgba(56,189,248,0.35); }
+        .btn-warn    { background: var(--warn-soft); color: var(--warn); border-color: rgba(245,158,11,0.35); }
+        .btn-purple  { background: var(--purple-soft); color: var(--purple); border-color: rgba(167,139,250,0.35); }
+        .btn-danger  { background: var(--danger-soft); color: var(--danger); border-color: rgba(251,113,133,0.35); }
+
+        .chip-link {
+            text-decoration: none;
+            color: var(--text);
+            padding: 10px 16px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: rgba(15, 23, 42, 0.62);
+            font-size: 0.88rem;
+        }
+
+        /* ── Metric grid ─────────────────────────────────── */
+        .metrics {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            margin-bottom: 24px;
+        }
+
+        .metric {
+            padding: 20px;
+            border-radius: 20px;
+            background: var(--panel);
+            border: 1px solid var(--line);
+        }
+
+        .metric span {
+            display: block;
+            color: var(--muted);
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+        }
+
+        .metric strong {
+            font-size: 1.7rem;
+            line-height: 1;
+            word-break: break-all;
+        }
+
+        .metric.green strong  { color: #86efac; }
+        .metric.blue strong   { color: var(--accent); }
+        .metric.amber strong  { color: #fcd34d; }
+        .metric.purple strong { color: var(--purple); }
+        .metric.red strong    { color: #fda4af; }
+
+        /* ── Layout & panels ─────────────────────────────── */
+        .layout {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .stack { display: grid; gap: 20px; }
+
+        .panel {
+            background: var(--panel);
+            backdrop-filter: blur(18px);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            box-shadow: 0 24px 60px rgba(2, 6, 23, 0.3);
+            padding: 26px;
+        }
+
+        .panel h2 {
+            font-size: 1.05rem;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+
+        .badge-green  { background: var(--primary-soft); color: #86efac; }
+        .badge-blue   { background: var(--accent-soft);  color: var(--accent); }
+        .badge-amber  { background: var(--warn-soft);    color: #fcd34d; }
+        .badge-purple { background: var(--purple-soft);  color: var(--purple); }
+        .badge-red    { background: var(--danger-soft);  color: #fda4af; }
+
+        /* ── Form rows ───────────────────────────────────── */
+        .form-row {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .form-row label {
+            font-size: 0.83rem;
+            color: var(--muted);
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--line);
+            color: var(--text);
+            font: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        input:focus { border-color: var(--accent); }
+        input::placeholder { color: var(--muted); opacity: 0.6; }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        /* ── Result box ──────────────────────────────────── */
+        .result {
+            margin-top: 12px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            line-height: 1.55;
+            display: none;
+        }
+
+        .result.show { display: block; }
+        .result.ok   { background: var(--primary-soft); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+        .result.err  { background: var(--danger-soft);  color: #fda4af; border: 1px solid rgba(251,113,133,0.3); }
+        .result.info { background: var(--accent-soft);  color: var(--accent); border: 1px solid rgba(56,189,248,0.3); }
+
+        /* ── Builder table ───────────────────────────────── */
+        .builder-table-wrap {
+            overflow-x: auto;
+            margin-top: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        thead th {
+            text-align: left;
+            color: var(--muted);
+            font-weight: 500;
+            padding: 0 12px 10px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        tbody tr:hover td { background: rgba(255,255,255,0.03); }
+
+        tbody td {
+            padding: 11px 12px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+
+        tbody td.text { font-family: inherit; font-size: 0.85rem; }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 0.73rem;
+            font-family: inherit;
+        }
+
+        .pill.active   { background: var(--primary-soft); color: #86efac; }
+        .pill.inactive { background: var(--danger-soft);  color: #fda4af; }
+
+        /* ── API stats panel ─────────────────────────────── */
+        .kv-list { display: grid; gap: 8px; }
+
+        .kv-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            padding: 9px 12px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--line);
+        }
+
+        .kv-row .k { color: var(--muted); font-size: 0.83rem; }
+        .kv-row .v { font-size: 0.85rem; word-break: break-all; text-align: right; }
+
+        code {
+            color: #fcd34d;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 1px 6px;
+            border-radius: 6px;
+        }
+
+        .sep {
+            height: 1px;
+            background: var(--line);
+            margin: 18px 0;
+        }
+
+        /* ── Pending reward highlight ────────────────────── */
+        .reward-amount {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #86efac;
+            margin: 12px 0 4px;
+            line-height: 1;
+        }
+
+        .reward-sub { color: var(--muted); font-size: 0.83rem; }
+
+        /* ── Responsive ──────────────────────────────────── */
+        @media (max-width: 1080px) {
+            .metrics { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 860px) {
+            .hero, .layout { grid-template-columns: 1fr; }
+            .metrics { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 560px) {
+            .metrics { grid-template-columns: 1fr; }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid currentColor;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<main>
+
+    <!-- ── Hero ──────────────────────────────────────────────────────── -->
+    <section class="hero" aria-label="page header">
+        <div>
+            <span class="eyebrow">Nexus Builder Fund</span>
+            <h1>Developer Payment<br>Dashboard</h1>
+            <p class="hero-sub">
+                Live view of the on-chain builder compensation pool. Connect your wallet to claim ETH rewards
+                and NGTT token bonuses. Admins can configure the placement wallet and NGTT award rate.
+            </p>
+            <div class="hero-links">
+                <a class="chip-link" href="./dashboard.html">⚡ Dashboard</a>
+                <a class="chip-link" href="./financial-ops-dashboard.html">Financial Ops</a>
+                <a class="chip-link" href="./withdraw.html">Withdraw</a>
+                <a class="chip-link" href="./governance.html">Governance</a>
+                <a class="chip-link" href="./index.html">Home</a>
+                <a class="chip-link" href="./docs/BUILDER_FUND.md" target="_blank" rel="noopener">Docs</a>
+            </div>
+            <div style="margin-top:20px; display:grid; gap:8px;">
+                <label style="font-size:0.82rem;color:var(--muted);">Contract address</label>
+                <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;">
+                    <input type="text" id="contract-address"
+                        placeholder="0x… NexusBuilderFund address"
+                        aria-label="NexusBuilderFund contract address"
+                        value="">
+                    <button class="btn btn-accent" id="load-contract" aria-label="Load contract">Load</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wallet sidebar -->
+        <aside class="wallet-card" aria-label="wallet connection">
+            <strong id="wallet-heading">Connect wallet</strong>
+            <p id="wallet-desc" style="color:var(--muted);font-size:0.85rem;line-height:1.55;">
+                Connect MetaMask or Coinbase Wallet to claim rewards, deposit fees, or configure admin settings.
+            </p>
+            <div class="wallet-address" id="wallet-addr" aria-live="polite"></div>
+            <div id="network-row" style="display:none;">
+                <span class="network-badge"><span class="dot"></span><span id="network-name">—</span></span>
+            </div>
+            <div id="role-row" style="font-size:0.82rem;color:var(--muted);display:none;">
+                Role: <span id="wallet-role" style="color:var(--text);">—</span>
+            </div>
+            <div style="position:relative;">
+                <button class="btn btn-primary" id="connect-btn" aria-label="Connect wallet">
+                    Connect Wallet
+                </button>
+                <!-- Wallet picker dropdown -->
+                <div id="wallet-picker" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:#1f2937;border:1px solid rgba(148,163,184,0.2);border-radius:10px;padding:10px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+                    <button id="pick-metamask" style="width:100%;display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid rgba(148,163,184,0.15);border-radius:7px;background:#111827;color:#e5e7eb;font-size:0.88rem;cursor:pointer;margin-bottom:7px;">🦊 MetaMask</button>
+                    <button id="pick-coinbase" style="width:100%;display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid rgba(148,163,184,0.15);border-radius:7px;background:#111827;color:#e5e7eb;font-size:0.88rem;cursor:pointer;">🔵 Coinbase Wallet</button>
+                </div>
+            </div>
+            <div class="result" id="wallet-result"></div>
+        </aside>
+    </section>
+
+    <!-- ── Metrics strip ─────────────────────────────────────────────── -->
+    <section class="metrics" aria-label="fund metrics">
+        <article class="metric green">
+            <span>Fund Balance (ETH)</span>
+            <strong id="m-balance">—</strong>
+        </article>
+        <article class="metric blue">
+            <span>API Calls Recorded</span>
+            <strong id="m-calls">—</strong>
+        </article>
+        <article class="metric amber">
+            <span>Placement Cut</span>
+            <strong id="m-placement">—</strong>
+        </article>
+        <article class="metric purple">
+            <span>NGTT / ETH</span>
+            <strong id="m-ngtt-rate">—</strong>
+        </article>
+        <article class="metric green">
+            <span>Builders</span>
+            <strong id="m-builders">—</strong>
+        </article>
+    </section>
+
+    <!-- ── Main layout ───────────────────────────────────────────────── -->
+    <div class="layout">
+
+        <!-- Left column -->
+        <div class="stack">
+
+            <!-- Builder claim panel -->
+            <article class="panel" aria-label="builder claim">
+                <h2>
+                    Your Reward
+                    <span class="badge badge-green">Builder</span>
+                </h2>
+
+                <div id="pending-section" style="display:none;">
+                    <p style="color:var(--muted);font-size:0.83rem;">Pending ETH reward</p>
+                    <div class="reward-amount" id="pending-eth">0.000000 ETH</div>
+                    <p class="reward-sub" id="pending-ngtt">≈ 0 NGTT bonus</p>
+                    <div style="margin-top:16px;">
+                        <button class="btn btn-primary" id="claim-btn" style="width:100%;" disabled
+                            aria-label="Claim ETH and NGTT rewards">
+                            Claim ETH + NGTT
+                        </button>
+                    </div>
+                    <div class="result" id="claim-result"></div>
+                </div>
+
+                <div id="not-builder-msg" style="color:var(--muted);font-size:0.85rem;line-height:1.6;">
+                    Connect your wallet and load the contract to check if you are a registered builder.
+                </div>
+            </article>
+
+            <!-- Deposit fees panel -->
+            <article class="panel" aria-label="deposit fees">
+                <h2>
+                    Deposit Fees
+                    <span class="badge badge-blue">Anyone</span>
+                </h2>
+                <p style="color:var(--muted);font-size:0.85rem;line-height:1.6;margin-bottom:16px;">
+                    Send ETH into the builder pool. A <code id="deposit-placement-bps">0</code>% placement cut is
+                    auto-forwarded to the treasury wallet on every deposit.
+                </p>
+                <div class="form-row">
+                    <label for="deposit-eth">ETH amount</label>
+                    <input type="number" id="deposit-eth" placeholder="0.01" min="0" step="0.001"
+                        aria-label="ETH amount to deposit">
+                </div>
+                <div class="form-row">
+                    <label for="deposit-note">Note (optional)</label>
+                    <input type="text" id="deposit-note" placeholder="REST API batch" maxlength="80"
+                        aria-label="Deposit note">
+                </div>
+                <button class="btn btn-accent" id="deposit-btn" style="width:100%;" disabled
+                    aria-label="Deposit fees into builder fund">
+                    Deposit ETH
+                </button>
+                <div class="result" id="deposit-result"></div>
+            </article>
+
+            <!-- Admin: Placement config -->
+            <article class="panel" aria-label="placement wallet configuration">
+                <h2>
+                    Placement Wallet
+                    <span class="badge badge-amber">Admin</span>
+                </h2>
+                <p style="color:var(--muted);font-size:0.85rem;line-height:1.6;margin-bottom:16px;">
+                    The placement wallet receives an automatic cut of every fee deposit.
+                    Current: <code id="current-placement-wallet">not set</code>
+                    at <code id="current-placement-bps">0</code> bps.
+                </p>
+                <div class="form-row">
+                    <label for="place-wallet">Destination wallet address</label>
+                    <input type="text" id="place-wallet" placeholder="0x… treasury / dashboard wallet"
+                        aria-label="Placement wallet address">
+                </div>
+                <div class="form-row">
+                    <label for="place-bps">Basis points (0–5000 → 0–50%)</label>
+                    <input type="number" id="place-bps" placeholder="2000 = 20%" min="0" max="5000" step="1"
+                        aria-label="Placement basis points">
+                </div>
+                <button class="btn btn-warn" id="set-placement-btn" style="width:100%;" disabled
+                    aria-label="Set placement wallet configuration">
+                    Set Placement Config
+                </button>
+                <div class="result" id="placement-result"></div>
+            </article>
+
+        </div>
+
+        <!-- Right column -->
+        <div class="stack">
+
+            <!-- Admin: NGTT reward config -->
+            <article class="panel" aria-label="NGTT token reward configuration">
+                <h2>
+                    NGTT Token Awards
+                    <span class="badge badge-purple">Admin</span>
+                </h2>
+                <p style="color:var(--muted);font-size:0.85rem;line-height:1.6;margin-bottom:16px;">
+                    Configure the NGTT governance token bonus paid to builders on every ETH claim.
+                    Current rate: <code id="current-ngtt-rate">0</code> NGTT / ETH.
+                    Contract holds: <code id="current-ngtt-balance">—</code> NGTT.
+                </p>
+                <div class="form-row">
+                    <label for="ngtt-token-addr">NGTT token contract address</label>
+                    <input type="text" id="ngtt-token-addr" placeholder="0x… NGTTGovernanceToken"
+                        aria-label="NGTT token address">
+                </div>
+                <div class="form-row">
+                    <label for="ngtt-rate">NGTT per 1 ETH claimed (whole tokens)</label>
+                    <input type="number" id="ngtt-rate" placeholder="1000 (= 1 000 NGTT per ETH)" min="0" step="1"
+                        aria-label="NGTT reward rate per ETH">
+                </div>
+                <button class="btn btn-purple" id="set-ngtt-btn" style="width:100%;" disabled
+                    aria-label="Set NGTT reward configuration">
+                    Set NGTT Reward Config
+                </button>
+                <div class="result" id="ngtt-result"></div>
+            </article>
+
+            <!-- API Stats -->
+            <article class="panel" aria-label="REST API usage stats">
+                <h2>
+                    API Usage Stats
+                    <span class="badge badge-blue">Live</span>
+                </h2>
+                <p style="color:var(--muted);font-size:0.83rem;line-height:1.5;margin-bottom:14px;">
+                    From <code>GET /api/v1/builder-fund/stats</code> on the REST server.
+                </p>
+                <div class="form-row">
+                    <label for="api-url">REST server URL</label>
+                    <div class="input-row">
+                        <input type="text" id="api-url" placeholder="http://localhost:8788"
+                            aria-label="REST server base URL"
+                            value="http://localhost:8788">
+                        <button class="btn btn-accent" id="fetch-api" aria-label="Fetch API stats">Fetch</button>
+                    </div>
+                </div>
+                <div class="kv-list" id="api-stats-list">
+                    <div class="kv-row" style="justify-content:center;color:var(--muted);">
+                        No data yet — click Fetch.
+                    </div>
+                </div>
+            </article>
+
+            <!-- Builders list -->
+            <article class="panel" aria-label="registered builders">
+                <h2>
+                    Registered Builders
+                    <span class="badge badge-green" id="builder-count-badge">0</span>
+                </h2>
+                <div class="builder-table-wrap" id="builder-table-wrap">
+                    <p style="color:var(--muted);font-size:0.85rem;">
+                        Load a contract to see the builder roster.
+                    </p>
+                </div>
+            </article>
+
+        </div>
+    </div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"
+    integrity="sha512-izHMSMOSPULdxGaygRGNYSFrOjf31CaBp9Ej7sgPMoVTTa40JxXXVYqSJE3YJAaE07e6s6dZj6n+J6S7oBr1Q=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/@coinbase/wallet-sdk@4.3.0/dist/index.global.js"></script>
+<script>
+"use strict";
+
+// ── Minimal NexusBuilderFund ABI ─────────────────────────────────────────────
+const FUND_ABI = [
+    // View
+    "function fundBalance() external view returns (uint256)",
+    "function builderCount() external view returns (uint256)",
+    "function totalUsageCalls() external view returns (uint256)",
+    "function totalDeposited() external view returns (uint256)",
+    "function feePerCallUsdCents() external view returns (uint256)",
+    "function placementWallet() external view returns (address)",
+    "function placementBps() external view returns (uint256)",
+    "function ngttToken() external view returns (address)",
+    "function ngttRewardPerEthWei() external view returns (uint256)",
+    "function ngttBalance() external view returns (uint256)",
+    "function builderIndex(address) external view returns (uint256)",
+    "function pendingReward(uint256 builderId) external view returns (uint256)",
+    "function getBuilder(uint256 builderId) external view returns (tuple(address wallet, uint256 shares, string handle, uint256 totalClaimed, bool active))",
+    "function rewardConfig() external view returns (address placementWallet, uint256 placementBps, address ngttToken, uint256 ngttRewardPerEthWei, uint256 ngttContractBalance)",
+    // Write
+    "function depositFees(string calldata note) external payable",
+    "function claimReward() external",
+    "function setPlacementConfig(address wallet, uint256 bps) external",
+    "function setNgttRewardConfig(address token, uint256 rewardPerEthWei) external",
+    // AccessControl
+    "function hasRole(bytes32 role, address account) external view returns (bool)",
+];
+
+const DEFAULT_ADMIN_ROLE = ethers.constants.HashZero;
+
+// ── State ────────────────────────────────────────────────────────────────────
+let provider = null;
+let signer   = null;
+let account  = null;
+let contract = null;  // read-only (provider)
+let signerContract = null; // write (signer)
+
+// ── DOM helpers ──────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+function showResult(id, msg, type /* ok | err | info */) {
+    const el = $(id);
+    el.textContent = msg;
+    el.className = `result show ${type}`;
+}
+
+function clearResult(id) {
+    const el = $(id);
+    el.className = "result";
+    el.textContent = "";
+}
+
+function setLoading(btnId, loading, label) {
+    const btn = $(btnId);
+    if (loading) {
+        btn.dataset.origLabel = btn.textContent;
+        btn.innerHTML = `<span class="spinner"></span>${label || "Waiting…"}`;
+        btn.disabled = true;
+    } else {
+        btn.innerHTML = btn.dataset.origLabel || label || btn.innerHTML;
+        btn.disabled = false;
+    }
+}
+
+function shortAddr(addr) {
+    if (!addr || addr === ethers.constants.AddressZero) return "not set";
+    return addr.slice(0, 6) + "…" + addr.slice(-4);
+}
+
+function fmt(wei, dp = 6) {
+    try {
+        return parseFloat(ethers.utils.formatEther(wei)).toFixed(dp);
+    } catch { return "—"; }
+}
+
+// ── Connect wallet ───────────────────────────────────────────────────────────
+function openWalletPicker() {
+    const picker = $("wallet-picker");
+    picker.style.display = picker.style.display === "none" ? "block" : "none";
+}
+function closeWalletPicker() {
+    $("wallet-picker").style.display = "none";
+}
+async function connectWithProvider(rawProvider) {
+    try {
+        setLoading("connect-btn", true, "Connecting…");
+        provider = new ethers.providers.Web3Provider(rawProvider, "any");
+        await provider.send("eth_requestAccounts", []);
+        signer  = provider.getSigner();
+        account = await signer.getAddress();
+
+        const network = await provider.getNetwork();
+        $("wallet-heading").textContent = "Wallet connected";
+        $("wallet-addr").textContent = account;
+        $("network-name").textContent = network.name === "unknown" ? `Chain ${network.chainId}` : network.name;
+        $("network-row").style.display = "";
+        clearResult("wallet-result");
+
+        if (contract) {
+            signerContract = contract.connect(signer);
+            await refreshWalletRole();
+            await refreshPendingReward();
+        }
+        $("deposit-btn").disabled = !contract;
+        setLoading("connect-btn", false);
+        $("connect-btn").textContent = "Reconnect";
+
+        rawProvider.on("accountsChanged", () => connectWithProvider(rawProvider));
+        rawProvider.on("chainChanged", () => connectWithProvider(rawProvider));
+    } catch (err) {
+        setLoading("connect-btn", false);
+        showResult("wallet-result", err.message || String(err), "err");
+    }
+}
+
+$("connect-btn").addEventListener("click", openWalletPicker);
+$("pick-metamask").addEventListener("click", () => {
+    closeWalletPicker();
+    if (!window.ethereum) { showResult("wallet-result", "MetaMask not detected. Install from metamask.io", "err"); return; }
+    connectWithProvider(window.ethereum);
+});
+$("pick-coinbase").addEventListener("click", () => {
+    closeWalletPicker();
+    let raw;
+    // 1. Direct Coinbase extension reference — works even when MetaMask is also installed
+    if (window.coinbaseWalletExtension) {
+        raw = window.coinbaseWalletExtension;
+    // 2. window.ethereum is already Coinbase Wallet (single-wallet setup)
+    } else if (typeof window.ethereum !== "undefined" && window.ethereum.isCoinbaseWallet) {
+        raw = window.ethereum;
+    // 3. Multi-wallet array (some setups expose window.ethereum.providers[])
+    } else if (Array.isArray(window.ethereum && window.ethereum.providers)) {
+        raw = window.ethereum.providers.find(p => p.isCoinbaseWallet);
+        if (!raw) {
+            showResult("wallet-result", "Coinbase Wallet not found among installed wallets. Install from coinbase.com/wallet.", "err"); return;
+        }
+    // 4. No extension — fall back to Coinbase Wallet SDK (QR / deeplink)
+    } else if (typeof CoinbaseWalletSDK !== "undefined") {
+        const sdk = new CoinbaseWalletSDK({ appName: "Nexus Protocol DAO", appLogoUrl: "" });
+        // Pass options:'all' so SDK v4 shows the EOA choice, not Smart Wallet only
+        raw = sdk.makeWeb3Provider({ options: "all" });
+    } else {
+        showResult("wallet-result", "Coinbase Wallet not detected. Install from coinbase.com/wallet.", "err"); return;
+    }
+    connectWithProvider(raw);
+});
+document.addEventListener("click", evt => {
+    const picker = $("wallet-picker");
+    if (picker && picker.style.display !== "none" && !document.querySelector("aside.wallet-card").contains(evt.target)) {
+        closeWalletPicker();
+    }
+});
+
+// ── Load contract ────────────────────────────────────────────────────────────
+$("load-contract").addEventListener("click", async () => {
+    const addr = $("contract-address").value.trim();
+    if (!ethers.utils.isAddress(addr)) {
+        showResult("wallet-result", "Invalid contract address.", "err");
+        return;
+    }
+    if (!provider) {
+        // read-only provider via window.ethereum or a default
+        if (window.ethereum) {
+            provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+        } else {
+            showResult("wallet-result", "No wallet found. Connect MetaMask first.", "err");
+            return;
+        }
+    }
+    try {
+        contract = new ethers.Contract(addr, FUND_ABI, provider);
+        if (signer) {
+            signerContract = contract.connect(signer);
+            await refreshWalletRole();
+        }
+        clearResult("wallet-result");
+        await refreshAll();
+        $("deposit-btn").disabled = !signer;
+    } catch (err) {
+        showResult("wallet-result", err.message || String(err), "err");
+    }
+});
+
+// ── Refresh everything ───────────────────────────────────────────────────────
+async function refreshAll() {
+    if (!contract) return;
+    try {
+        const [
+            balance,
+            usage,
+            builderCnt,
+            cfg,
+        ] = await Promise.all([
+            contract.fundBalance(),
+            contract.totalUsageCalls().catch(() => ethers.BigNumber.from(0)),
+            contract.builderCount(),
+            contract.rewardConfig(),
+        ]);
+
+        // Metrics
+        $("m-balance").textContent = fmt(balance, 4) + " ETH";
+        $("m-calls").textContent   = usage.toString();
+        $("m-builders").textContent = builderCnt.toString();
+        $("builder-count-badge").textContent = builderCnt.toString();
+
+        const bps = cfg.placementBps.toNumber();
+        $("m-placement").textContent = (bps / 100).toFixed(2) + "%";
+        $("deposit-placement-bps").textContent = (bps / 100).toFixed(2);
+
+        const rateEth = parseFloat(ethers.utils.formatEther(cfg.ngttRewardPerEthWei));
+        $("m-ngtt-rate").textContent = rateEth.toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+        // Placement config display
+        const pw = cfg.placementWallet;
+        $("current-placement-wallet").textContent =
+            pw === ethers.constants.AddressZero ? "not set" : pw;
+        $("current-placement-bps").textContent = bps;
+
+        // NGTT config display
+        $("current-ngtt-rate").textContent =
+            rateEth.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        $("current-ngtt-balance").textContent =
+            fmt(cfg.ngttContractBalance, 2) + " NGTT";
+
+        await refreshBuilderTable(builderCnt.toNumber());
+        if (signer && account) await refreshPendingReward();
+
+    } catch (err) {
+        console.error("refreshAll:", err);
+    }
+}
+
+async function refreshWalletRole() {
+    if (!contract || !account) return;
+    try {
+        const isAdmin = await contract.hasRole(DEFAULT_ADMIN_ROLE, account);
+        $("wallet-role").textContent = isAdmin ? "Admin (DEFAULT_ADMIN_ROLE)" : "Builder / User";
+        $("role-row").style.display = "";
+
+        // Enable admin buttons only for admin
+        $("set-placement-btn").disabled = !isAdmin;
+        $("set-ngtt-btn").disabled = !isAdmin;
+    } catch { /* ignore */ }
+}
+
+async function refreshPendingReward() {
+    if (!contract || !account) return;
+    const idxBig = await contract.builderIndex(account).catch(() => ethers.BigNumber.from(0));
+    const idx = idxBig.toNumber();
+    if (idx === 0) {
+        $("pending-section").style.display = "none";
+        $("not-builder-msg").textContent = "Your wallet is not registered as a builder.";
+        return;
+    }
+    const builderId = idx - 1;
+    const [pending, cfg] = await Promise.all([
+        contract.pendingReward(builderId),
+        contract.rewardConfig(),
+    ]);
+    $("pending-section").style.display = "";
+    $("not-builder-msg").style.display = "none";
+    $("pending-eth").textContent = fmt(pending, 6) + " ETH";
+
+    const rateWei = cfg.ngttRewardPerEthWei;
+    let ngttBonus = ethers.BigNumber.from(0);
+    try {
+        ngttBonus = pending.mul(rateWei).div(ethers.utils.parseEther("1"));
+    } catch { /* ignore */ }
+    $("pending-ngtt").textContent = "≈ " + fmt(ngttBonus, 2) + " NGTT bonus";
+
+    const hasPending = pending.gt(0);
+    $("claim-btn").disabled = !hasPending || !signer;
+}
+
+// ── Builders table ────────────────────────────────────────────────────────────
+async function refreshBuilderTable(count) {
+    const wrap = $("builder-table-wrap");
+    if (count === 0) {
+        wrap.innerHTML = "<p style='color:var(--muted);font-size:0.85rem;'>No builders registered yet.</p>";
+        return;
+    }
+    const rows = [];
+    const fetches = [];
+    for (let i = 0; i < Math.min(count, 50); i++) {
+        fetches.push(contract.getBuilder(i).catch(() => null));
+    }
+    const builders = await Promise.all(fetches);
+    for (let i = 0; i < builders.length; i++) {
+        const b = builders[i];
+        if (!b) continue;
+        rows.push(`<tr>
+            <td class="text">${i}</td>
+            <td class="text">${escHtml(b.handle || "—")}</td>
+            <td>${shortAddr(b.wallet)}</td>
+            <td class="text" style="text-align:right;">${b.shares.toString()}</td>
+            <td class="text" style="text-align:right;">${fmt(b.totalClaimed, 4)}</td>
+            <td class="text"><span class="pill ${b.active ? "active" : "inactive"}">${b.active ? "active" : "inactive"}</span></td>
+        </tr>`);
+    }
+    wrap.innerHTML = `<table>
+        <thead>
+            <tr>
+                <th>ID</th><th>Handle</th><th>Wallet</th><th style="text-align:right;">Shares</th>
+                <th style="text-align:right;">Claimed (ETH)</th><th>Status</th>
+            </tr>
+        </thead>
+        <tbody>${rows.join("")}</tbody>
+    </table>`;
+}
+
+function escHtml(s) {
+    return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+// ── Claim reward ─────────────────────────────────────────────────────────────
+$("claim-btn").addEventListener("click", async () => {
+    if (!signerContract) {
+        showResult("claim-result", "Connect your wallet first.", "err");
+        return;
+    }
+    clearResult("claim-result");
+    setLoading("claim-btn", true, "Claiming…");
+    try {
+        const tx = await signerContract.claimReward();
+        showResult("claim-result", `Tx sent: ${tx.hash}`, "info");
+        await tx.wait();
+        showResult("claim-result", `✓ Claimed! Tx: ${tx.hash}`, "ok");
+        await refreshAll();
+    } catch (err) {
+        showResult("claim-result", err.reason || err.message || String(err), "err");
+    } finally {
+        setLoading("claim-btn", false, "Claim ETH + NGTT");
+    }
+});
+
+// ── Deposit fees ─────────────────────────────────────────────────────────────
+$("deposit-btn").addEventListener("click", async () => {
+    if (!signerContract) {
+        showResult("deposit-result", "Connect your wallet first.", "err");
+        return;
+    }
+    const amtStr = $("deposit-eth").value.trim();
+    const note   = $("deposit-note").value.trim() || "web dashboard";
+    if (!amtStr || isNaN(parseFloat(amtStr)) || parseFloat(amtStr) <= 0) {
+        showResult("deposit-result", "Enter a positive ETH amount.", "err");
+        return;
+    }
+    let value;
+    try {
+        value = ethers.utils.parseEther(amtStr);
+    } catch {
+        showResult("deposit-result", "Invalid ETH amount.", "err");
+        return;
+    }
+    clearResult("deposit-result");
+    setLoading("deposit-btn", true, "Sending…");
+    try {
+        const tx = await signerContract.depositFees(note, { value });
+        showResult("deposit-result", `Tx sent: ${tx.hash}`, "info");
+        await tx.wait();
+        showResult("deposit-result", `✓ Deposited ${amtStr} ETH! Tx: ${tx.hash}`, "ok");
+        await refreshAll();
+    } catch (err) {
+        showResult("deposit-result", err.reason || err.message || String(err), "err");
+    } finally {
+        setLoading("deposit-btn", false, "Deposit ETH");
+    }
+});
+
+// ── Set placement config ──────────────────────────────────────────────────────
+$("set-placement-btn").addEventListener("click", async () => {
+    if (!signerContract) {
+        showResult("placement-result", "Connect your wallet first.", "err");
+        return;
+    }
+    const wallet = $("place-wallet").value.trim();
+    const bpsStr = $("place-bps").value.trim();
+
+    if (wallet && !ethers.utils.isAddress(wallet)) {
+        showResult("placement-result", "Invalid wallet address.", "err");
+        return;
+    }
+    const bps = parseInt(bpsStr, 10);
+    if (isNaN(bps) || bps < 0 || bps > 5000) {
+        showResult("placement-result", "Basis points must be 0–5000.", "err");
+        return;
+    }
+    const dest = wallet || ethers.constants.AddressZero;
+
+    clearResult("placement-result");
+    setLoading("set-placement-btn", true, "Updating…");
+    try {
+        const tx = await signerContract.setPlacementConfig(dest, bps);
+        showResult("placement-result", `Tx sent: ${tx.hash}`, "info");
+        await tx.wait();
+        showResult("placement-result", `✓ Placement set to ${shortAddr(dest)} @ ${bps} bps. Tx: ${tx.hash}`, "ok");
+        await refreshAll();
+    } catch (err) {
+        showResult("placement-result", err.reason || err.message || String(err), "err");
+    } finally {
+        setLoading("set-placement-btn", false, "Set Placement Config");
+    }
+});
+
+// ── Set NGTT reward config ────────────────────────────────────────────────────
+$("set-ngtt-btn").addEventListener("click", async () => {
+    if (!signerContract) {
+        showResult("ngtt-result", "Connect your wallet first.", "err");
+        return;
+    }
+    const tokenAddr = $("ngtt-token-addr").value.trim();
+    const rateStr   = $("ngtt-rate").value.trim();
+
+    if (tokenAddr && !ethers.utils.isAddress(tokenAddr)) {
+        showResult("ngtt-result", "Invalid token address.", "err");
+        return;
+    }
+    const rateTokens = parseFloat(rateStr);
+    if (isNaN(rateTokens) || rateTokens < 0) {
+        showResult("ngtt-result", "Enter a non-negative reward rate.", "err");
+        return;
+    }
+    const token        = tokenAddr || ethers.constants.AddressZero;
+    const ratePerEthWei = ethers.utils.parseUnits(
+        Math.floor(rateTokens).toString(),
+        18
+    );
+
+    clearResult("ngtt-result");
+    setLoading("set-ngtt-btn", true, "Updating…");
+    try {
+        const tx = await signerContract.setNgttRewardConfig(token, ratePerEthWei);
+        showResult("ngtt-result", `Tx sent: ${tx.hash}`, "info");
+        await tx.wait();
+        showResult("ngtt-result", `✓ NGTT reward set to ${rateTokens} tokens/ETH. Tx: ${tx.hash}`, "ok");
+        await refreshAll();
+    } catch (err) {
+        showResult("ngtt-result", err.reason || err.message || String(err), "err");
+    } finally {
+        setLoading("set-ngtt-btn", false, "Set NGTT Reward Config");
+    }
+});
+
+// ── Fetch API stats ───────────────────────────────────────────────────────────
+$("fetch-api").addEventListener("click", fetchApiStats);
+
+async function fetchApiStats() {
+    const base = $("api-url").value.trim().replace(/\/$/, "");
+    const list = $("api-stats-list");
+    list.innerHTML = `<div class="kv-row" style="justify-content:center;color:var(--muted);"><span class="spinner"></span> Fetching…</div>`;
+    try {
+        const res = await fetch(`${base}/api/v1/builder-fund/stats`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        const rows = [];
+        const add = (k, v) => rows.push(`<div class="kv-row"><span class="k">${escHtml(k)}</span><span class="v"><code>${escHtml(String(v))}</code></span></div>`);
+
+        add("Total API calls", data.totalCalls ?? "—");
+        add("Server started", data.startedAt ?? "—");
+        add("Snapshot", data.snapshotAt ?? "—");
+        add("Contract", shortAddr(data.builderFundContract));
+        add("Placement wallet", shortAddr(data.placementWallet));
+        add("Placement bps", (data.placementBps ?? 0) + " (" + ((data.placementBps ?? 0) / 100).toFixed(2) + "%)");
+        add("NGTT token", shortAddr(data.ngttToken));
+        add("NGTT reward/ETH", data.ngttRewardPerEthWei ?? "—");
+
+        if (data.byEndpoint && typeof data.byEndpoint === "object") {
+            rows.push(`<div class="sep"></div>`);
+            for (const [ep, cnt] of Object.entries(data.byEndpoint)) {
+                add(ep, cnt + " calls");
+            }
+        }
+
+        list.innerHTML = rows.join("");
+
+        // Also update metrics from API data
+        $("m-calls").textContent = data.totalCalls ?? $("m-calls").textContent;
+
+    } catch (err) {
+        list.innerHTML = `<div class="kv-row" style="color:var(--danger);">${escHtml(err.message || String(err))}</div>`;
+    }
+}
+
+// ── Auto-fetch API stats on load ──────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded", () => {
+    // If ethers loaded, silently try to fetch API stats
+    setTimeout(() => {
+        fetchApiStats().catch(() => {});
+        // Also try to restore contract from localStorage
+        const saved = localStorage.getItem("nexus_builder_fund_address");
+        if (saved && ethers.utils.isAddress(saved)) {
+            $("contract-address").value = saved;
+        }
+    }, 400);
+});
+
+// ── Persist contract address ──────────────────────────────────────────────────
+$("contract-address").addEventListener("change", () => {
+    const v = $("contract-address").value.trim();
+    if (ethers.utils.isAddress(v)) {
+        localStorage.setItem("nexus_builder_fund_address", v);
+    }
+});
+
+// ── Handle wallet account/chain changes (MetaMask fallback) ───────────────────
+if (window.ethereum) {
+    window.ethereum.on("accountsChanged", accs => {
+        if (accs.length === 0) {
+            account = null;
+            signer  = null;
+            signerContract = null;
+            $("wallet-addr").textContent = "";
+            $("wallet-heading").textContent = "Wallet disconnected";
+            $("role-row").style.display = "none";
+        } else {
+            account = accs[0];
+            $("wallet-addr").textContent = account;
+            refreshWalletRole().catch(() => {});
+            refreshPendingReward().catch(() => {});
+        }
+    });
+
+    window.ethereum.on("chainChanged", () => {
+        window.location.reload();
+    });
+}
+</script>
+</body>
+</html>

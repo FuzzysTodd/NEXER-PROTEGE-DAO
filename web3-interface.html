@@ -1,0 +1,2684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nexus Web3 Interface — Wallet · Send · Receive</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #07111b;
+            --panel: rgba(10, 25, 41, 0.92);
+            --panel-alt: #1a2535;
+            --line: rgba(148, 163, 184, 0.18);
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --primary: #22c55e;
+            --primary-soft: rgba(34, 197, 94, 0.14);
+            --accent: #38bdf8;
+            --accent-soft: rgba(56, 189, 248, 0.14);
+            --warn: #f59e0b;
+            --warn-soft: rgba(245, 158, 11, 0.14);
+            --danger: #fb7185;
+            --danger-soft: rgba(251, 113, 133, 0.14);
+            --purple: #a78bfa;
+            --purple-soft: rgba(167, 139, 250, 0.14);
+            --coinbase-blue: #0052ff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 48%),
+                linear-gradient(180deg, #030712 0%, #07111b 48%, #0f172a 100%);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        main { width: min(1100px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0 80px; }
+
+        h1, h2, h3 { line-height: 1.15; }
+
+        /* ── Breadcrumb nav ─────────────────────────────────────── */
+        .topnav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 28px;
+        }
+        .topnav a { color: var(--accent); text-decoration: none; }
+        .topnav a:hover { text-decoration: underline; }
+
+        .mode-bar {
+            position: sticky;
+            top: 10px;
+            z-index: 90;
+            margin-bottom: 20px;
+            background: rgba(10, 25, 41, 0.96);
+        }
+        .mode-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .workflow-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            border: 1px solid var(--line);
+            background: var(--panel-alt);
+            color: var(--muted);
+        }
+        .workflow-stage {
+            transition: opacity .2s ease, transform .2s ease, border-color .2s ease;
+        }
+        body.mode-guided .workflow-stage {
+            opacity: .48;
+            transform: translateY(1px);
+            pointer-events: none;
+        }
+        body.mode-guided .workflow-stage.is-active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            border-color: rgba(56,189,248,.45);
+            box-shadow: 0 0 0 1px rgba(56,189,248,.18);
+        }
+
+        /* ── Panels ─────────────────────────────────────────────── */
+        .panel {
+            background: var(--panel);
+            backdrop-filter: blur(18px);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ── Status badge ───────────────────────────────────────── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+        .badge-disconnected { background: var(--danger-soft); color: var(--danger); border: 1px solid rgba(251,113,133,.3); }
+        .badge-connected    { background: var(--primary-soft); color: #86efac; border: 1px solid rgba(34,197,94,.3); }
+        .badge-warn         { background: var(--warn-soft); color: var(--warn); border: 1px solid rgba(245,158,11,.3); }
+        .badge-info         { background: var(--accent-soft); color: var(--accent); border: 1px solid rgba(56,189,248,.3); }
+
+        /* ── Buttons ────────────────────────────────────────────── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity .15s, transform .12s;
+        }
+        .btn:hover { opacity: .88; transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+        .btn-primary  { background: var(--primary); color: #052e16; }
+        .btn-accent   { background: var(--accent); color: #0c1a2e; }
+        .btn-purple   { background: var(--purple); color: #1e0a44; }
+        .btn-ghost    { background: var(--panel-alt); color: var(--text); border: 1px solid var(--line); }
+        .btn-danger   { background: var(--danger); color: #1a0010; }
+        .btn-coinbase { background: var(--coinbase-blue); color: #fff; }
+        .btn-sm       { padding: 7px 12px; font-size: 0.82rem; border-radius: 8px; }
+
+        /* ── Wallet picker popup ────────────────────────────────── */
+        .wallet-picker {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            min-width: 260px;
+            background: #0f1f30;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 14px;
+            z-index: 100;
+            box-shadow: 0 20px 60px rgba(2,6,23,.7);
+        }
+        .wallet-picker.open { display: block; }
+        .wallet-picker-title {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            margin-bottom: 12px;
+        }
+        .wallet-pick-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            background: var(--panel-alt);
+            color: var(--text);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: background .14s;
+        }
+        .wallet-pick-btn:last-child { margin-bottom: 0; }
+        .wallet-pick-btn:hover { background: rgba(56,189,248,.12); border-color: var(--accent); }
+
+        /* ── Wallet connection area ─────────────────────────────── */
+        .wallet-connect-area {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .wallet-trigger { position: relative; }
+        .wallet-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 14px;
+            flex: 1;
+        }
+        .wallet-info-card {
+            background: var(--panel-alt);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+        .info-label {
+            font-size: 0.72rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            margin-bottom: 6px;
+        }
+        .info-value {
+            font-size: 0.92rem;
+            font-weight: 600;
+            word-break: break-all;
+            font-family: "SF Mono", "Monaco", "Consolas", monospace;
+        }
+
+        /* ── Handle pill ────────────────────────────────────────── */
+        .handle-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: var(--coinbase-blue);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.92rem;
+        }
+
+        /* ── Network + Registry table ───────────────────────────── */
+        .network-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .net-btn {
+            padding: 8px 16px;
+            border-radius: 999px;
+            border: 2px solid var(--line);
+            background: transparent;
+            color: var(--muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .14s;
+        }
+        .net-btn.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-soft);
+        }
+        .net-btn:hover:not(.active) {
+            border-color: rgba(148,163,184,.4);
+            color: var(--text);
+        }
+
+        .token-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.87rem;
+        }
+        .token-table th {
+            text-align: left;
+            color: var(--muted);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            padding: 0 12px 10px;
+            border-bottom: 1px solid var(--line);
+        }
+        .token-table td {
+            padding: 11px 12px;
+            border-bottom: 1px solid rgba(148,163,184,.07);
+            vertical-align: middle;
+        }
+        .token-table tr:last-child td { border-bottom: none; }
+        .token-table tr:hover td { background: rgba(56,189,248,.04); }
+        .addr-code {
+            font-family: "SF Mono", "Monaco", "Consolas", monospace;
+            font-size: 0.8rem;
+            color: var(--accent);
+            background: var(--accent-soft);
+            padding: 2px 7px;
+            border-radius: 5px;
+        }
+        .unsupported-chain-warn {
+            display: none;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background: var(--warn-soft);
+            border: 1px solid rgba(245,158,11,.35);
+            color: var(--warn);
+            font-size: 0.88rem;
+            margin-bottom: 16px;
+        }
+
+        /* ── Send / Receive panel ───────────────────────────────── */
+        .send-receive-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--line);
+            margin-bottom: 22px;
+        }
+        .tab-btn {
+            padding: 10px 22px;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all .14s;
+        }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-bottom: 7px;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: var(--panel-alt);
+            color: var(--text);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color .14s;
+        }
+        .form-input:focus, .form-select:focus { border-color: var(--accent); }
+        .form-input.invalid { border-color: var(--danger); }
+        .form-hint {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 5px;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .tx-result {
+            margin-top: 14px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            display: none;
+        }
+        .tx-result.success {
+            background: var(--primary-soft);
+            border: 1px solid rgba(34,197,94,.3);
+            color: #86efac;
+            display: block;
+        }
+        .tx-result.error {
+            background: var(--danger-soft);
+            border: 1px solid rgba(251,113,133,.3);
+            color: var(--danger);
+            display: block;
+        }
+        .tx-result.info {
+            background: var(--accent-soft);
+            border: 1px solid rgba(56,189,248,.3);
+            color: var(--accent);
+            display: block;
+        }
+
+        .preflight-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .preflight-card {
+            background: var(--panel-alt);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+        .preflight-label {
+            font-size: 0.72rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            margin-bottom: 6px;
+        }
+        .preflight-value {
+            font-size: 0.94rem;
+            font-weight: 600;
+            word-break: break-word;
+        }
+        .inventory-list {
+            display: grid;
+            gap: 10px;
+        }
+        .inventory-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+            background: var(--panel-alt);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+        .inventory-asset {
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+        .inventory-meta {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+        .inventory-balance {
+            text-align: right;
+            font-family: "SF Mono", "Monaco", "Consolas", monospace;
+            font-size: 0.84rem;
+            color: var(--primary);
+            word-break: break-all;
+        }
+
+        .signal-feed {
+            max-height: 240px;
+            overflow-y: auto;
+            background: var(--panel-alt);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px;
+            font-family: "SF Mono", "Monaco", "Consolas", monospace;
+            font-size: 0.78rem;
+        }
+        .signal-row {
+            display: grid;
+            grid-template-columns: 88px 1fr;
+            gap: 10px;
+            padding: 6px 4px;
+            border-bottom: 1px solid rgba(148,163,184,.1);
+        }
+        .signal-row:last-child { border-bottom: none; }
+        .signal-ts { color: var(--muted); }
+        .signal-msg { color: var(--text); word-break: break-word; }
+
+        .cred-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.84rem;
+        }
+        .cred-table th {
+            text-align: left;
+            color: var(--muted);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: 0 8px 8px;
+            border-bottom: 1px solid var(--line);
+        }
+        .cred-table td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(148,163,184,.08);
+            vertical-align: top;
+            word-break: break-word;
+        }
+        .cred-table tr:last-child td { border-bottom: none; }
+
+        .rail-canvas {
+            background: radial-gradient(circle at 20% 20%, rgba(56,189,248,.12), transparent 45%), #0a1626;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 14px;
+        }
+        .rail-svg {
+            width: 100%;
+            height: 230px;
+            display: block;
+        }
+        .rail-node { cursor: pointer; }
+        .rail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .rail-card {
+            background: var(--panel-alt);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .rail-card-title {
+            font-size: .86rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .rail-card-meta {
+            font-size: .76rem;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        /* ── Keccak / Merkle helper ─────────────────────────────── */
+        .mono-result {
+            font-family: "SF Mono", "Monaco", "Consolas", monospace;
+            font-size: 0.82rem;
+            background: #070f1a;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 14px 16px;
+            word-break: break-all;
+            color: var(--primary);
+            min-height: 46px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+        .encoding-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        /* ── Accordion ──────────────────────────────────────────── */
+        .accordion-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 14px 18px;
+            background: var(--panel-alt);
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            user-select: none;
+        }
+        .accordion-header:hover { border-color: var(--accent); }
+        .accordion-body {
+            display: none;
+            padding: 18px;
+            background: rgba(10,25,41,.5);
+            border: 1px solid var(--line);
+            border-radius: 0 0 10px 10px;
+            margin-top: -8px;
+            margin-bottom: 8px;
+        }
+        .accordion-body.open { display: block; }
+
+        /* ── Spinner ────────────────────────────────────────────── */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin .8s linear infinite; display: inline-block; }
+
+        code { font-family: "SF Mono","Monaco","Consolas",monospace; font-size: .88em; }
+    </style>
+</head>
+<body>
+<main>
+    <!-- Breadcrumb -->
+    <nav class="topnav" aria-label="Breadcrumb">
+        <a href="./index.html">⚡ Nexus</a>
+        <span>›</span>
+        <span>Web3 Interface</span>
+    </nav>
+
+    <section class="panel mode-bar" aria-label="Workflow mode controls">
+        <div class="panel-title" style="margin-bottom:12px;">🧭 Workflow Control</div>
+        <div class="mode-controls">
+            <span class="workflow-chip" id="wf-mode-chip">Mode: Open</span>
+            <span class="workflow-chip" id="wf-stage-chip">Stage 1/10</span>
+            <button class="btn btn-accent btn-sm" onclick="setWorkflowMode('guided')">Guided Order</button>
+            <button class="btn btn-ghost btn-sm" onclick="setWorkflowMode('open')">Open Layout</button>
+            <button class="btn btn-ghost btn-sm" onclick="stepWorkflow(-1)">Previous Step</button>
+            <button class="btn btn-ghost btn-sm" onclick="stepWorkflow(1)">Next Step</button>
+            <button class="btn btn-purple btn-sm" onclick="focusCurrentWorkflowStage()">Focus Current</button>
+        </div>
+        <p style="color:var(--muted); font-size:.82rem; line-height:1.6;">
+            Guided mode keeps a smooth ordered flow for deep operational runs. Open mode unlocks every panel for expert freeform execution.
+        </p>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 1 — WALLET CONNECTION
+    ════════════════════════════════════════════════════════════════════ -->
+    <section class="panel workflow-stage" data-stage="1">
+        <div class="panel-title">
+            🔌 Wallet Connection
+            <span id="status-badge" class="badge badge-disconnected">⬤ Disconnected</span>
+        </div>
+
+        <!-- Handle identity -->
+        <div style="margin-bottom:20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <span class="handle-pill" id="handle-pill">🔵 </span>
+            <span class="badge badge-info" style="font-size:.78rem;">Coinbase Wallet Handle (display-only)</span>
+        </div>
+
+        <div class="wallet-connect-area">
+            <!-- Wallet picker trigger -->
+            <div class="wallet-trigger" id="wallet-trigger">
+                <button class="btn btn-accent" id="connect-btn" onclick="toggleWalletPicker()">
+                    🔌 Connect Wallet
+                </button>
+                <div class="wallet-picker" id="wallet-picker">
+                    <p class="wallet-picker-title">Choose wallet</p>
+                    <button class="wallet-pick-btn" id="pick-auto"   onclick="connectWallet('auto')">
+                        ⚡ AUTO (recommended)
+                    </button>
+                    <button class="wallet-pick-btn" id="pick-metamask" onclick="connectWallet('metamask')">
+                        🦊 MetaMask
+                    </button>
+                    <button class="wallet-pick-btn" id="pick-coinbase" onclick="connectWallet('coinbase')">
+                        🔵 Coinbase Wallet
+                    </button>
+                    <hr style="border-color:var(--line); margin:10px 0;">
+                    <button class="wallet-pick-btn" id="pick-disconnect" onclick="disconnectWallet()" style="color:var(--danger);">
+                        ✕ Disconnect
+                    </button>
+                </div>
+            </div>
+
+            <!-- Connected wallet info cards -->
+            <div class="wallet-info-grid" id="wallet-info-grid" style="display:none;">
+                <div class="wallet-info-card">
+                    <div class="info-label">Connected Address</div>
+                    <div class="info-value" id="info-address">—</div>
+                </div>
+                <div class="wallet-info-card">
+                    <div class="info-label">Network</div>
+                    <div class="info-value" id="info-network">—</div>
+                </div>
+                <div class="wallet-info-card">
+                    <div class="info-label">Chain ID</div>
+                    <div class="info-value" id="info-chain-id">—</div>
+                </div>
+                <div class="wallet-info-card">
+                    <div class="info-label">Wallet Type</div>
+                    <div class="info-value" id="info-wallet-type">—</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="wallet-msg" class="tx-result" style="margin-top:14px;"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 2 — NETWORK + ADDRESS REGISTRY
+    ════════════════════════════════════════════════════════════════════ -->
+    <section class="panel workflow-stage" data-stage="2">
+        <div class="panel-title">🌐 Network &amp; Address Registry</div>
+
+        <div id="chain-warn" class="unsupported-chain-warn">
+            ⚠️ Your wallet is connected to an unsupported network.
+            Please switch to <strong>Ethereum Mainnet</strong> (chainId: 1), <strong>Base Mainnet</strong> (chainId: 8453), or <strong>BNB Smart Chain</strong> (chainId: 56).
+        </div>
+
+        <!-- Network selector tabs -->
+        <div class="network-selector" id="net-selector">
+            <button class="net-btn active" data-chain="1"    onclick="selectNetworkView(1)">Ethereum</button>
+            <button class="net-btn"        data-chain="8453" onclick="selectNetworkView(8453)">Base</button>
+            <button class="net-btn"        data-chain="56"   onclick="selectNetworkView(56)">BSC</button>
+        </div>
+
+        <!-- Token/address table -->
+        <div id="registry-table-wrap">
+            <table class="token-table">
+                <thead>
+                    <tr>
+                        <th>Token</th>
+                        <th>Contract Address</th>
+                        <th>Decimals</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody id="registry-tbody"></tbody>
+            </table>
+        </div>
+
+        <p style="font-size:.8rem;color:var(--muted);margin-top:14px;">
+            Addresses sourced from canonical on-chain deployments. Always verify independently before sending funds.
+            See <a href="./network-registry.json" target="_blank" style="color:var(--accent);">network-registry.json</a> for the full registry.
+        </p>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 2.5 — TOKEN CREDENTIAL PROFILES
+    ════════════════════════════════════════════════════════════════════ -->
+    <section class="panel workflow-stage" data-stage="3">
+        <div class="panel-title">🧬 Token Credential Profiles</div>
+        <p style="color:var(--muted); font-size:.86rem; margin-bottom:16px; line-height:1.6;">
+            Define token-specific technical profiles per chain. This stores address, decimals, classification,
+            verification mode, and policy tags locally, then applies them to registry views, send flow, and balance reads.
+            Do not enter private keys or secrets.
+        </p>
+
+        <div class="form-group">
+            <label class="form-label" for="cred-chain">Chain</label>
+            <select class="form-select" id="cred-chain" aria-label="Credential profile chain">
+                <option value="1">Ethereum Mainnet (1)</option>
+                <option value="8453">Base Mainnet (8453)</option>
+                <option value="56">BNB Smart Chain (56)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="cred-symbol">Token Symbol</label>
+            <input type="text" class="form-input" id="cred-symbol" placeholder="USDC" aria-label="Token symbol">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="cred-address">Token Address (0x... or NATIVE)</label>
+            <input type="text" class="form-input" id="cred-address" placeholder="0x..." aria-label="Token address">
+        </div>
+
+        <div class="preflight-grid" style="margin-bottom:12px;">
+            <div>
+                <label class="form-label" for="cred-decimals">Decimals</label>
+                <input type="number" class="form-input" id="cred-decimals" placeholder="18" min="0" max="36" aria-label="Token decimals">
+            </div>
+            <div>
+                <label class="form-label" for="cred-class">Classification</label>
+                <select class="form-select" id="cred-class" aria-label="Token classification">
+                    <option value="base-asset">Base Asset</option>
+                    <option value="stablecoin">Stablecoin</option>
+                    <option value="governance">Governance</option>
+                    <option value="lp-token">LP Token</option>
+                    <option value="nft-wrapper">NFT Wrapper</option>
+                    <option value="rwa">RWA</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="cred-verify">Verification Mode</label>
+                <select class="form-select" id="cred-verify" aria-label="Verification mode">
+                    <option value="onchain-verified">On-Chain Verified</option>
+                    <option value="manual-reviewed">Manual Reviewed</option>
+                    <option value="experimental">Experimental</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="cred-notes">Policy / Routing Notes</label>
+            <input type="text" class="form-input" id="cred-notes" placeholder="Example: off-ramp-ready, base-settlement" aria-label="Credential notes">
+        </div>
+
+        <div class="form-actions" style="margin-bottom:14px;">
+            <button class="btn btn-accent btn-sm" onclick="saveTokenCredentialProfile()">Save Profile</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearTokenCredentialProfiles()">Clear Custom Profiles</button>
+        </div>
+
+        <div id="cred-result" class="tx-result"></div>
+
+        <div id="cred-table-wrap">
+            <table class="cred-table">
+                <thead>
+                    <tr>
+                        <th>Chain</th>
+                        <th>Symbol</th>
+                        <th>Address</th>
+                        <th>Decimals</th>
+                        <th>Class</th>
+                        <th>Verify</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="cred-tbody"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 3 — SEND / RECEIVE
+    ════════════════════════════════════════════════════════════════════ -->
+    <section class="panel workflow-stage" data-stage="4">
+        <div class="panel-title">💸 Send / Receive</div>
+
+        <!-- Tabs -->
+        <div class="send-receive-tabs">
+            <button class="tab-btn active" onclick="switchTab('send')">Send</button>
+            <button class="tab-btn"        onclick="switchTab('receive')">Receive</button>
+        </div>
+
+        <!-- ── SEND panel ── -->
+        <div class="tab-panel active" id="tab-send">
+
+            <div class="form-group">
+                <label class="form-label" for="send-token">Token / Asset</label>
+                <select class="form-select" id="send-token" onchange="onTokenChange()"></select>
+                <p class="form-hint" id="send-token-addr-hint"></p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="send-to">Recipient Address</label>
+                <input type="text"
+                       class="form-input"
+                       id="send-to"
+                       placeholder="0x… (EIP-55 checksummed or lowercase)"
+                      oninput="validateRecipient(this)">
+                <p class="form-hint" id="send-to-hint"></p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="send-amount">Amount</label>
+                <input type="text"
+                       class="form-input"
+                       id="send-amount"
+                      placeholder="e.g. 0.01"
+                      oninput="updateSendPreflight()">
+                <p class="form-hint" id="send-amount-hint"></p>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" id="send-btn" onclick="executeSend()">
+                    Send
+                </button>
+                <span class="badge badge-warn" id="send-chain-badge" style="display:none;">
+                    Wrong network
+                </span>
+            </div>
+
+            <div class="tx-result" id="send-result"></div>
+        </div>
+
+        <!-- ── RECEIVE panel ── -->
+        <div class="tab-panel" id="tab-receive">
+            <p style="margin-bottom:18px; color:var(--muted); font-size:.9rem;">
+                Share your connected address or your Coinbase Wallet handle to receive funds.
+            </p>
+
+            <div class="wallet-info-card" style="margin-bottom:16px;">
+                <div class="info-label">Your Address (connected wallet)</div>
+                <div class="info-value" id="receive-address" style="color:var(--primary);">
+                    Connect wallet to see your address
+                </div>
+            </div>
+
+            <div class="wallet-info-card">
+                <div class="info-label">Coinbase Wallet Handle</div>
+                <div class="info-value" id="receive-handle" style="color:var(--coinbase-blue);"></div>
+            </div>
+
+            <p style="font-size:.78rem; color:var(--muted); margin-top:14px;">
+                Note: Sending to a <code>.cb.id</code> handle requires the sender to use Coinbase Wallet or a
+                compatible resolver. For maximum compatibility, share your <code>0x</code> address.
+            </p>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 3.5 — LIVE ASSET INVENTORY + PRE-FLIGHT
+    ════════════════════════════════════════════════════════════════════ -->
+    <section class="panel workflow-stage" data-stage="5">
+        <div class="panel-title">📊 Live Asset Inventory &amp; Route Preflight</div>
+
+        <div class="preflight-grid">
+            <div class="preflight-card">
+                <div class="preflight-label">Send Network</div>
+                <div class="preflight-value" id="pf-network">Not connected</div>
+            </div>
+            <div class="preflight-card">
+                <div class="preflight-label">Selected Asset</div>
+                <div class="preflight-value" id="pf-asset">—</div>
+            </div>
+            <div class="preflight-card">
+                <div class="preflight-label">Available Balance</div>
+                <div class="preflight-value" id="pf-balance">—</div>
+            </div>
+            <div class="preflight-card">
+                <div class="preflight-label">Route Status</div>
+                <div class="preflight-value" id="pf-status">Waiting for input</div>
+            </div>
+        </div>
+
+        <div class="wallet-info-card" style="margin-bottom:16px;">
+            <div class="info-label">Preflight Summary</div>
+            <div class="info-value" id="pf-summary" style="font-family:inherit; color:var(--text);">Connect a wallet to load balances and route checks.</div>
+        </div>
+
+        <div class="form-actions" style="margin-bottom:14px;">
+            <button class="btn btn-accent btn-sm" id="refresh-balances-btn" onclick="loadPortfolioBalances()">Refresh Balances</button>
+            <span class="badge badge-info" id="portfolio-chain-badge">View chain: Ethereum</span>
+        </div>
+
+        <div class="inventory-list" id="portfolio-list">
+            <div class="wallet-info-card">
+                <div class="info-label">Portfolio</div>
+                <div class="info-value" id="portfolio-placeholder" style="font-family:inherit; color:var(--muted);">Balances will appear here after wallet connection.</div>
+            </div>
+        </div>
+
+        <div class="tx-result" id="portfolio-result"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 3.75 — SIGNAL + NETWORK RELIABILITY
+    ════════════════════════════════════════════════════════════════════ -->
+    <section class="panel workflow-stage" data-stage="6">
+        <div class="panel-title">📡 Signal &amp; Network Reliability</div>
+        <p style="color:var(--muted); font-size:.86rem; margin-bottom:16px; line-height:1.6;">
+            Transaction success depends on transport quality. Use this panel to monitor WebSocket signal flow,
+            REST reachability, and endpoint latency before critical payout or treasury operations.
+        </p>
+
+        <div class="preflight-grid" style="margin-bottom:14px;">
+            <div class="preflight-card">
+                <div class="preflight-label">Signal Bus</div>
+                <div class="preflight-value" id="sig-conn-state">Disconnected</div>
+            </div>
+            <div class="preflight-card">
+                <div class="preflight-label">Events Received</div>
+                <div class="preflight-value" id="sig-events-count">0</div>
+            </div>
+            <div class="preflight-card">
+                <div class="preflight-label">Last Event</div>
+                <div class="preflight-value" id="sig-last-event">—</div>
+            </div>
+            <div class="preflight-card">
+                <div class="preflight-label">REST Probe</div>
+                <div class="preflight-value" id="sig-rest-latency">Not tested</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="sig-ws-url">Signal Bus WebSocket URL</label>
+            <input type="text" class="form-input" id="sig-ws-url" value="ws://127.0.0.1:8790" aria-label="Signal bus WebSocket URL">
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="sig-rest-url">Signals REST URL</label>
+            <input type="text" class="form-input" id="sig-rest-url" value="http://127.0.0.1:8788/api/signals" aria-label="Signals REST URL">
+        </div>
+
+        <div class="form-actions" style="margin-bottom:14px;">
+            <button class="btn btn-accent btn-sm" onclick="connectSignalMonitor()">Connect Signal Bus</button>
+            <button class="btn btn-ghost btn-sm" onclick="disconnectSignalMonitor()">Disconnect</button>
+            <button class="btn btn-purple btn-sm" onclick="probeSignalEndpoints()">Probe Endpoints</button>
+        </div>
+
+        <div class="signal-feed" id="signal-feed">
+            <div class="signal-row"><span class="signal-ts">—</span><span class="signal-msg">Waiting for signal traffic…</span></div>
+        </div>
+
+        <div class="tx-result" id="signal-result"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 3.9 — MULTI-RAIL ORCHESTRATION CANVAS
+    ════════════════════════════════════════════════════════════════════ -->
+    <section class="panel workflow-stage" data-stage="7">
+        <div class="panel-title">🧠 Multi-Rail Orchestration Canvas</div>
+        <p style="color:var(--muted); font-size:.86rem; margin-bottom:16px; line-height:1.6;">
+            Superalgos-style workspace logic adapted for Nexus: graph-first orchestration, layered rail status,
+            and action routing across crypto and traditional settlement domains.
+        </p>
+
+        <div class="rail-canvas">
+            <svg class="rail-svg" viewBox="0 0 900 230" aria-label="Multi-rail orchestration graph">
+                <g stroke="rgba(148,163,184,.28)" stroke-width="2" fill="none">
+                    <path d="M120 60 C220 60, 260 70, 340 78" />
+                    <path d="M120 60 C210 42, 260 36, 340 32" />
+                    <path d="M120 60 C210 90, 260 120, 340 124" />
+                    <path d="M420 32 C520 40, 560 50, 640 60" />
+                    <path d="M420 78 C520 80, 560 80, 640 80" />
+                    <path d="M420 124 C520 116, 560 102, 640 98" />
+                    <path d="M700 80 C760 80, 790 92, 840 112" />
+                    <path d="M700 80 C760 80, 790 68, 840 46" />
+                </g>
+
+                <g class="rail-node" onclick="selectRailNode('core')">
+                    <rect x="30" y="40" width="90" height="40" rx="10" fill="rgba(34,197,94,.2)" stroke="rgba(34,197,94,.65)" />
+                    <text x="75" y="65" text-anchor="middle" fill="#86efac" font-size="12" font-weight="700">Core UI</text>
+                </g>
+
+                <g class="rail-node" onclick="selectRailNode('evm')">
+                    <rect x="340" y="16" width="80" height="32" rx="9" fill="rgba(56,189,248,.18)" stroke="rgba(56,189,248,.65)" />
+                    <text x="380" y="36" text-anchor="middle" fill="#7dd3fc" font-size="11" font-weight="700">EVM</text>
+                </g>
+                <g class="rail-node" onclick="selectRailNode('ethereum')">
+                    <rect x="340" y="62" width="80" height="32" rx="9" fill="rgba(56,189,248,.18)" stroke="rgba(56,189,248,.65)" />
+                    <text x="380" y="82" text-anchor="middle" fill="#7dd3fc" font-size="11" font-weight="700">Ethereum</text>
+                </g>
+                <g class="rail-node" onclick="selectRailNode('polygon')">
+                    <rect x="340" y="108" width="80" height="32" rx="9" fill="rgba(56,189,248,.18)" stroke="rgba(56,189,248,.65)" />
+                    <text x="380" y="128" text-anchor="middle" fill="#7dd3fc" font-size="11" font-weight="700">Polygon</text>
+                </g>
+
+                <g class="rail-node" onclick="selectRailNode('bitcoin')">
+                    <rect x="640" y="44" width="86" height="32" rx="9" fill="rgba(245,158,11,.2)" stroke="rgba(245,158,11,.7)" />
+                    <text x="683" y="64" text-anchor="middle" fill="#fcd34d" font-size="11" font-weight="700">Bitcoin</text>
+                </g>
+                <g class="rail-node" onclick="selectRailNode('exchange')">
+                    <rect x="640" y="82" width="86" height="32" rx="9" fill="rgba(167,139,250,.2)" stroke="rgba(167,139,250,.7)" />
+                    <text x="683" y="102" text-anchor="middle" fill="#c4b5fd" font-size="11" font-weight="700">Exchange</text>
+                </g>
+
+                <g class="rail-node" onclick="selectRailNode('wire')">
+                    <rect x="840" y="96" width="50" height="30" rx="8" fill="rgba(251,113,133,.18)" stroke="rgba(251,113,133,.68)" />
+                    <text x="865" y="115" text-anchor="middle" fill="#fda4af" font-size="10" font-weight="700">Wire</text>
+                </g>
+                <g class="rail-node" onclick="selectRailNode('banking')">
+                    <rect x="840" y="28" width="50" height="30" rx="8" fill="rgba(34,197,94,.16)" stroke="rgba(34,197,94,.7)" />
+                    <text x="865" y="47" text-anchor="middle" fill="#86efac" font-size="10" font-weight="700">Bank</text>
+                </g>
+                <g class="rail-node" onclick="selectRailNode('atm')">
+                    <rect x="840" y="160" width="50" height="30" rx="8" fill="rgba(245,158,11,.16)" stroke="rgba(245,158,11,.7)" />
+                    <text x="865" y="179" text-anchor="middle" fill="#fcd34d" font-size="10" font-weight="700">ATM</text>
+                </g>
+            </svg>
+        </div>
+
+        <div class="wallet-info-card" style="margin-bottom:12px;">
+            <div class="info-label">Rail Inspector</div>
+            <div class="info-value" id="rail-inspector" style="font-family:inherit; color:var(--text);">Select a node on the canvas to inspect routing intent, technical scope, and operational posture.</div>
+        </div>
+
+        <div class="rail-grid" id="rail-grid"></div>
+
+        <div class="form-actions" style="margin-top:12px;">
+            <button class="btn btn-accent btn-sm" onclick="setRailViewMode('operations')">Operations</button>
+            <button class="btn btn-ghost btn-sm" onclick="setRailViewMode('strategy')">Strategy</button>
+            <button class="btn btn-purple btn-sm" onclick="setRailViewMode('execution')">Execution</button>
+        </div>
+
+        <div class="tx-result" id="rail-result"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 4 — KECCAK256 / MERKLE HELPERS
+    ════════════════════════════════════════════════════════════════════ -->
+    <section class="panel workflow-stage" data-stage="8">
+        <div class="panel-title">🔐 Keccak256 &amp; Merkle Leaf Helper</div>
+
+        <p style="color:var(--muted); font-size:.9rem; margin-bottom:22px;">
+            Compute <code>keccak256</code> leaves consistent with Solidity contract patterns used in this repo.
+            Contracts use <code>keccak256(abi.encodePacked(value))</code> for single-value hashing
+            (e.g. endpoint names, title strings). For Merkle allowlists use double-leaf encoding:
+            <code>keccak256(abi.encodePacked(keccak256(abi.encodePacked(address))))</code>.
+        </p>
+
+        <!-- Encoding selector -->
+        <div class="encoding-row">
+            <button class="btn btn-ghost btn-sm active-enc" id="enc-packed" onclick="setEncoding('packed')">
+                abi.encodePacked (single)
+            </button>
+            <button class="btn btn-ghost btn-sm" id="enc-encode" onclick="setEncoding('encode')">
+                abi.encode (padded 32-byte)
+            </button>
+            <button class="btn btn-ghost btn-sm" id="enc-double" onclick="setEncoding('double')">
+                Double-hash Merkle leaf
+            </button>
+        </div>
+
+        <!-- Input -->
+        <div class="form-group">
+            <label class="form-label" for="keccak-input">Input value</label>
+            <input type="text"
+                   class="form-input"
+                   id="keccak-input"
+                   placeholder="0xAddress or any string">
+            <p class="form-hint">
+                Enter an Ethereum address or arbitrary string.
+                Address inputs are checksummed automatically.
+            </p>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="computeKeccak()">Compute Hash</button>
+
+        <div class="mono-result" id="keccak-result">
+— result will appear here —
+        </div>
+
+        <!-- Accordion: Proof placeholder -->
+        <div style="margin-top:20px;">
+            <div class="accordion-header" onclick="toggleAccordion('merkle-acc')">
+                <span>🌿 Merkle Proof Placeholder</span>
+                <span id="merkle-acc-arrow">▸</span>
+            </div>
+            <div class="accordion-body" id="merkle-acc">
+                <p style="color:var(--muted); font-size:.88rem; margin-bottom:14px;">
+                    Paste a JSON array of proof siblings (as hex strings) and the leaf
+                    to verify membership against a root.
+                </p>
+                <div class="form-group">
+                    <label class="form-label">Merkle Root (bytes32)</label>
+                    <input type="text" class="form-input" id="merkle-root" placeholder="0x…">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Leaf (bytes32 — use hash result above)</label>
+                    <input type="text" class="form-input" id="merkle-leaf" placeholder="0x…">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Proof Siblings (JSON array of bytes32)</label>
+                    <input type="text" class="form-input" id="merkle-proof"
+                           placeholder='["0xabc…","0xdef…"]'>
+                </div>
+                <button class="btn btn-purple btn-sm" onclick="verifyMerkle()">Verify Proof</button>
+                <div class="mono-result" id="merkle-result">— result will appear here —</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 5 — DATA SOVEREIGNTY & REPO FABRIC
+    ════════════════════════════════════════════════════════════════════ -->
+    <section class="panel workflow-stage" data-stage="9">
+        <div class="panel-title">🗂 DAO Data Sovereignty Fabric</div>
+        <p style="color:var(--muted); font-size:.86rem; margin-bottom:16px; line-height:1.6;">
+            Canonical source is <strong>FuzzysTodd/The-Nexus-Protocol-Token-DOA</strong>. Register local mirrors,
+            gist references, and Codespace artifacts as governed inputs, with trust class and ownership notes.
+        </p>
+
+        <div class="preflight-grid" style="margin-bottom:14px;">
+            <div class="preflight-card">
+                <div class="preflight-label">Canonical Repo</div>
+                <div class="preflight-value" id="ds-canonical">FuzzysTodd/The-Nexus-Protocol-Token-DOA</div>
+            </div>
+            <div class="preflight-card">
+                <div class="preflight-label">Owner Authority</div>
+                <div class="preflight-value">@FuzzysTodd</div>
+            </div>
+            <div class="preflight-card">
+                <div class="preflight-label">Registered Sources</div>
+                <div class="preflight-value" id="ds-count">0</div>
+            </div>
+            <div class="preflight-card">
+                <div class="preflight-label">Policy</div>
+                <div class="preflight-value">No private keys, no credential secrets</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="ds-type">Source Type</label>
+            <select class="form-select" id="ds-type" aria-label="Data source type">
+                <option value="canonical-repo">Canonical Repo</option>
+                <option value="local-copy">Local Copy</option>
+                <option value="github-gist">GitHub Gist</option>
+                <option value="codespace-artifact">Codespace Artifact</option>
+                <option value="ops-report">Ops Report</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="ds-locator">Locator (URL or Path)</label>
+            <input type="text" class="form-input" id="ds-locator" placeholder="https://... or C:/..." aria-label="Data source locator">
+        </div>
+
+        <div class="preflight-grid" style="margin-bottom:12px;">
+            <div>
+                <label class="form-label" for="ds-trust">Trust Class</label>
+                <select class="form-select" id="ds-trust" aria-label="Trust class">
+                    <option value="owner-authoritative">Owner Authoritative</option>
+                    <option value="repo-verified">Repo Verified</option>
+                    <option value="operator-local">Operator Local</option>
+                    <option value="external-reference">External Reference</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="ds-scope">Scope</label>
+                <input type="text" class="form-input" id="ds-scope" placeholder="governance / treasury / strategy" aria-label="Source scope">
+            </div>
+        </div>
+
+        <div class="preflight-grid" style="margin-bottom:12px;">
+            <div>
+                <label class="form-label" for="ds-added-by">Added By</label>
+                <input type="text" class="form-input" id="ds-added-by" value="@FuzzysTodd" aria-label="Added by user or system">
+            </div>
+            <div>
+                <label class="form-label" for="ds-validation">Validation Status</label>
+                <select class="form-select" id="ds-validation" aria-label="Validation status">
+                    <option value="verified">Verified</option>
+                    <option value="pending">Pending</option>
+                    <option value="needs-review">Needs Review</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="ds-hash">Provenance Hash (sha256 hex, optional)</label>
+                <input type="text" class="form-input" id="ds-hash" placeholder="64-char hex hash" aria-label="Provenance hash">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="ds-notes">Notes (IP, governance, distribution policy)</label>
+            <input type="text" class="form-input" id="ds-notes" placeholder="Owner IP, DAO policy, distribution role" aria-label="Source notes">
+        </div>
+
+        <div class="form-actions" style="margin-bottom:14px;">
+            <button class="btn btn-accent btn-sm" onclick="addDataSourceEntry()">Add Source</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportDataSourceManifest()">Export Manifest</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetDataSourceManifest()">Reset To Canonical</button>
+        </div>
+
+        <div class="tx-result" id="ds-result"></div>
+
+        <div id="ds-table-wrap">
+            <table class="cred-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Locator</th>
+                        <th>Trust</th>
+                        <th>Validation</th>
+                        <th>Added By</th>
+                        <th>Added At</th>
+                        <th>Hash</th>
+                        <th>Scope</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="ds-tbody"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel workflow-stage" data-stage="10">
+        <div class="panel-title">🤖 Nexus AI Expert Console</div>
+        <p style="color:var(--muted); font-size:.86rem; margin-bottom:14px; line-height:1.6;">
+            Expert operator assistant for treasury, governance, and rail execution. Uses live wallet,
+            signal reliability, token profiles, and source trust metadata to recommend the next safe action.
+        </p>
+
+        <div class="form-group">
+            <label class="form-label" for="ai-objective">Objective</label>
+            <input type="text" class="form-input" id="ai-objective" placeholder="e.g. move USDC to execution rail with high reliability" aria-label="AI objective">
+        </div>
+
+        <div class="form-actions" style="margin-bottom:12px;">
+            <button class="btn btn-accent btn-sm" onclick="runAiExpertAnalysis()">Run Expert Analysis</button>
+        </div>
+
+        <div class="tx-result" id="ai-expert-result"></div>
+    </section>
+
+</main>
+
+<!-- ethers.js v5 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"
+        integrity="sha512-FDcVY+g7vc5CXANbrTSg1K5qLyriCsGDYCE02Li1tXEYdNQPvLPHNE+rT2Mjei8N7fZbe0WLhw27j2SrGRpdMg=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+
+<!-- Coinbase Wallet SDK v4 (optional — loaded dynamically for SDK fallback) -->
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// GLOBAL CONSTANTS
+// ─────────────────────────────────────────────────────────────────────────────
+const APP_NAME  = "Nexus Protocol DAO";
+const CB_HANDLE = "tenkrypt.cb.id";
+const CB_SDK_CDN = "https://cdnjs.cloudflare.com/ajax/libs/coinbase-wallet-sdk/4.0.4/index.umd.js";
+const DEFAULT_SIGNAL_WS_URL = "ws://127.0.0.1:8790";
+const DEFAULT_SIGNAL_REST_URL = "http://127.0.0.1:8788/api/signals";
+const TOKEN_PROFILE_STORAGE_KEY = "nexus_token_credential_profiles_v1";
+const WORKFLOW_MODE_KEY = "nexus_web3_workflow_mode";
+const WORKFLOW_STAGE_KEY = "nexus_web3_workflow_stage";
+const DATA_SOURCE_STORAGE_KEY = "nexus_data_source_manifest_v1";
+const CANONICAL_REPO = "FuzzysTodd/The-Nexus-Protocol-Token-DOA";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NETWORK REGISTRY
+// Mirrors network-registry.json — kept inline for zero-build, zero-fetch usage.
+// ─────────────────────────────────────────────────────────────────────────────
+const REGISTRY = {
+    networks: {
+        1: {
+            chainId: 1,
+            name: "Ethereum Mainnet",
+            shortName: "eth",
+            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+            blockExplorerUrl: "https://etherscan.io",
+            tokens: {
+                ETH:  { symbol: "ETH",  name: "Ether",              address: "0x0000000000000000000000000000000000000000", decimals: 18, native: true },
+                USDC: { symbol: "USDC", name: "USD Coin",            address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", decimals: 6  },
+                USDT: { symbol: "USDT", name: "Tether USD",          address: "0xdAC17F958D2ee523a2206206994597C13D831ec7", decimals: 6  },
+                WETH: { symbol: "WETH", name: "Wrapped Ether",       address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", decimals: 18 },
+                DAI:  { symbol: "DAI",  name: "Dai Stablecoin",      address: "0x6B175474E89094C44Da98b954EedeAC495271d0F", decimals: 18 },
+                NGTT: { symbol: "NGTT", name: "Nexus Game Theory Token", address: "0xeCE999c86452c573Adfdd7F0C9226e673477973a", decimals: 18 }
+            }
+        },
+        8453: {
+            chainId: 8453,
+            name: "Base Mainnet",
+            shortName: "base",
+            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+            blockExplorerUrl: "https://basescan.org",
+            tokens: {
+                ETH:   { symbol: "ETH",   name: "Ether",         address: "0x0000000000000000000000000000000000000000", decimals: 18, native: true },
+                USDC:  { symbol: "USDC",  name: "USD Coin",       address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", decimals: 6  },
+                WETH:  { symbol: "WETH",  name: "Wrapped Ether",  address: "0x4200000000000000000000000000000000000006", decimals: 18 },
+                DAI:   { symbol: "DAI",   name: "Dai Stablecoin", address: "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb", decimals: 18 },
+                USDbC: { symbol: "USDbC", name: "USD Base Coin",  address: "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA", decimals: 6  }
+            }
+        },
+        56: {
+            chainId: 56,
+            name: "BNB Smart Chain",
+            shortName: "bnb",
+            nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
+            blockExplorerUrl: "https://bscscan.com",
+            tokens: {
+                BNB:  { symbol: "BNB",  name: "BNB",           address: "0x0000000000000000000000000000000000000000", decimals: 18, native: true },
+                WBNB: { symbol: "WBNB", name: "Wrapped BNB",   address: "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", decimals: 18 },
+                USDT: { symbol: "USDT", name: "Tether USD",    address: "0x55d398326f99059fF775485246999027B3197955", decimals: 18 },
+                USDC: { symbol: "USDC", name: "USD Coin",      address: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", decimals: 18 },
+                BUSD: { symbol: "BUSD", name: "Binance USD",   address: "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56", decimals: 18 }
+            }
+        }
+    }
+};
+
+const SUPPORTED_CHAINS = new Set(Object.keys(REGISTRY.networks).map(Number));
+
+// ERC-20 minimal ABI (transfer + decimals + symbol)
+const ERC20_ABI = [
+    "function transfer(address to, uint256 amount) returns (bool)",
+    "function decimals() view returns (uint8)",
+    "function symbol() view returns (string)",
+    "function balanceOf(address owner) view returns (uint256)"
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+let provider     = null;
+let signer       = null;
+let account      = null;
+let chainId      = null;
+let rawProvider  = null;
+let walletType   = null;
+let _connecting  = false;   // guard against recursive reconnect
+let _viewChain   = 1;       // currently viewed network in registry
+let _portfolio   = {};
+let _signalSocket = null;
+let _signalCount = 0;
+let _lastSignalAt = null;
+let _tokenProfiles = loadTokenCredentialProfiles();
+let _workflowMode = "open";
+let _workflowStage = 1;
+let _railViewMode = "operations";
+let _dataSourceManifest = loadDataSourceManifest();
+
+const RAILS = {
+    core: { name: "Core UI", scope: "Control plane", status: "live", notes: "Workflow, policy, signaling, and execution orchestration" },
+    evm: { name: "EVM", scope: "Chain abstraction", status: "live", notes: "Shared ABI, signing, and transaction semantics" },
+    ethereum: { name: "Ethereum", scope: "Mainnet settlement", status: "live", notes: "Primary governance and treasury domain" },
+    polygon: { name: "Polygon", scope: "Scaled EVM rail", status: "planned", notes: "High-throughput execution, low-fee routing profile" },
+    bitcoin: { name: "Bitcoin", scope: "Non-EVM reserve rail", status: "planned", notes: "Conservative custody and bridge policy layer" },
+    exchange: { name: "Exchange", scope: "Liquidity and conversion", status: "partial", notes: "Route through approved venues and policy thresholds" },
+    banking: { name: "Banking", scope: "Fiat account settlement", status: "policy", notes: "Human approval and compliance envelope" },
+    wire: { name: "Wire", scope: "Bank transfer rail", status: "policy", notes: "Manual control and verifiable destination checks" },
+    atm: { name: "ATM", scope: "Physical cash rail", status: "policy", notes: "Operator-guided flow with strict destination controls" }
+};
+
+function getWorkflowStageCount() {
+    return document.querySelectorAll(".workflow-stage").length || 1;
+}
+
+function applyWorkflowMode() {
+    document.body.classList.toggle("mode-guided", _workflowMode === "guided");
+    document.body.classList.toggle("mode-open", _workflowMode === "open");
+
+    const total = getWorkflowStageCount();
+    const stage = Math.min(Math.max(1, _workflowStage), total);
+    _workflowStage = stage;
+
+    document.querySelectorAll(".workflow-stage").forEach((el) => {
+        const current = Number(el.dataset.stage || "1");
+        const active = _workflowMode === "open" || current <= stage;
+        el.classList.toggle("is-active", active);
+    });
+
+    const modeChip = document.getElementById("wf-mode-chip");
+    const stageChip = document.getElementById("wf-stage-chip");
+    if (modeChip) modeChip.textContent = "Mode: " + (_workflowMode === "guided" ? "Guided" : "Open");
+    if (stageChip) stageChip.textContent = `Stage ${stage}/${total}`;
+}
+
+function setWorkflowMode(mode) {
+    _workflowMode = mode === "guided" ? "guided" : "open";
+    localStorage.setItem(WORKFLOW_MODE_KEY, _workflowMode);
+    applyWorkflowMode();
+}
+
+function stepWorkflow(delta) {
+    const total = getWorkflowStageCount();
+    _workflowStage = Math.min(total, Math.max(1, _workflowStage + delta));
+    localStorage.setItem(WORKFLOW_STAGE_KEY, String(_workflowStage));
+    applyWorkflowMode();
+    if (_workflowMode === "guided") focusCurrentWorkflowStage();
+}
+
+function focusCurrentWorkflowStage() {
+    const stageEl = document.querySelector(`.workflow-stage[data-stage="${_workflowStage}"]`);
+    if (stageEl) {
+        stageEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+}
+
+function getRailStatusBadgeClass(status) {
+    if (status === "live") return "badge-connected";
+    if (status === "partial") return "badge-info";
+    if (status === "planned") return "badge-warn";
+    return "badge-disconnected";
+}
+
+function renderRailGrid() {
+    const grid = document.getElementById("rail-grid");
+    if (!grid) return;
+
+    grid.innerHTML = Object.values(RAILS).map((rail) => {
+        const modeHint = _railViewMode === "operations"
+            ? "Ops focus: reliability, latency, and approvals"
+            : _railViewMode === "strategy"
+                ? "Strategy focus: route selection and capital posture"
+                : "Execution focus: transaction readiness and handoff";
+        return `
+            <div class="rail-card">
+                <div class="rail-card-title">${rail.name} <span class="badge ${getRailStatusBadgeClass(rail.status)}" style="margin-left:6px;">${rail.status}</span></div>
+                <div class="rail-card-meta">
+                    Scope: ${rail.scope}<br>
+                    ${rail.notes}<br>
+                    ${modeHint}
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+function setRailResult(cls, text) {
+    const el = document.getElementById("rail-result");
+    if (!el) return;
+    el.className = "tx-result " + cls;
+    el.textContent = text;
+    el.style.display = "block";
+}
+
+function setRailViewMode(mode) {
+    _railViewMode = ["operations", "strategy", "execution"].includes(mode) ? mode : "operations";
+    renderRailGrid();
+    setRailResult("info", "Rail canvas mode set to " + _railViewMode + ".");
+}
+
+function selectRailNode(key) {
+    const rail = RAILS[key];
+    if (!rail) return;
+    const inspector = document.getElementById("rail-inspector");
+    if (inspector) {
+        inspector.textContent = `${rail.name} · ${rail.scope} · status=${rail.status}. ${rail.notes}`;
+    }
+}
+
+function makeDefaultDataSourceManifest() {
+    return {
+        version: 1,
+        canonicalRepo: CANONICAL_REPO,
+        owner: "@FuzzysTodd",
+        sources: [
+            {
+                type: "canonical-repo",
+                locator: "https://github.com/FuzzysTodd/The-Nexus-Protocol-Token-DOA",
+                trust: "owner-authoritative",
+                scope: "full-system",
+                notes: "Primary source of truth for governance, docs, contracts, and operations",
+                metadata: {
+                    validationStatus: "verified",
+                    addedBy: "@FuzzysTodd",
+                    addedAt: new Date().toISOString(),
+                    provenanceHash: ""
+                }
+            }
+        ]
+    };
+}
+
+function isLikelySha256Hex(value) {
+    return /^[a-fA-F0-9]{64}$/.test(value);
+}
+
+function loadDataSourceManifest() {
+    try {
+        const raw = localStorage.getItem(DATA_SOURCE_STORAGE_KEY);
+        if (!raw) return makeDefaultDataSourceManifest();
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.sources)) {
+            return makeDefaultDataSourceManifest();
+        }
+        return parsed;
+    } catch (_) {
+        return makeDefaultDataSourceManifest();
+    }
+}
+
+function persistDataSourceManifest() {
+    localStorage.setItem(DATA_SOURCE_STORAGE_KEY, JSON.stringify(_dataSourceManifest));
+}
+
+function setDsResult(cls, text) {
+    const el = document.getElementById("ds-result");
+    if (!el) return;
+    el.className = "tx-result " + cls;
+    el.textContent = text;
+    el.style.display = "block";
+}
+
+function renderDataSourceManifest() {
+    const canonical = document.getElementById("ds-canonical");
+    const count = document.getElementById("ds-count");
+    const tbody = document.getElementById("ds-tbody");
+    if (!tbody) return;
+
+    if (canonical) canonical.textContent = _dataSourceManifest.canonicalRepo || CANONICAL_REPO;
+    if (count) count.textContent = String((_dataSourceManifest.sources || []).length);
+
+    const rows = (_dataSourceManifest.sources || []).map((src) => `
+        <tr>
+            <td>${src.type || "—"}</td>
+            <td>${src.locator || "—"}</td>
+            <td>${src.trust || "—"}</td>
+            <td>${src.metadata?.validationStatus || "—"}</td>
+            <td>${src.metadata?.addedBy || "—"}</td>
+            <td>${src.metadata?.addedAt || "—"}</td>
+            <td>${src.metadata?.provenanceHash || "—"}</td>
+            <td>${src.scope || "—"}</td>
+            <td>${src.notes || "—"}</td>
+        </tr>
+    `);
+
+    tbody.innerHTML = rows.length
+        ? rows.join("")
+        : "<tr><td colspan='9' style='color:var(--muted); padding:12px;'>No data sources registered yet.</td></tr>";
+}
+
+function addDataSourceEntry() {
+    const type = document.getElementById("ds-type").value;
+    const locator = document.getElementById("ds-locator").value.trim();
+    const trust = document.getElementById("ds-trust").value;
+    const scope = document.getElementById("ds-scope").value.trim();
+    const notes = document.getElementById("ds-notes").value.trim();
+    const addedBy = document.getElementById("ds-added-by").value.trim();
+    const validationStatus = document.getElementById("ds-validation").value;
+    const provenanceHash = document.getElementById("ds-hash").value.trim();
+
+    if (!locator) {
+        setDsResult("error", "⚠ Locator is required.");
+        return;
+    }
+    if (/private key|mnemonic|seed phrase/i.test(locator + " " + notes)) {
+        setDsResult("error", "❌ Secrets are not allowed in source manifests.");
+        return;
+    }
+    if (!addedBy) {
+        setDsResult("error", "⚠ Added By is required.");
+        return;
+    }
+    if (provenanceHash && !isLikelySha256Hex(provenanceHash)) {
+        setDsResult("error", "⚠ Provenance hash must be a 64-character SHA-256 hex value.");
+        return;
+    }
+
+    _dataSourceManifest.sources.push({
+        type,
+        locator,
+        trust,
+        scope: scope || "general",
+        notes,
+        metadata: {
+            validationStatus,
+            addedBy,
+            addedAt: new Date().toISOString(),
+            provenanceHash
+        }
+    });
+
+    persistDataSourceManifest();
+    renderDataSourceManifest();
+    setDsResult("success", "✔ Data source entry registered.");
+}
+
+function resetDataSourceManifest() {
+    _dataSourceManifest = makeDefaultDataSourceManifest();
+    persistDataSourceManifest();
+    renderDataSourceManifest();
+    setDsResult("info", "Manifest reset to canonical repository baseline.");
+}
+
+function exportDataSourceManifest() {
+    const payload = JSON.stringify(_dataSourceManifest, null, 2);
+    const blob = new Blob([payload], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "nexus-dao-data-sources.manifest.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    setDsResult("info", "Manifest exported as JSON.");
+}
+
+function setAiExpertResult(cls, text) {
+    const el = document.getElementById("ai-expert-result");
+    if (!el) return;
+    el.className = "tx-result " + cls;
+    el.textContent = text;
+    el.style.display = "block";
+}
+
+function runAiExpertAnalysis() {
+    const objective = document.getElementById("ai-objective")?.value.trim() || "general operation";
+    const manifestSources = _dataSourceManifest?.sources || [];
+    const verifiedSources = manifestSources.filter((s) => s.metadata?.validationStatus === "verified").length;
+    const totalSources = manifestSources.length;
+    const unverified = totalSources - verifiedSources;
+    const signalStatus = (_signalSocket && _signalSocket.readyState === WebSocket.OPEN) ? "live" : "degraded";
+    const activeChainName = REGISTRY.networks[_state.chainId]?.name || String(_state.chainId || "unknown");
+    const signalSummary = `${_signalCount} events`;
+
+    let posture = "balanced";
+    if (signalStatus !== "live" || unverified > 0) posture = "defensive";
+    if (signalStatus === "live" && unverified === 0 && _state.connected) posture = "execution-ready";
+
+    const recommendation = [
+        `Objective: ${objective}.`,
+        `Posture: ${posture}.`,
+        `Active chain: ${activeChainName}.`,
+        `Signal: ${signalStatus} (${signalSummary}).`,
+        `Source trust: ${verifiedSources}/${totalSources} verified.`,
+        posture === "defensive"
+            ? "Action: verify pending sources and restore signal stability before high-value execution."
+            : "Action: proceed with preflight-confirmed route and monitor signal feed during settlement."
+    ].join(" ");
+
+    setAiExpertResult(posture === "defensive" ? "info" : "success", recommendation);
+}
+
+function loadTokenCredentialProfiles() {
+    try {
+        const raw = localStorage.getItem(TOKEN_PROFILE_STORAGE_KEY);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (_) {
+        return {};
+    }
+}
+
+function persistTokenCredentialProfiles() {
+    localStorage.setItem(TOKEN_PROFILE_STORAGE_KEY, JSON.stringify(_tokenProfiles));
+}
+
+function getResolvedTokenMap(chain) {
+    const baseTokens = (REGISTRY.networks[chain] && REGISTRY.networks[chain].tokens) || {};
+    const customTokens = _tokenProfiles[String(chain)] || {};
+    return { ...baseTokens, ...customTokens };
+}
+
+function getResolvedToken(chain, symbol) {
+    return getResolvedTokenMap(chain)[symbol];
+}
+
+function renderTokenCredentialTable() {
+    const tbody = document.getElementById("cred-tbody");
+    if (!tbody) return;
+
+    const rows = [];
+    Object.entries(_tokenProfiles).forEach(([chain, symbols]) => {
+        const chainName = REGISTRY.networks[Number(chain)]?.name || `Chain ${chain}`;
+        Object.entries(symbols || {}).forEach(([symbol, profile]) => {
+            rows.push(`
+                <tr>
+                    <td>${chainName}</td>
+                    <td>${symbol}</td>
+                    <td>${profile.native ? "NATIVE" : (profile.address || "—")}</td>
+                    <td>${profile.decimals}</td>
+                    <td>${profile.classification || "custom"}</td>
+                    <td>${profile.verifyMode || "manual-reviewed"}</td>
+                    <td>${profile.notes || "—"}</td>
+                </tr>
+            `);
+        });
+    });
+
+    tbody.innerHTML = rows.length
+        ? rows.join("")
+        : "<tr><td colspan='7' style='color:var(--muted); padding:12px;'>No custom token profiles yet. Base registry tokens are active by default.</td></tr>";
+}
+
+function setCredResult(cls, text) {
+    const el = document.getElementById("cred-result");
+    el.className = "tx-result " + cls;
+    el.textContent = text;
+    el.style.display = "block";
+}
+
+function saveTokenCredentialProfile() {
+    const chain = Number(document.getElementById("cred-chain").value);
+    const symbolRaw = document.getElementById("cred-symbol").value.trim();
+    const addrRaw = document.getElementById("cred-address").value.trim();
+    const decimalsRaw = document.getElementById("cred-decimals").value;
+    const classification = document.getElementById("cred-class").value;
+    const verifyMode = document.getElementById("cred-verify").value;
+    const notes = document.getElementById("cred-notes").value.trim();
+
+    const symbol = symbolRaw.toUpperCase();
+    if (!symbol || !/^[A-Z0-9_]{2,20}$/.test(symbol)) {
+        setCredResult("error", "⚠ Symbol must be 2-20 chars (A-Z, 0-9, underscore).");
+        return;
+    }
+
+    const decimals = Number(decimalsRaw);
+    if (!Number.isInteger(decimals) || decimals < 0 || decimals > 36) {
+        setCredResult("error", "⚠ Decimals must be an integer between 0 and 36.");
+        return;
+    }
+
+    const native = addrRaw.toUpperCase() === "NATIVE";
+    if (!native && !ethers.utils.isAddress(addrRaw)) {
+        setCredResult("error", "⚠ Address must be a valid 0x address or the keyword NATIVE.");
+        return;
+    }
+
+    if (!_tokenProfiles[String(chain)]) _tokenProfiles[String(chain)] = {};
+    _tokenProfiles[String(chain)][symbol] = {
+        symbol,
+        name: symbol,
+        address: native ? "0x0000000000000000000000000000000000000000" : ethers.utils.getAddress(addrRaw),
+        decimals,
+        native,
+        classification,
+        verifyMode,
+        notes
+    };
+
+    persistTokenCredentialProfiles();
+    renderTokenCredentialTable();
+    renderRegistryTable(getActiveChainId());
+    refreshSendTokenList();
+    loadPortfolioBalances();
+    setCredResult("success", `✔ Saved profile for ${symbol} on chain ${chain}.`);
+}
+
+function clearTokenCredentialProfiles() {
+    _tokenProfiles = {};
+    persistTokenCredentialProfiles();
+    renderTokenCredentialTable();
+    renderRegistryTable(getActiveChainId());
+    refreshSendTokenList();
+    loadPortfolioBalances();
+    setCredResult("info", "Custom token profiles cleared. Base registry remains active.");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROVIDER SELECTION — AUTO-FALLBACK LOGIC
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Pick the best available provider based on the requested wallet type:
+ *   "auto"     — auto-detect best available
+ *   "metamask" — prefer MetaMask
+ *   "coinbase" — prefer Coinbase Wallet extension → SDK
+ *
+ * Returns { raw, type } or throws with a human-readable message.
+ */
+function selectProvider(type) {
+    const eth = window.ethereum;
+
+    if (type === "metamask") {
+        if (!eth) throw new Error("MetaMask not detected. Install from metamask.io");
+        // Multi-wallet: scan providers array
+        if (Array.isArray(eth.providers)) {
+            const mm = eth.providers.find(p => p.isMetaMask && !p.isCoinbaseWallet);
+            if (mm) return { raw: mm, type: "MetaMask" };
+        }
+        if (eth.isMetaMask) return { raw: eth, type: "MetaMask" };
+        throw new Error("MetaMask not found. Ensure it is installed and enabled.");
+    }
+
+    if (type === "coinbase") {
+        // 1. Direct Coinbase extension reference (works alongside MetaMask)
+        if (window.coinbaseWalletExtension) return { raw: window.coinbaseWalletExtension, type: "Coinbase Wallet (extension)" };
+        // 2. window.ethereum is Coinbase Wallet
+        if (eth && eth.isCoinbaseWallet)    return { raw: eth, type: "Coinbase Wallet (extension)" };
+        // 3. Multi-wallet providers array
+        if (eth && Array.isArray(eth.providers)) {
+            const cb = eth.providers.find(p => p.isCoinbaseWallet);
+            if (cb) return { raw: cb, type: "Coinbase Wallet (extension)" };
+        }
+        // 4. SDK fallback — construct inline without a module bundler
+        if (typeof CoinbaseWalletSDK !== "undefined") {
+            const sdk = new CoinbaseWalletSDK({ appName: APP_NAME, appLogoUrl: "" });
+            return { raw: sdk.makeWeb3Provider({ options: "all" }), type: "Coinbase Wallet (SDK)" };
+        }
+        // 5. Load SDK dynamically then retry
+        throw new Error("LOAD_CB_SDK"); // caller handles this
+    }
+
+    // ── AUTO ──────────────────────────────────────────────────────────────
+    // Strategy: if only one provider → use it; if multiple → prefer MetaMask
+    // then Coinbase; fallback to first; if none → SDK.
+    if (!eth) {
+        // No injected provider at all → try SDK
+        if (typeof CoinbaseWalletSDK !== "undefined") {
+            const sdk = new CoinbaseWalletSDK({ appName: APP_NAME, appLogoUrl: "" });
+            return { raw: sdk.makeWeb3Provider({ options: "all" }), type: "Coinbase Wallet (SDK)" };
+        }
+        throw new Error("No wallet detected. Install MetaMask (metamask.io) or Coinbase Wallet (coinbase.com/wallet).");
+    }
+    if (Array.isArray(eth.providers) && eth.providers.length > 0) {
+        const mm = eth.providers.find(p => p.isMetaMask && !p.isCoinbaseWallet);
+        if (mm) return { raw: mm, type: "MetaMask (auto)" };
+        const cb = eth.providers.find(p => p.isCoinbaseWallet);
+        if (cb) return { raw: cb, type: "Coinbase Wallet (auto)" };
+        return { raw: eth.providers[0], type: "Unknown Wallet (auto)" };
+    }
+    const autoType = eth.isCoinbaseWallet
+        ? "Coinbase Wallet (auto)"
+        : eth.isMetaMask
+            ? "MetaMask (auto)"
+            : "Injected Wallet (auto)";
+    return { raw: eth, type: autoType };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COINBASE SDK DYNAMIC LOADER
+// ─────────────────────────────────────────────────────────────────────────────
+function loadCoinbaseSDK() {
+    return new Promise((resolve, reject) => {
+        if (typeof CoinbaseWalletSDK !== "undefined") { resolve(); return; }
+        const s = document.createElement("script");
+        s.src = CB_SDK_CDN;
+        s.onload  = () => resolve();
+        s.onerror = () => reject(new Error("Failed to load Coinbase Wallet SDK."));
+        document.head.appendChild(s);
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONNECT
+// ─────────────────────────────────────────────────────────────────────────────
+async function connectWallet(type) {
+    if (_connecting) return;
+    _connecting = true;
+    closeWalletPicker();
+    setWalletMsg("info", "⏳ Connecting…");
+
+    try {
+        let sel;
+        try {
+            sel = selectProvider(type);
+        } catch (e) {
+            if (e.message === "LOAD_CB_SDK") {
+                setWalletMsg("info", "⏳ Loading Coinbase Wallet SDK…");
+                await loadCoinbaseSDK();
+                sel = selectProvider(type); // retry after SDK loaded
+            } else {
+                throw e;
+            }
+        }
+
+        // Tear down previous listeners before re-assigning rawProvider
+        if (rawProvider && rawProvider.removeListener) {
+            rawProvider.removeListener("accountsChanged", handleAccountsChanged);
+            rawProvider.removeListener("chainChanged",    handleChainChanged);
+        }
+
+        rawProvider = sel.raw;
+        walletType  = sel.type;
+
+        provider = new ethers.providers.Web3Provider(rawProvider, "any");
+        await provider.send("eth_requestAccounts", []);
+        signer  = provider.getSigner();
+        account = await signer.getAddress();
+
+        const network = await provider.getNetwork();
+        chainId = network.chainId;
+
+        // Attach events (deduplicated)
+        rawProvider.on("accountsChanged", handleAccountsChanged);
+        rawProvider.on("chainChanged",    handleChainChanged);
+
+        updateWalletUI();
+        clearWalletMsg();
+    } catch (err) {
+        setWalletMsg("error", "❌ " + (err.message || String(err)));
+    } finally {
+        _connecting = false;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EVENT HANDLERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function handleAccountsChanged(accounts) {
+    if (_connecting) return;
+    if (!accounts || accounts.length === 0) {
+        disconnectWallet(); return;
+    }
+    _connecting = true;
+    try {
+        provider = new ethers.providers.Web3Provider(rawProvider, "any");
+        signer   = provider.getSigner();
+        account  = await signer.getAddress();
+        const network = await provider.getNetwork();
+        chainId = network.chainId;
+        updateWalletUI();
+    } finally {
+        _connecting = false;
+    }
+}
+
+async function handleChainChanged() {
+    if (_connecting) return;
+    _connecting = true;
+    try {
+        provider = new ethers.providers.Web3Provider(rawProvider, "any");
+        signer   = provider.getSigner();
+        const network = await provider.getNetwork();
+        chainId = network.chainId;
+        updateWalletUI();
+    } finally {
+        _connecting = false;
+    }
+}
+
+function disconnectWallet() {
+    if (rawProvider && rawProvider.removeListener) {
+        rawProvider.removeListener("accountsChanged", handleAccountsChanged);
+        rawProvider.removeListener("chainChanged",    handleChainChanged);
+    }
+    provider = signer = account = rawProvider = walletType = null;
+    chainId = null;
+    updateWalletUI();
+    closeWalletPicker();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UI UPDATES
+// ─────────────────────────────────────────────────────────────────────────────
+function updateWalletUI() {
+    const connected = !!account;
+    const badge     = document.getElementById("status-badge");
+    const grid      = document.getElementById("wallet-info-grid");
+    const connectBtn = document.getElementById("connect-btn");
+
+    if (connected) {
+        badge.className = "badge badge-connected";
+        badge.textContent = "⬤ Connected";
+        grid.style.display = "";
+
+        document.getElementById("info-address").textContent     = account;
+        document.getElementById("info-chain-id").textContent    = chainId;
+        document.getElementById("info-wallet-type").textContent = walletType || "—";
+
+        const netInfo = REGISTRY.networks[chainId];
+        document.getElementById("info-network").textContent =
+            netInfo ? netInfo.name : (chainId ? `Chain ${chainId}` : "—");
+
+        connectBtn.textContent = "🔌 Switch Wallet";
+        document.getElementById("receive-address").textContent = account;
+
+        // Unsupported chain warning
+        const warn = document.getElementById("chain-warn");
+        if (!SUPPORTED_CHAINS.has(chainId)) {
+            warn.style.display = "block";
+            document.getElementById("send-chain-badge").style.display = "inline-flex";
+        } else {
+            warn.style.display = "none";
+            document.getElementById("send-chain-badge").style.display = "none";
+            // Auto-switch registry view to connected chain
+            selectNetworkView(chainId);
+        }
+
+        loadPortfolioBalances();
+    } else {
+        badge.className = "badge badge-disconnected";
+        badge.textContent = "⬤ Disconnected";
+        grid.style.display = "none";
+        connectBtn.textContent = "🔌 Connect Wallet";
+        document.getElementById("receive-address").textContent = "Connect wallet to see your address";
+        document.getElementById("chain-warn").style.display = "none";
+        document.getElementById("send-chain-badge").style.display = "none";
+        _portfolio = {};
+        renderPortfolioBalances();
+    }
+
+    refreshSendTokenList();
+    updateSendPreflight();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WALLET PICKER
+// ─────────────────────────────────────────────────────────────────────────────
+function toggleWalletPicker() {
+    const picker = document.getElementById("wallet-picker");
+    picker.classList.toggle("open");
+}
+function closeWalletPicker() {
+    document.getElementById("wallet-picker").classList.remove("open");
+}
+document.addEventListener("click", e => {
+    const trigger = document.getElementById("wallet-trigger");
+    if (trigger && !trigger.contains(e.target)) closeWalletPicker();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WALLET MESSAGE
+// ─────────────────────────────────────────────────────────────────────────────
+function setWalletMsg(cls, text) {
+    const el = document.getElementById("wallet-msg");
+    el.className = "tx-result " + cls;
+    el.textContent = text;
+    el.style.display = "block";
+}
+function clearWalletMsg() {
+    const el = document.getElementById("wallet-msg");
+    el.style.display = "none";
+    el.className = "tx-result";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NETWORK REGISTRY VIEW
+// ─────────────────────────────────────────────────────────────────────────────
+function selectNetworkView(cid) {
+    _viewChain = Number(cid);
+    document.querySelectorAll(".net-btn").forEach(btn => {
+        btn.classList.toggle("active", Number(btn.dataset.chain) === _viewChain);
+    });
+    renderRegistryTable(_viewChain);
+    refreshSendTokenList();
+    updatePortfolioChainBadge();
+    updateSendPreflight();
+}
+
+function renderRegistryTable(cid) {
+    const netInfo = REGISTRY.networks[cid];
+    const tbody = document.getElementById("registry-tbody");
+    if (!netInfo) { tbody.innerHTML = "<tr><td colspan='4' style='color:var(--muted); padding:14px;'>No data for this chain.</td></tr>"; return; }
+    const resolvedTokens = getResolvedTokenMap(cid);
+
+    tbody.innerHTML = Object.entries(resolvedTokens).map(([sym, tok]) => `
+        <tr>
+            <td><strong>${sym}</strong> <span style="color:var(--muted); font-size:.8rem;">${tok.name}</span></td>
+            <td>${tok.native
+                ? '<span style="color:var(--muted); font-size:.8rem;">Native currency</span>'
+                : `<span class="addr-code">${tok.address}</span>`
+            }</td>
+            <td>${tok.decimals}</td>
+            <td>${tok.native ? "Native" : "ERC-20"}</td>
+        </tr>
+    `).join("");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SEND / RECEIVE
+// ─────────────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("tab-" + tab).classList.add("active");
+    document.querySelectorAll(".tab-btn").forEach(b => {
+        if (b.textContent.toLowerCase().trim() === tab) b.classList.add("active");
+    });
+}
+
+function refreshSendTokenList() {
+    const viewChain = (chainId && SUPPORTED_CHAINS.has(chainId)) ? chainId : _viewChain;
+    const netInfo = REGISTRY.networks[viewChain];
+    const tokenMap = getResolvedTokenMap(viewChain);
+    const sel = document.getElementById("send-token");
+    sel.innerHTML = "";
+
+    if (netInfo) {
+        Object.entries(tokenMap).forEach(([sym, tok]) => {
+            const opt = document.createElement("option");
+            opt.value = sym;
+            opt.textContent = sym + " — " + tok.name;
+            sel.appendChild(opt);
+        });
+    }
+    onTokenChange();
+}
+
+function onTokenChange() {
+    const viewChain = (chainId && SUPPORTED_CHAINS.has(chainId)) ? chainId : _viewChain;
+    const netInfo = REGISTRY.networks[viewChain];
+    const sym = document.getElementById("send-token").value;
+    const hint = document.getElementById("send-token-addr-hint");
+    if (!netInfo || !sym) { hint.textContent = ""; return; }
+    const tok = getResolvedToken(viewChain, sym);
+    if (!tok) { hint.textContent = ""; return; }
+    hint.textContent = tok.native
+        ? "Native " + tok.symbol + " — no contract address"
+        : "Contract: " + tok.address;
+    updateSendPreflight();
+}
+
+function validateRecipient(input) {
+    const val = input.value.trim();
+    const hint = document.getElementById("send-to-hint");
+    if (!val) { input.classList.remove("invalid"); hint.textContent = ""; updateSendPreflight(); return false; }
+    if (!ethers.utils.isAddress(val)) {
+        input.classList.add("invalid");
+        hint.textContent = "⚠ Invalid Ethereum address.";
+        updateSendPreflight();
+        return false;
+    }
+    input.classList.remove("invalid");
+    // Show checksummed form
+    try {
+        const checksummed = ethers.utils.getAddress(val);
+        hint.textContent = val !== checksummed ? "✔ Checksummed: " + checksummed : "✔ Valid checksummed address";
+    } catch (_) {
+        hint.textContent = "";
+    }
+    updateSendPreflight();
+    return true;
+}
+
+function getActiveChainId() {
+    return (chainId && SUPPORTED_CHAINS.has(chainId)) ? chainId : _viewChain;
+}
+
+function formatDisplayAmount(value, decimals = 4) {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return String(value);
+    return num.toLocaleString(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: decimals
+    });
+}
+
+function updatePortfolioChainBadge() {
+    const badge = document.getElementById("portfolio-chain-badge");
+    const netInfo = REGISTRY.networks[getActiveChainId()];
+    badge.textContent = "View chain: " + (netInfo ? netInfo.name : "Unknown");
+}
+
+async function loadPortfolioBalances() {
+    const resultEl = document.getElementById("portfolio-result");
+    const refreshBtn = document.getElementById("refresh-balances-btn");
+    const activeChain = getActiveChainId();
+    const netInfo = REGISTRY.networks[activeChain];
+    const tokenMap = getResolvedTokenMap(activeChain);
+
+    updatePortfolioChainBadge();
+
+    if (!account || !provider || !netInfo) {
+        _portfolio = {};
+        renderPortfolioBalances();
+        resultEl.style.display = "none";
+        updateSendPreflight();
+        return;
+    }
+
+    refreshBtn.disabled = true;
+    refreshBtn.innerHTML = '<span class="spin">⏳</span> Refreshing…';
+
+    try {
+        const entries = await Promise.all(Object.entries(tokenMap).map(async ([symbol, token]) => {
+            try {
+                if (token.native) {
+                    const balance = await provider.getBalance(account);
+                    return [symbol, {
+                        symbol,
+                        name: token.name,
+                        decimals: token.decimals,
+                        native: true,
+                        raw: balance,
+                        formatted: ethers.utils.formatUnits(balance, token.decimals)
+                    }];
+                }
+
+                const contract = new ethers.Contract(token.address, ERC20_ABI, provider);
+                const [balance, decimals, symbolOut] = await Promise.all([
+                    contract.balanceOf(account),
+                    contract.decimals().catch(() => token.decimals),
+                    contract.symbol().catch(() => symbol)
+                ]);
+
+                return [symbol, {
+                    symbol: symbolOut || symbol,
+                    name: token.name,
+                    decimals,
+                    native: false,
+                    raw: balance,
+                    formatted: ethers.utils.formatUnits(balance, decimals)
+                }];
+            } catch (error) {
+                return [symbol, {
+                    symbol,
+                    name: token.name,
+                    decimals: token.decimals,
+                    native: !!token.native,
+                    raw: null,
+                    formatted: null,
+                    error: error.message || String(error)
+                }];
+            }
+        }));
+
+        _portfolio = { chainId: activeChain, assets: Object.fromEntries(entries) };
+        renderPortfolioBalances();
+        updateSendPreflight();
+        resultEl.className = "tx-result info";
+        resultEl.textContent = "✔ Balances refreshed from live provider for " + netInfo.name + ".";
+        resultEl.style.display = "block";
+    } catch (err) {
+        resultEl.className = "tx-result error";
+        resultEl.textContent = "❌ Failed to refresh balances: " + (err.message || String(err));
+        resultEl.style.display = "block";
+    } finally {
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML = "Refresh Balances";
+    }
+}
+
+function renderPortfolioBalances() {
+    const list = document.getElementById("portfolio-list");
+    const activeChain = getActiveChainId();
+    const netInfo = REGISTRY.networks[activeChain];
+
+    if (!account) {
+        list.innerHTML = `
+            <div class="wallet-info-card">
+                <div class="info-label">Portfolio</div>
+                <div class="info-value" style="font-family:inherit; color:var(--muted);">Connect a wallet to inspect live on-chain balances.</div>
+            </div>
+        `;
+        return;
+    }
+
+    if (!_portfolio.assets || _portfolio.chainId !== activeChain) {
+        list.innerHTML = `
+            <div class="wallet-info-card">
+                <div class="info-label">Portfolio</div>
+                <div class="info-value" style="font-family:inherit; color:var(--muted);">No live balance snapshot loaded yet for ${netInfo ? netInfo.name : "the selected network"}.</div>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = Object.values(_portfolio.assets).map(asset => {
+        const balanceText = asset.formatted == null
+            ? "Unavailable"
+            : `${formatDisplayAmount(asset.formatted)} ${asset.symbol}`;
+        const meta = asset.error
+            ? `Read error: ${asset.error}`
+            : asset.native
+                ? "Native asset"
+                : asset.name;
+        return `
+            <div class="inventory-row">
+                <div>
+                    <div class="inventory-asset">${asset.symbol}</div>
+                    <div class="inventory-meta">${meta}</div>
+                </div>
+                <div class="inventory-balance">${balanceText}</div>
+                <span class="badge ${asset.error ? "badge-warn" : "badge-connected"}">${asset.error ? "Read issue" : "Live"}</span>
+            </div>
+        `;
+    }).join("");
+}
+
+function updateSendPreflight() {
+    const activeChain = getActiveChainId();
+    const netInfo = REGISTRY.networks[activeChain];
+    const symbol = document.getElementById("send-token")?.value;
+    const amountStr = document.getElementById("send-amount")?.value.trim() || "";
+    const recipient = document.getElementById("send-to")?.value.trim() || "";
+    const asset = netInfo && symbol ? getResolvedToken(activeChain, symbol) : null;
+    const balanceInfo = _portfolio.assets && _portfolio.chainId === activeChain ? _portfolio.assets[symbol] : null;
+
+    document.getElementById("pf-network").textContent = netInfo ? netInfo.name : "Unknown network";
+    document.getElementById("pf-asset").textContent = asset ? `${asset.symbol} ${asset.native ? "(native)" : "(ERC-20)"}` : "—";
+    document.getElementById("pf-balance").textContent = balanceInfo && balanceInfo.formatted != null
+        ? `${formatDisplayAmount(balanceInfo.formatted)} ${balanceInfo.symbol}`
+        : account ? "Refresh required" : "Connect wallet";
+
+    let status = "Waiting for input";
+    let summary = "Connect a wallet to load balances and route checks.";
+
+    if (!account) {
+        status = "Connect wallet";
+        summary = "Wallet connection is required before on-chain preflight can validate asset balance, network, and recipient.";
+    } else if (!SUPPORTED_CHAINS.has(activeChain)) {
+        status = "Unsupported network";
+        summary = "Switch to Ethereum, Base, or BNB Smart Chain before sending assets from this interface.";
+    } else if (!asset) {
+        status = "Choose asset";
+        summary = "Select the token or native asset you plan to send.";
+    } else if (!recipient) {
+        status = "Recipient missing";
+        summary = "Enter a recipient address to validate the route.";
+    } else if (!ethers.utils.isAddress(recipient)) {
+        status = "Recipient invalid";
+        summary = "The current recipient is not a valid Ethereum address.";
+    } else if (!amountStr || isNaN(Number(amountStr)) || Number(amountStr) <= 0) {
+        status = "Amount invalid";
+        summary = "Enter a positive transfer amount to continue.";
+    } else if (!balanceInfo || balanceInfo.formatted == null) {
+        status = "Balance unknown";
+        summary = "Refresh balances to compare the requested transfer amount against the live on-chain balance.";
+    } else if (Number(amountStr) > Number(balanceInfo.formatted)) {
+        status = "Insufficient balance";
+        summary = `Requested ${amountStr} ${asset.symbol}, but the live balance is ${formatDisplayAmount(balanceInfo.formatted)} ${balanceInfo.symbol}.`;
+    } else {
+        const checksummed = ethers.utils.getAddress(recipient);
+        status = "Ready for review";
+        summary = `${amountStr} ${asset.symbol} can be sent on ${netInfo.name} to ${checksummed}. Review gas, destination intent, and approval policy before signing.`;
+    }
+
+    document.getElementById("pf-status").textContent = status;
+    document.getElementById("pf-summary").textContent = summary;
+}
+
+async function executeSend() {
+    const resultEl = document.getElementById("send-result");
+    resultEl.className = "tx-result";
+    resultEl.style.display = "none";
+
+    if (!signer) {
+        showTxResult("error", "⚠ No wallet connected. Connect a wallet first.");
+        return;
+    }
+    if (!SUPPORTED_CHAINS.has(chainId)) {
+        showTxResult("error", "⚠ Unsupported network. Switch to Ethereum, Base, or BSC.");
+        return;
+    }
+
+    const toInput = document.getElementById("send-to");
+    const to      = toInput.value.trim();
+    if (!validateRecipient(toInput)) {
+        showTxResult("error", "⚠ Invalid recipient address.");
+        return;
+    }
+
+    const checksumTo = ethers.utils.getAddress(to);
+    const amountStr = document.getElementById("send-amount").value.trim();
+    if (!amountStr || isNaN(Number(amountStr)) || Number(amountStr) <= 0) {
+        showTxResult("error", "⚠ Enter a valid positive amount.");
+        return;
+    }
+
+    const sym     = document.getElementById("send-token").value;
+    const netInfo = REGISTRY.networks[chainId];
+    const tok     = netInfo ? getResolvedToken(chainId, sym) : null;
+    if (!tok) { showTxResult("error", "⚠ Token not found in registry for current network."); return; }
+
+    const sendBtn = document.getElementById("send-btn");
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<span class="spin">⏳</span> Sending…';
+
+    try {
+        let tx;
+        if (tok.native) {
+            // Native ETH
+            const value = ethers.utils.parseEther(amountStr);
+            tx = await signer.sendTransaction({ to: checksumTo, value });
+        } else {
+            // ERC-20
+            const contract = new ethers.Contract(tok.address, ERC20_ABI, signer);
+            const decimals = tok.decimals;
+            const amount   = ethers.utils.parseUnits(amountStr, decimals);
+            tx = await contract.transfer(checksumTo, amount);
+        }
+
+        showTxResult("success",
+            "✔ Transaction submitted! Tx hash: " + tx.hash +
+            "\n\nView on " + (netInfo.blockExplorerUrl || "block explorer") +
+            "/tx/" + tx.hash
+        );
+
+        loadPortfolioBalances();
+    } catch (err) {
+        showTxResult("error", "❌ " + (err.reason || err.message || String(err)));
+    } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = "Send";
+    }
+}
+
+function showTxResult(cls, text) {
+    const el = document.getElementById("send-result");
+    el.className = "tx-result " + cls;
+    el.textContent = text;
+    el.style.display = "block";
+}
+
+function setSignalResult(cls, text) {
+    const el = document.getElementById("signal-result");
+    el.className = "tx-result " + cls;
+    el.textContent = text;
+    el.style.display = "block";
+}
+
+function appendSignalRow(message) {
+    const feed = document.getElementById("signal-feed");
+    const row = document.createElement("div");
+    row.className = "signal-row";
+    const ts = new Date().toLocaleTimeString();
+    row.innerHTML = `<span class="signal-ts">${ts}</span><span class="signal-msg">${message}</span>`;
+    feed.prepend(row);
+
+    const rows = feed.querySelectorAll(".signal-row");
+    if (rows.length > 50) {
+        rows[rows.length - 1].remove();
+    }
+}
+
+function setSignalConnectionState(stateText) {
+    document.getElementById("sig-conn-state").textContent = stateText;
+}
+
+function updateSignalCounters() {
+    document.getElementById("sig-events-count").textContent = String(_signalCount);
+    document.getElementById("sig-last-event").textContent = _lastSignalAt || "—";
+}
+
+function connectSignalMonitor() {
+    const wsUrl = document.getElementById("sig-ws-url").value.trim() || DEFAULT_SIGNAL_WS_URL;
+    disconnectSignalMonitor(false);
+
+    try {
+        _signalSocket = new WebSocket(wsUrl);
+        setSignalConnectionState("Connecting...");
+        setSignalResult("info", "⏳ Connecting to signal bus: " + wsUrl);
+
+        _signalSocket.onopen = () => {
+            setSignalConnectionState("Connected");
+            setSignalResult("success", "✔ Signal bus connected.");
+            appendSignalRow("Connected to " + wsUrl);
+        };
+
+        _signalSocket.onmessage = (event) => {
+            _signalCount += 1;
+            _lastSignalAt = new Date().toLocaleTimeString();
+            updateSignalCounters();
+
+            let msg = event.data;
+            if (typeof msg === "string") {
+                try {
+                    const parsed = JSON.parse(msg);
+                    const eventName = parsed.event || parsed.type || "event";
+                    const source = parsed.source || parsed.module || "signal";
+                    msg = `${source}:${eventName}`;
+                } catch (_) {
+                    if (msg.length > 140) msg = msg.slice(0, 140) + "...";
+                }
+            }
+            appendSignalRow(String(msg));
+        };
+
+        _signalSocket.onerror = () => {
+            setSignalConnectionState("Error");
+            setSignalResult("error", "❌ Signal bus connection error. Check endpoint and local service status.");
+        };
+
+        _signalSocket.onclose = () => {
+            setSignalConnectionState("Disconnected");
+            appendSignalRow("Signal bus disconnected");
+        };
+    } catch (err) {
+        setSignalConnectionState("Error");
+        setSignalResult("error", "❌ Failed to open signal socket: " + (err.message || String(err)));
+    }
+}
+
+function disconnectSignalMonitor(showMessage = true) {
+    if (_signalSocket) {
+        try { _signalSocket.close(); } catch (_) {}
+        _signalSocket = null;
+    }
+    setSignalConnectionState("Disconnected");
+    if (showMessage) setSignalResult("info", "Signal monitor disconnected.");
+}
+
+async function probeSignalEndpoints() {
+    const restUrl = document.getElementById("sig-rest-url").value.trim() || DEFAULT_SIGNAL_REST_URL;
+    const restCell = document.getElementById("sig-rest-latency");
+
+    const started = performance.now();
+    try {
+        const res = await fetch(restUrl, { method: "GET" });
+        const elapsed = Math.round(performance.now() - started);
+        restCell.textContent = `${elapsed} ms (HTTP ${res.status})`;
+        setSignalResult("success", "✔ Endpoint probe completed. REST endpoint reachable.");
+    } catch (err) {
+        const elapsed = Math.round(performance.now() - started);
+        restCell.textContent = `${elapsed} ms (unreachable)`;
+        setSignalResult("error", "❌ REST probe failed: " + (err.message || String(err)) + ". Check CORS, service status, or URL.");
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// KECCAK256 HELPER
+// ─────────────────────────────────────────────────────────────────────────────
+let _encoding = "packed"; // "packed" | "encode" | "double"
+
+function setEncoding(enc) {
+    _encoding = enc;
+    document.querySelectorAll(".active-enc").forEach(b => b.classList.remove("active-enc"));
+    document.getElementById("enc-" + enc).classList.add("active-enc");
+
+    // Visual feedback on active button
+    ["packed", "encode", "double"].forEach(e => {
+        document.getElementById("enc-" + e).style.borderColor =
+            e === enc ? "var(--accent)" : "var(--line)";
+        document.getElementById("enc-" + e).style.color =
+            e === enc ? "var(--accent)" : "var(--text)";
+    });
+}
+
+function computeKeccak() {
+    const raw = document.getElementById("keccak-input").value.trim();
+    const resultEl = document.getElementById("keccak-result");
+    if (!raw) { resultEl.textContent = "⚠ Enter a value to hash."; return; }
+
+    try {
+        let bytes, hash, description;
+
+        if (_encoding === "packed") {
+            // keccak256(abi.encodePacked(value))
+            // If it's an address, encode as 20 bytes; otherwise as UTF-8 string bytes
+            if (ethers.utils.isAddress(raw)) {
+                const addr = ethers.utils.getAddress(raw); // checksum
+                bytes = ethers.utils.solidityPack(["address"], [addr]);
+                hash  = ethers.utils.keccak256(bytes);
+                description = `keccak256(abi.encodePacked(address(${addr})))`;
+            } else {
+                bytes = ethers.utils.toUtf8Bytes(raw);
+                hash  = ethers.utils.keccak256(bytes);
+                description = `keccak256(abi.encodePacked("${raw}"))`;
+            }
+        } else if (_encoding === "encode") {
+            // keccak256(abi.encode(value)) — 32-byte left-padded
+            if (ethers.utils.isAddress(raw)) {
+                const addr = ethers.utils.getAddress(raw);
+                bytes = ethers.utils.defaultAbiCoder.encode(["address"], [addr]);
+                hash  = ethers.utils.keccak256(bytes);
+                description = `keccak256(abi.encode(address(${addr})))`;
+            } else {
+                bytes = ethers.utils.defaultAbiCoder.encode(["string"], [raw]);
+                hash  = ethers.utils.keccak256(bytes);
+                description = `keccak256(abi.encode("${raw}"))`;
+            }
+        } else {
+            // Double-hash Merkle leaf: keccak256(abi.encodePacked(keccak256(abi.encodePacked(addr))))
+            if (!ethers.utils.isAddress(raw)) {
+                resultEl.textContent = "⚠ Double-hash leaf requires an Ethereum address.";
+                return;
+            }
+            const addr   = ethers.utils.getAddress(raw);
+            const inner  = ethers.utils.keccak256(ethers.utils.solidityPack(["address"], [addr]));
+            hash = ethers.utils.keccak256(ethers.utils.solidityPack(["bytes32"], [inner]));
+            description = `keccak256(abi.encodePacked(keccak256(abi.encodePacked(address(${addr})))))`;
+        }
+
+        // Copy leaf to Merkle leaf field for convenience
+        document.getElementById("merkle-leaf").value = hash;
+
+        resultEl.textContent =
+            `Encoding: ${description}\n\nResult (bytes32):\n${hash}`;
+
+    } catch (err) {
+        resultEl.textContent = "❌ Error: " + (err.message || String(err));
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MERKLE PROOF VERIFIER (client-side, for debugging)
+// Uses the same pairwise-hash algorithm as OpenZeppelin MerkleProof.sol
+// ─────────────────────────────────────────────────────────────────────────────
+function verifyMerkle() {
+    const resultEl  = document.getElementById("merkle-result");
+    const rootStr   = document.getElementById("merkle-root").value.trim();
+    const leafStr   = document.getElementById("merkle-leaf").value.trim();
+    const proofStr  = document.getElementById("merkle-proof").value.trim();
+
+    if (!rootStr || !leafStr) {
+        resultEl.textContent = "⚠ Root and leaf are required.";
+        return;
+    }
+
+    let proof = [];
+    if (proofStr) {
+        try { proof = JSON.parse(proofStr); }
+        catch (_) { resultEl.textContent = "⚠ Proof must be a valid JSON array of hex strings."; return; }
+    }
+
+    try {
+        // Verify: iteratively compute parent hashes
+        let computedHash = leafStr.toLowerCase();
+
+        for (const sibling of proof) {
+            const sib = sibling.toLowerCase();
+            // Sort: smaller hash first (OZ convention)
+            const [a, b] = computedHash < sib ? [computedHash, sib] : [sib, computedHash];
+            // keccak256(abi.encodePacked(a, b))
+            computedHash = ethers.utils.keccak256(
+                ethers.utils.concat([a, b])
+            );
+        }
+
+        const valid = computedHash.toLowerCase() === rootStr.toLowerCase();
+        resultEl.textContent = valid
+            ? "✔ Proof VALID — computed root matches.\nRoot: " + computedHash
+            : "✗ Proof INVALID — computed root does NOT match.\nExpected: " + rootStr.toLowerCase() + "\nComputed: " + computedHash;
+
+    } catch (err) {
+        resultEl.textContent = "❌ Error: " + (err.message || String(err));
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ACCORDION
+// ─────────────────────────────────────────────────────────────────────────────
+function toggleAccordion(id) {
+    const body  = document.getElementById(id);
+    const arrow = document.getElementById(id + "-arrow");
+    const open  = body.classList.toggle("open");
+    if (arrow) arrow.textContent = open ? "▾" : "▸";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────────────────
+(function init() {
+    // Inject handle from constant (single source of truth)
+    const handlePill = document.getElementById("handle-pill");
+    if (handlePill) handlePill.textContent = "🔵 " + CB_HANDLE;
+    const receiveHandle = document.getElementById("receive-handle");
+    if (receiveHandle) receiveHandle.textContent = CB_HANDLE;
+
+    setEncoding("packed");
+    selectNetworkView(1);
+    updateWalletUI();
+    renderPortfolioBalances();
+    updatePortfolioChainBadge();
+    updateSendPreflight();
+    updateSignalCounters();
+    setSignalConnectionState("Disconnected");
+    renderTokenCredentialTable();
+    renderRailGrid();
+    selectRailNode("core");
+    renderDataSourceManifest();
+
+    const savedMode = localStorage.getItem(WORKFLOW_MODE_KEY);
+    _workflowMode = savedMode === "guided" ? "guided" : "open";
+    const savedStage = Number(localStorage.getItem(WORKFLOW_STAGE_KEY) || "1");
+    _workflowStage = Number.isFinite(savedStage) ? savedStage : 1;
+    applyWorkflowMode();
+})();
+</script>
+</body>
+</html>

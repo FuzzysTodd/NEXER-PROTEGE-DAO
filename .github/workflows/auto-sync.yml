@@ -1,0 +1,103 @@
+name: "Auto-Sync — Keep Branches Current with Main"
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    # Run nightly at 02:00 UTC to keep long-lived branches fresh
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      target_branch_pattern:
+        description: "Branch pattern to sync (e.g. copilot/*)"
+        required: false
+        default: "copilot/*"
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-branches:
+    name: "Sync long-lived branches with main"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git bot identity
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch all remotes
+        run: git fetch --all --prune
+
+      - name: Sync copilot/* and agent/* branches
+        env:
+          PATTERN: ${{ github.event.inputs.target_branch_pattern || 'copilot/*' }}
+        run: |
+          set -euo pipefail
+          MAIN_SHA=$(git rev-parse origin/main)
+          echo "main @ $MAIN_SHA"
+
+          # Collect branches matching the pattern
+          git branch -r --list "origin/${PATTERN}" | sed 's|origin/||' | while read branch; do
+            echo "---"
+            echo "Processing: $branch"
+
+            # Skip if already up-to-date with main
+            BRANCH_SHA=$(git rev-parse "origin/$branch")
+            if git merge-base --is-ancestor "$MAIN_SHA" "$BRANCH_SHA"; then
+              echo "$branch already contains main — skip"
+              continue
+            fi
+
+            # Try a non-destructive merge-base check
+            BEHIND=$(git rev-list --count "origin/$branch..origin/main")
+            echo "$branch is $BEHIND commits behind main"
+
+            git checkout -B "$branch" "origin/$branch"
+
+            # Attempt a normal merge from main — if conflicts occur, skip for manual resolution
+            if git merge --no-edit origin/main 2>&1; then
+              echo "Merge succeeded for $branch — pushing"
+              git push origin "$branch"
+              echo "::notice title=AutoSync::Merged main into $branch ($BEHIND commits)"
+            else
+              git merge --abort || true
+              echo "::warning title=AutoSync::Merge conflict on $branch — skipping (manual resolution needed)"
+            fi
+          done
+
+  # Post a single summary comment on open PRs from synced branches
+  summarize:
+    name: "Post sync summary"
+    needs: sync-branches
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    steps:
+      - name: Comment on open PRs
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              state: "open",
+            });
+            const sha = context.sha.slice(0, 7);
+            for (const pr of prs) {
+              if (!pr.head.ref.startsWith("copilot/") && !pr.head.ref.startsWith("agent/")) continue;
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: pr.number,
+                body: `🔄 **Auto-Sync**: \`main\` (${sha}) was pushed. This branch has been auto-synced if no conflicts were detected. If your branch shows conflicts, please resolve them manually.`,
+              });
+            }

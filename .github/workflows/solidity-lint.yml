@@ -1,0 +1,63 @@
+name: "Solidity Lint (Solhint)"
+
+on:
+  push:
+    paths:
+      - "contracts/**/*.sol"
+  pull_request:
+    paths:
+      - "contracts/**/*.sol"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  solhint:
+    name: "Solhint Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Setup Node 20
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "20"
+
+      - name: Install solhint
+        run: npm install -g solhint@4
+
+      - name: Run solhint on Nexus contracts
+        run: |
+          files=$(find contracts -type f -name "*.sol" | sort)
+          if [ -z "$files" ]; then
+            echo "No Solidity files found in contracts/"
+            exit 0
+          fi
+          failed=0
+          for f in $files; do
+            echo "Linting: $f"
+            # 30 warnings per file: tuned for current contracts with gas-custom-errors/reason-string/no-global-import disabled
+            solhint "$f" --max-warnings 30 || failed=1
+          done
+          exit $failed
+
+      - name: Verify pragma versions
+        run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          import sys
+          errors = []
+          for p in Path("contracts").glob("*.sol"):
+              text = p.read_text()
+              if "pragma solidity" not in text:
+                  errors.append(f"{p}: missing pragma")
+              elif "^0.8.20" not in text:
+                  errors.append(f"{p}: pragma should be ^0.8.20")
+          if errors:
+              for e in errors:
+                  print(f"ERROR: {e}", file=sys.stderr)
+              sys.exit(1)
+          print("All contracts use pragma solidity ^0.8.20")
+          PYTHON

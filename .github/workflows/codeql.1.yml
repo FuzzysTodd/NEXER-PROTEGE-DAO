@@ -1,0 +1,13 @@
+name: "CodeQL (disabled placeholder)"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Placeholder
+        run: |
+          echo "This workflow is intentionally disabled."
+          echo "Add a real CodeQL workflow in .github/workflows/codeql.yml if desired."

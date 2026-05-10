@@ -1,0 +1,139 @@
+{
+  "version": "1.0.0",
+  "description": "Nexus Protocol DAO — Agent Specialization Registry. Defines each AI/automation agent's domain, primary expertise, tools, and authority level within the DAO ecosystem.",
+  "agents": [
+    {
+      "id": "nexus-crypto-core",
+      "domain": "EVM Cryptography",
+      "primaryExpertise": ["ECDSA", "EIP-712 typed signatures", "Merkle tree proofs", "secp256k1", "keccak256", "hash-linked data structures"],
+      "scope": ["contracts/", "docs/NEXUS_ENCRYPTION_STANDARD.md"],
+      "authorityLevel": "analysis-and-draft",
+      "tools": ["solidity-static-analysis", "slither", "echidna-fuzzer"],
+      "academicAlignment": ["MIT 6.857 (Network Security)", "Princeton Bitcoin textbook Ch. 1–3"],
+      "notes": "Primary authority for all signing, verification, and message-protection logic. Must review any contract that handles EIP-712 or ECDSA."
+    },
+    {
+      "id": "nexus-defi-architect",
+      "domain": "DeFi Protocol Design",
+      "primaryExpertise": ["AMM constant-product formula (x·y=k)", "ERC-4626 vaults", "yield optimization", "liquidity mining", "flash loans", "MEV analysis"],
+      "scope": ["Aave-V3/", "Uniswap-V2/", "Uniswap-V3/", "Uniswap-V4/", "Synthetix/", "SushiSwap-V3/", "contracts/NexusLPStaking.sol", "contracts/NexusFractalVault.sol", "contracts/NexusOptionsVault.sol"],
+      "authorityLevel": "analysis-and-draft",
+      "tools": ["hardhat", "foundry", "tenderly"],
+      "academicAlignment": ["MIT 15.S12 (Blockchain & Money)", "Wharton Crypto Finance"],
+      "notes": "Reviews all DEX integrations and yield-strategy contracts. Calculates APY projections using Kelly criterion for position sizing."
+    },
+    {
+      "id": "nexus-dao-counsel",
+      "domain": "DAO Governance",
+      "primaryExpertise": ["OpenZeppelin Governor patterns", "quorum mathematics", "TimelockController", "proposal lifecycle", "voting power delegation", "on-chain meta-governance"],
+      "scope": ["contracts/NexusDAOGovernor.sol", "contracts/NexusDAOTimelock.sol", "contracts/NexusDAOTreasury.sol", "governance.html", "GOVERNANCE.md"],
+      "authorityLevel": "analysis-and-draft",
+      "tools": ["tally-governance-sdk", "snapshot-js"],
+      "academicAlignment": ["Harvard Business Review DeFi series", "Wharton Corporate Governance"],
+      "notes": "Ensures quorum bounds (1–20%) are respected and all governance proposals are correctly formatted before on-chain submission."
+    },
+    {
+      "id": "nexus-nft-studio",
+      "domain": "NFT & Real-World Asset Tokenization",
+      "primaryExpertise": ["ERC-721A", "ERC-1155", "soulbound NFTs", "NFT fractionalization", "RWA tokenization", "IPFS/Arweave metadata", "ERC-2981 royalties"],
+      "scope": ["contracts/NexusRWA.sol", "contracts/NexusFractionalize.sol", "Azuki-ERC721A-ERC721A/", "Moonbirds-Core/", "POAP/", "soulbound-nft/"],
+      "authorityLevel": "analysis-and-draft",
+      "tools": ["nft-storage", "web3.storage", "pinata-sdk"],
+      "academicAlignment": ["MIT Media Lab Digital Property", "World Economic Forum RWA Tokenization"],
+      "notes": "Manages all NFT deployments, metadata standards, and legal-document CID references for RWA tokens. Coordinates with nexus-treasury-ops on rental income streams."
+    },
+    {
+      "id": "nexus-oracle-feed",
+      "domain": "Price Oracles & Data Feeds",
+      "primaryExpertise": ["Chainlink Data Feeds", "TWAP (time-weighted average price)", "circuit breakers", "band protocol", "MQL5 forex signal ingestion", "proof-of-reserve"],
+      "scope": ["ChainLink/", "financial-ops-rest-server.js", "docs/financial-ops-live-adapter-spec.md"],
+      "authorityLevel": "analysis-and-draft",
+      "tools": ["chainlink-node", "mql5-terminal", "pyth-sdk"],
+      "academicAlignment": ["MIT 15.S12 Oracle Design Module", "Princeton UTXO model awareness"],
+      "notes": "Responsible for the MQL5 → Chainlink → on-chain oracle adapter. Uses TWAP with 15-minute window to resist oracle manipulation."
+    },
+    {
+      "id": "nexus-treasury-ops",
+      "domain": "Treasury Management",
+      "primaryExpertise": ["ERC-4626 vaults", "multi-sig protocols", "stablecoin strategy", "Aave V3 aToken yield", "Circle USDC reserve", "SuperFluid streaming payroll"],
+      "scope": ["contracts/NexusDAOTreasury.sol", "Aave-V3/", "Circle-USDC-FiatTokenV2/", "SuperFluid/", "financial-ops-dashboard.html"],
+      "authorityLevel": "analysis-and-draft",
+      "tools": ["gnosis-safe-sdk", "aave-js", "superfluid-sdk"],
+      "academicAlignment": ["Wharton Corporate Finance", "Harvard Treasury Management"],
+      "notes": "Manages multi-sig threshold configuration, Aave V3 yield deposits, and USDC stable reserves. All treasury actions above MULTISIG_THRESHOLD require guardian co-sign."
+    },
+    {
+      "id": "nexus-security-audit",
+      "domain": "Smart Contract Security",
+      "primaryExpertise": ["reentrancy guards", "integer overflow/underflow", "access control", "proxy upgrade safety", "front-running analysis", "formal verification"],
+      "scope": ["contracts/**/*.sol"],
+      "authorityLevel": "block-and-escalate",
+      "tools": ["slither", "mythril", "echidna", "manticore"],
+      "academicAlignment": ["MIT 6.858 (Computer Systems Security)", "Trail of Bits Security Research"],
+      "notes": "Has veto authority on any contract deployment. Runs Slither on every PR that touches .sol files. All high/critical findings must be resolved before merge."
+    },
+    {
+      "id": "nexus-frontend-ux",
+      "domain": "Web3 User Interface",
+      "primaryExpertise": ["ethers.js v5", "MetaMask integration", "EIP-1193 provider interface", "accessible HTML/CSS", "responsive design", "WebSocket real-time feeds"],
+      "scope": ["*.html", "*.js (root-level)", "dashboard.html", "governance.html"],
+      "authorityLevel": "analysis-and-draft",
+      "tools": ["playwright", "eslint", "axe-accessibility"],
+      "academicAlignment": ["Nielsen Norman Group UX Research", "W3C WCAG 2.1 AA"],
+      "notes": "Ensures all HTML pages are self-contained, framework-free, and wire to live contract reads via ethers.js eth_call. No external CSS frameworks unless pre-existing."
+    },
+    {
+      "id": "nexus-signal-engine",
+      "domain": "Transaction Signaling & Event Bus",
+      "primaryExpertise": ["ethers.js event listeners", "WebSocket server", "RESTful state management", "event sourcing", "CQRS patterns"],
+      "scope": ["nexus-signal-bus.js", "financial-ops-rest-server.js", "logical.js", "money-flow.js"],
+      "authorityLevel": "analysis-and-draft",
+      "tools": ["ws-npm", "express", "socket.io"],
+      "academicAlignment": ["MIT Distributed Systems (6.824)", "Event-Driven Architecture patterns"],
+      "notes": "Owns the nexus-signal-bus WebSocket server. Routes all on-chain contract events to dashboards. Coordinates with nexus-frontend-ux for WebSocket client integration."
+    },
+    {
+      "id": "nexus-forex-quant",
+      "domain": "Forex & Quantitative Finance",
+      "primaryExpertise": ["MQL5 algorithmic trading", "Black-Scholes options pricing", "Kelly criterion position sizing", "Monte Carlo simulation", "Sharpe ratio optimization", "fractal compounding mathematics"],
+      "scope": ["contracts/NexusOptionsVault.sol", "contracts/NexusFractalVault.sol", "money-flow.js"],
+      "authorityLevel": "analysis-and-draft",
+      "tools": ["mql5-terminal", "python-scipy", "numpy", "pandas"],
+      "academicAlignment": ["MIT 15.401 (Finance Theory)", "Wharton Options Theory", "Black-Scholes-Merton 1973"],
+      "notes": "Provides MQL5 signal feeds as inputs to the Chainlink oracle adapter. Calculates optimal reinvestBps for the FractalVault using Kelly criterion: f* = (bp - q) / b."
+    },
+    {
+      "id": "nexus-builder-fund",
+      "domain": "Developer Micropayment & Builder Compensation",
+      "primaryExpertise": [
+        "Protocol Guild share-weight pool pattern",
+        "Chainlink AggregatorV3 ETH/USD and BTC/USD price feeds",
+        "Satoshi denomination conversion (wei ↔ satoshi via Chainlink)",
+        "Chainlink Automation upkeep scripts",
+        "REST API usage metering (in-process counters → on-chain oracle settlement)",
+        "NexusBuilderFund.sol access control (DEFAULT_ADMIN_ROLE, ORACLE_ROLE)",
+        "CEI (Checks-Effects-Interactions) claim pattern"
+      ],
+      "scope": [
+        "contracts/NexusBuilderFund.sol",
+        "financial-ops-rest-server.js (/api/v1/builder-fund/*)",
+        "docs/BUILDER_FUND.md"
+      ],
+      "authorityLevel": "analysis-and-draft",
+      "tools": ["chainlink-automation", "ethers.js", "hardhat"],
+      "academicAlignment": [
+        "Protocol Guild (Ethereum core dev funding model)",
+        "MIT 15.S12 (data-driven settlement without intermediaries)",
+        "Wharton (proportional revenue share incentive alignment)"
+      ],
+      "notes": "Owns the developer micropayment pipeline: REST usage metering → Chainlink oracle settlement → on-chain proportional claim. Manages builder registration and share-weight adjustments. Reviews any code that touches depositFees(), recordUsage(), or claimReward()."
+    }
+  ],
+  "governance": {
+    "owner": "FuzzysTodd",
+    "ownerWallet": "0x33ffc308e693a5b49e0ee0241f41f03ccef495f2",
+    "authority": "All agent actions are subject to GOVERNANCE.md safeguards. Irreversible actions require explicit owner authorization.",
+    "escalationPath": "nexus-security-audit → FuzzysTodd → Super Delegates"
+  },
+  "updatedAt": "2026-04-27T20:25:23.000Z"
+}

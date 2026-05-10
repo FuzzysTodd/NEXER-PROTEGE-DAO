@@ -1,0 +1,335 @@
+name: Project Board Automation
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Nexus Protocol DAO — GitHub Project Board Automation
+#
+# PR Roadmap this workflow manages:
+#   PR1  Cloudflare Pages root deployment
+#   PR2  Zero Trust documentation
+#   PR3  Repo-wide copy update
+#   PR4  Public addresses file
+#   PR5  Dashboard navigation unification
+#   PR6  Test suite modernization
+#   PR7  Audit readiness copy pass
+#   PR8  Cloudflare Pages CI integration
+#   PR9  Withdraw dashboard UX improvements
+#
+# Column flow:
+#   Backlog → In Progress → Review → Ready to Merge → Done
+#
+# Trigger → Action:
+#   PR opened / reopened / synchronize  →  Review
+#   PR approved + all checks pass       →  Ready to Merge
+#   PR merged                           →  Done
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  pull_request_review:
+    types: [submitted]
+  check_suite:
+    types: [completed]
+
+concurrency:
+  # Serialize board moves per PR to avoid race conditions between jobs
+  group: board-move-pr-${{ github.event.pull_request.number || github.event.check_suite.pull_requests[0].number || github.run_id }}
+  cancel-in-progress: false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SHARED GRAPHQL HELPER (inlined into every job via actions/github-script)
+# ─────────────────────────────────────────────────────────────────────────────
+
+env:
+  HELPER: |
+    const GET_PROJECT = `
+      query($org: String!, $number: Int!) {
+        organization(login: $org) {
+          projectV2(number: $number) {
+            id
+            fields(first: 20) {
+              nodes {
+                ... on ProjectV2SingleSelectField {
+                  id
+                  name
+                  options { id name }
+                }
+              }
+            }
+          }
+        }
+      }`;
+
+    const GET_PR_ITEM = `
+      query($org: String!, $number: Int!, $prId: ID!) {
+        organization(login: $org) {
+          projectV2(number: $number) {
+            items(first: 100) {
+              nodes {
+                id
+                content {
+                  ... on PullRequest { id }
+                }
+              }
+            }
+          }
+        }
+      }`;
+
+    const ADD_ITEM = `
+      mutation($projectId: ID!, $contentId: ID!) {
+        addProjectV2ItemById(input: { projectId: $projectId contentId: $contentId }) {
+          item { id }
+        }
+      }`;
+
+    const UPDATE_FIELD = `
+      mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+        updateProjectV2ItemFieldValue(input: {
+          projectId: $projectId
+          itemId: $itemId
+          fieldId: $fieldId
+          value: { singleSelectOptionId: $optionId }
+        }) {
+          projectV2Item { id }
+        }
+      }`;
+
+    async function moveCardToColumn({ github, prNodeId, targetColumn, projectNumber, orgLogin }) {
+      const projectData = await github.graphql(GET_PROJECT, {
+        org: orgLogin,
+        number: projectNumber,
+      });
+
+      const project   = projectData.organization.projectV2;
+      const projectId = project.id;
+
+      const statusField = project.fields.nodes.find(
+        f => f.name && f.name.toLowerCase() === 'status'
+      );
+      if (!statusField) throw new Error('Could not find a "Status" field on the project board.');
+
+      const targetOption = statusField.options.find(
+        o => o.name.toLowerCase() === targetColumn.toLowerCase()
+      );
+      if (!targetOption) {
+        throw new Error(
+          `Column "${targetColumn}" not found. Available: ${statusField.options.map(o => o.name).join(', ')}`
+        );
+      }
+
+      const itemsData = await github.graphql(GET_PR_ITEM, {
+        org: orgLogin,
+        number: projectNumber,
+        prId: prNodeId,
+      });
+
+      let itemId = null;
+      for (const item of itemsData.organization.projectV2.items.nodes) {
+        if (item.content && item.content.id === prNodeId) {
+          itemId = item.id;
+          break;
+        }
+      }
+
+      if (!itemId) {
+        console.log(`PR not found on board. Adding to project...`);
+        const addResult = await github.graphql(ADD_ITEM, {
+          projectId,
+          contentId: prNodeId,
+        });
+        itemId = addResult.addProjectV2ItemById.item.id;
+      }
+
+      await github.graphql(UPDATE_FIELD, {
+        projectId,
+        itemId,
+        fieldId:  statusField.id,
+        optionId: targetOption.id,
+      });
+
+      console.log(`✅ PR card moved to "${targetColumn}" (item: ${itemId})`);
+    }
+
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ── JOB 1: PR opened / pushed to / reopened  →  Review ──────────────────
+  move-to-review:
+    name: "📋 Move → Review"
+    if: |
+      github.event_name == 'pull_request' &&
+      (github.event.action == 'opened' ||
+       github.event.action == 'synchronize' ||
+       github.event.action == 'reopened')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Move card to Review column
+        uses: actions/github-script@v7
+        env:
+          PROJECT_NUMBER: ${{ secrets.PROJECT_NUMBER }}
+          ORG_LOGIN: ${{ secrets.ORG_LOGIN }}
+        with:
+          github-token: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
+          script: |
+            eval(process.env.HELPER);
+            await moveCardToColumn({
+              github,
+              prNodeId:      context.payload.pull_request.node_id,
+              targetColumn:  'Review',
+              projectNumber: Number(process.env.PROJECT_NUMBER),
+              orgLogin:      process.env.ORG_LOGIN,
+            });
+
+  # ── JOB 2: PR merged  →  Done ────────────────────────────────────────────
+  move-to-done:
+    name: "✅ Move → Done"
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Move card to Done column
+        uses: actions/github-script@v7
+        env:
+          PROJECT_NUMBER: ${{ secrets.PROJECT_NUMBER }}
+          ORG_LOGIN: ${{ secrets.ORG_LOGIN }}
+        with:
+          github-token: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
+          script: |
+            eval(process.env.HELPER);
+            await moveCardToColumn({
+              github,
+              prNodeId:      context.payload.pull_request.node_id,
+              targetColumn:  'Done',
+              projectNumber: Number(process.env.PROJECT_NUMBER),
+              orgLogin:      process.env.ORG_LOGIN,
+            });
+
+  # ── JOB 3: Approved + all checks pass  →  Ready to Merge ────────────────
+  move-to-ready:
+    name: "🚀 Move → Ready to Merge"
+    if: |
+      (github.event_name == 'pull_request_review' &&
+       github.event.review.state == 'APPROVED') ||
+      (github.event_name == 'check_suite' &&
+       github.event.check_suite.conclusion == 'success' &&
+       github.event.check_suite.pull_requests[0] != null)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resolve PR from event
+        id: resolve
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
+          result-encoding: json
+          script: |
+            let prNumber, prNodeId;
+
+            if (context.eventName === 'pull_request_review') {
+              prNumber = context.payload.pull_request.number;
+              prNodeId = context.payload.pull_request.node_id;
+            } else {
+              const prs = context.payload.check_suite.pull_requests;
+              if (!prs || prs.length === 0) {
+                console.log('No PRs associated with this check suite. Skipping.');
+                return null;
+              }
+              prNumber = prs[0].number;
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                pull_number: prNumber,
+              });
+              prNodeId = pr.node_id;
+            }
+
+            return { prNumber, prNodeId };
+
+      - name: Verify approval + checks gate
+        id: gate
+        if: steps.resolve.outputs.result != 'null'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
+          result-encoding: json
+          script: |
+            const { prNumber } = JSON.parse(`${{ steps.resolve.outputs.result }}`);
+
+            // 1. Reviews: at least one APPROVED, no pending CHANGES_REQUESTED
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              pull_number: prNumber,
+            });
+
+            const reviewerState = {};
+            for (const r of reviews) {
+              if (['APPROVED', 'CHANGES_REQUESTED', 'DISMISSED'].includes(r.state)) {
+                reviewerState[r.user.login] = r.state;
+              }
+            }
+            const states   = Object.values(reviewerState);
+            const approved = states.includes('APPROVED') && !states.includes('CHANGES_REQUESTED');
+
+            if (!approved) {
+              console.log(`Gate BLOCKED — review state: ${JSON.stringify(reviewerState)}`);
+              return false;
+            }
+
+            // 2. Checks: all completed and all passed / skipped / neutral
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              pull_number: prNumber,
+            });
+
+            const { data: checkData } = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              ref:   pr.head.sha,
+              per_page: 100,
+            });
+
+            const relevant = checkData.check_runs.filter(
+              r => r.name !== 'Project Board Automation'
+            );
+
+            const allDone   = relevant.every(r => r.status === 'completed');
+            const allPassed = relevant.every(r =>
+              ['success', 'skipped', 'neutral'].includes(r.conclusion)
+            );
+
+            if (!allDone || !allPassed) {
+              console.log(`Gate BLOCKED — checks not fully green.`);
+              relevant
+                .filter(r => !['success', 'skipped', 'neutral'].includes(r.conclusion))
+                .forEach(r => console.log(`  ✗ ${r.name}: ${r.status}/${r.conclusion}`));
+              return false;
+            }
+
+            console.log(`Gate PASSED — PR #${prNumber} is approved and all checks are green.`);
+            return true;
+
+      - name: Move card to Ready to Merge
+        if: steps.gate.outputs.result == 'true'
+        uses: actions/github-script@v7
+        env:
+          PROJECT_NUMBER: ${{ secrets.PROJECT_NUMBER }}
+          ORG_LOGIN: ${{ secrets.ORG_LOGIN }}
+        with:
+          github-token: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
+          script: |
+            eval(process.env.HELPER);
+            const { prNodeId } = JSON.parse(`${{ steps.resolve.outputs.result }}`);
+            await moveCardToColumn({
+              github,
+              prNodeId,
+              targetColumn:  'Ready to Merge',
+              projectNumber: Number(process.env.PROJECT_NUMBER),
+              orgLogin:      process.env.ORG_LOGIN,
+            });

@@ -1,0 +1,67 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import signal
+
+class KenwoodTS990S:
+    def __init__(self):
+        self.frequency = 14.250e6  # 20m band, MHz
+        self.bandwidth = 2.7e3     # SSB filter
+        self.noise_figure = 10     # dB
+        self.gain = 100           # dB
+        self.temperature = 290     # K
+        
+    def thermal_noise_power(self):
+        k = 1.38e-23
+        return k * self.temperature * self.bandwidth  # Watts
+    
+    def snr(self, signal_power):
+        noise_power = self.thermal_noise_power() * 10**(self.noise_figure/10)
+        return 10 * np.log10(signal_power / noise_power)
+    
+    def listen_to_cosmic_voice(self, voice_power_watts=1e-12):  # 1 pW — a whisper in RF
+        snr_db = self.snr(voice_power_watts)
+        print(f"Kenwood TS-990S tuned to {self.frequency/1e6:.3f} MHz")
+        print(f"Signal: {voice_power_watts:.2e} W → SNR = {snr_db:+.1f} dB")
+        if snr_db > 6:
+            print("VOICE DETECTED: 'Who... am... I?' — fading in from 1947.")
+        else:
+            print("STATIC. The universe is whispering, but the noise wins.")
+
+# Activate the receiver
+kenwood = KenwoodTS990S()
+
+# Try to hear a voice from 1950, scattered by ionosphere, now 10⁻²⁵ W
+kenwood.listen_to_cosmic_voice(voice_power_watts=1e-25)
+import numpy as np
+import matplotlib.pyplot as plt
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
+from qiskit_aer import AerSimulator
+
+# Your voice = a quantum state (simplified: 3-qubit "word")
+q = QuantumRegister(3, 'word')
+env = QuantumRegister(6, 'universe')  # Environment that "hears"
+c = ClassicalRegister(3)
+qc = QuantumCircuit(q, env, c)
+
+# Step 1: Encode your word "I AM" → |101⟩
+qc.x(q[0])
+qc.x(q[2])
+
+# Step 2: Couple to environment (decoherence)
+for i in range(3):
+    qc.cx(q[i], env[i])      # Entangle
+    qc.cx(q[i], env[i+3])    # Spread
+    qc.h(env[i])             # Randomize phase
+    qc.h(env[i+3])
+
+# Step 3: Measure only YOUR word
+qc.measure(q, c)
+
+# Run
+simulator = AerSimulator()
+result = simulator.run(qc, shots=1).result()
+spoken_word = list(result.get_counts().keys())[0]
+
+print(f"You said: |{spoken_word}⟩")
+print("But the universe now holds 6 entangled qubits...")
+print("Your word is *everywhere* — and *nowhere* recoverable.")

@@ -1,0 +1,139 @@
+{
+  "networks": {
+    "1": {
+      "chainId": 1,
+      "name": "Ethereum Mainnet",
+      "shortName": "eth",
+      "nativeCurrency": { "name": "Ether", "symbol": "ETH", "decimals": 18 },
+      "rpcUrls": ["https://mainnet.infura.io/v3/", "https://cloudflare-eth.com"],
+      "blockExplorerUrl": "https://etherscan.io",
+      "tokens": {
+        "ETH": {
+          "symbol": "ETH",
+          "name": "Ether",
+          "address": "0x0000000000000000000000000000000000000000",
+          "decimals": 18,
+          "native": true
+        },
+        "USDC": {
+          "symbol": "USDC",
+          "name": "USD Coin",
+          "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "decimals": 6
+        },
+        "USDT": {
+          "symbol": "USDT",
+          "name": "Tether USD",
+          "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+          "decimals": 6
+        },
+        "WETH": {
+          "symbol": "WETH",
+          "name": "Wrapped Ether",
+          "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          "decimals": 18
+        },
+        "DAI": {
+          "symbol": "DAI",
+          "name": "Dai Stablecoin",
+          "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+          "decimals": 18
+        },
+        "NGTT": {
+          "symbol": "NGTT",
+          "name": "Nexus Game Theory Token",
+          "address": "0xeCE999c86452c573Adfdd7F0C9226e673477973a",
+          "decimals": 18
+        }
+      }
+    },
+    "8453": {
+      "chainId": 8453,
+      "name": "Base Mainnet",
+      "shortName": "base",
+      "nativeCurrency": { "name": "Ether", "symbol": "ETH", "decimals": 18 },
+      "rpcUrls": ["https://mainnet.base.org"],
+      "blockExplorerUrl": "https://basescan.org",
+      "tokens": {
+        "ETH": {
+          "symbol": "ETH",
+          "name": "Ether",
+          "address": "0x0000000000000000000000000000000000000000",
+          "decimals": 18,
+          "native": true
+        },
+        "USDC": {
+          "symbol": "USDC",
+          "name": "USD Coin",
+          "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "decimals": 6
+        },
+        "WETH": {
+          "symbol": "WETH",
+          "name": "Wrapped Ether",
+          "address": "0x4200000000000000000000000000000000000006",
+          "decimals": 18
+        },
+        "DAI": {
+          "symbol": "DAI",
+          "name": "Dai Stablecoin",
+          "address": "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb",
+          "decimals": 18
+        },
+        "USDbC": {
+          "symbol": "USDbC",
+          "name": "USD Base Coin",
+          "address": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
+          "decimals": 6
+        }
+      }
+    },
+    "56": {
+      "chainId": 56,
+      "name": "BNB Smart Chain",
+      "shortName": "bnb",
+      "nativeCurrency": { "name": "BNB", "symbol": "BNB", "decimals": 18 },
+      "rpcUrls": ["https://bsc-mainnet.core.chainstack.com/35848e183f3e3303c8cfeacbea831cab"],
+      "blockExplorerUrl": "https://bscscan.com",
+      "tokens": {
+        "BNB": {
+          "symbol": "BNB",
+          "name": "BNB",
+          "address": "0x0000000000000000000000000000000000000000",
+          "decimals": 18,
+          "native": true
+        },
+        "WBNB": {
+          "symbol": "WBNB",
+          "name": "Wrapped BNB",
+          "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+          "decimals": 18
+        },
+        "USDT": {
+          "symbol": "USDT",
+          "name": "Tether USD",
+          "address": "0x55d398326f99059fF775485246999027B3197955",
+          "decimals": 18
+        },
+        "USDC": {
+          "symbol": "USDC",
+          "name": "USD Coin",
+          "address": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+          "decimals": 18
+        },
+        "BUSD": {
+          "symbol": "BUSD",
+          "name": "Binance USD",
+          "address": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+          "decimals": 18
+        }
+      }
+    }
+  },
+  "handles": {
+    "tenkrypt.cb.id": {
+      "label": "tenkrypt.cb.id",
+      "note": "Coinbase Wallet handle — resolve to address via Coinbase Wallet app or on-chain basename registry"
+    }
+  }
+}

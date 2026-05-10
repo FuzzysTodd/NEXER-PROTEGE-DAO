@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nexus DAO Command Center</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #0f172a;
+            --panel: #111827;
+            --panel-alt: #1f2937;
+            --text: #e5e7eb;
+            --muted: #94a3b8;
+            --accent: #38bdf8;
+            --border: rgba(148, 163, 184, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(180deg, #020617 0%, var(--bg) 100%);
+            color: var(--text);
+        }
+
+        main {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 32px 20px 56px;
+        }
+
+        .hero,
+        .panel {
+            background: rgba(17, 24, 39, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: 0 12px 32px rgba(2, 6, 23, 0.3);
+        }
+
+        .hero {
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+
+        .hero h1,
+        .panel h2 {
+            margin-top: 0;
+        }
+
+        .hero p,
+        .panel p,
+        li {
+            line-height: 1.6;
+        }
+
+        .hero .badge-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 18px 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .hero .badge-row li,
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(56, 189, 248, 0.14);
+            color: #c7f0ff;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            font-size: 0.95rem;
+        }
+
+        .layout {
+            display: grid;
+            gap: 24px;
+        }
+
+        .panel {
+            padding: 24px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-top: 22px;
+        }
+
+        .stat-card {
+            padding: 18px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        .stat-card strong {
+            display: block;
+            font-size: 1.65rem;
+            color: #f8fafc;
+            margin-bottom: 6px;
+        }
+
+        .stat-card span {
+            display: block;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .card {
+            background: var(--panel-alt);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+        }
+
+        .card h3 {
+            margin: 0 0 10px;
+        }
+
+        .card p {
+            margin: 0 0 14px;
+            color: var(--muted);
+        }
+
+        .card a {
+            color: var(--accent);
+            text-decoration: none;
+            word-break: break-word;
+        }
+
+        .card a:hover,
+        .note a:hover {
+            text-decoration: underline;
+        }
+
+        .card .source {
+            display: block;
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .status-list {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .status-list strong {
+            color: #f8fafc;
+        }
+
+        .wallet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .wallet-detail {
+            padding: 18px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        .wallet-detail strong,
+        .wallet-status strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #f8fafc;
+        }
+
+        .wallet-status {
+            margin-top: 18px;
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        .wallet-status[data-tone="ok"] {
+            border-color: rgba(34, 197, 94, 0.5);
+            background: rgba(20, 83, 45, 0.28);
+        }
+
+        .wallet-status[data-tone="warn"] {
+            border-color: rgba(245, 158, 11, 0.45);
+            background: rgba(120, 53, 15, 0.24);
+        }
+
+        .wallet-status[data-tone="idle"] {
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        .mono {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            word-break: break-all;
+        }
+
+        .action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        button.action,
+        input.action-input,
+        textarea.action-input,
+        a.action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            background: rgba(56, 189, 248, 0.14);
+            color: #c7f0ff;
+            text-decoration: none;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        input.action-input {
+            justify-content: flex-start;
+            min-width: min(100%, 320px);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text);
+        }
+
+        textarea.action-input {
+            display: block;
+            width: 100%;
+            min-height: 160px;
+            resize: vertical;
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text);
+        }
+
+        input.action-input::placeholder {
+            color: var(--muted);
+        }
+
+        textarea.action-input::placeholder {
+            color: var(--muted);
+        }
+
+        button.action:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .feature-list {
+            margin: 12px 0 0;
+            padding-left: 18px;
+            color: var(--muted);
+        }
+
+        .feature-list li + li {
+            margin-top: 8px;
+        }
+
+        .note {
+            margin-top: 20px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+
+        .note a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .field-group {
+            display: grid;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .field-group label {
+            color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .list-card {
+            margin-top: 18px;
+            padding: 18px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        .list-card h3 {
+            margin: 0 0 12px;
+        }
+
+        .method-list {
+            margin: 0;
+            padding-left: 18px;
+            color: var(--muted);
+        }
+
+        .method-list li + li {
+            margin-top: 8px;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <section class="hero">
+        <h1>Nexus DAO Command Center</h1>
+        <p>
+            This page presents the DAO as a live repository-backed control center: governance authority, MCP gameplay
+            groups, treasury and profit routing, contract entry points, and external ecosystem surfaces are all
+            summarized in one browser view.
+        </p>
+        <ul class="badge-row">
+            <li>Baseline lint: flake8 . ✅</li>
+            <li>Baseline tests: pytest -q ✅</li>
+            <li>DAO features hydrated in-browser ✅</li>
+        </ul>
+        <div class="stat-grid" data-dao-stats></div>
+    </section>
+
+    <div class="layout">
+        <section class="panel">
+            <h2>Operator workspace</h2>
+            <p>Filter the dashboard and jump into the DAO surfaces you need most often without leaving this command center.</p>
+            <div class="action-row">
+                <input class="action-input" id="dashboard-search" type="search" data-dashboard-search placeholder="Search governance, wallet, treasury, MCP, rewards, docs...">
+                <button class="action" type="button" data-clear-dashboard-search>Clear filter</button>
+                <button class="action" type="button" data-refresh-wallet>Refresh wallet state</button>
+                <a class="action" href="./GOVERNANCE.md">Open governance charter</a>
+                <a class="action" href="./contracts/NexusGameTheoryToken.sol">Open NGTT contract</a>
+            </div>
+            <div class="note" data-dashboard-search-status>
+                Showing all dashboard cards.
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>MetaMask control center</h2>
+            <p>Connect MetaMask, verify the active wallet, and open the preferred DAO operator address directly in your browser wallet flow.</p>
+            <div class="wallet-grid">
+                <article class="wallet-detail">
+                    <strong>Preferred DAO wallet</strong>
+                    <div class="mono" data-preferred-wallet-address>Loading preferred wallet…</div>
+                </article>
+                <article class="wallet-detail">
+                    <strong>Connected wallet</strong>
+                    <div class="mono" data-connected-wallet-address>Not connected</div>
+                </article>
+                <article class="wallet-detail">
+                    <strong>Chain ID</strong>
+                    <div data-wallet-chain-id>Unavailable</div>
+                </article>
+                <article class="wallet-detail">
+                    <strong>Address match</strong>
+                    <div data-wallet-match-state>Waiting for MetaMask</div>
+                </article>
+            </div>
+            <div class="wallet-status" data-wallet-status data-tone="idle">
+                <strong>Wallet status</strong>
+                <div data-wallet-status-text>Checking for MetaMask support and current account access.</div>
+            </div>
+            <div class="action-row">
+                <button class="action" type="button" data-connect-wallet>Connect MetaMask</button>
+                <button class="action" type="button" data-copy-wallet>Copy preferred wallet</button>
+                <a class="action" data-open-wallet href="#" target="_blank" rel="noopener noreferrer">Open wallet on Etherscan</a>
+            </div>
+            <div class="note">
+                The dashboard now supports live MetaMask connection state. Contract write actions still require deployed addresses and ABIs before proposal or treasury transactions can be sent.
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Contract workspace</h2>
+            <p>Load a wallet, contract address, and ABI JSON into the dashboard so you can inspect withdraw-style functions before wiring any real transaction flow.</p>
+            <div class="form-grid">
+                <div class="field-group">
+                    <label for="operator-wallet-input">Wallet address</label>
+                    <input class="action-input mono" id="operator-wallet-input" type="text" data-operator-wallet-input placeholder="0x...">
+                </div>
+                <div class="field-group">
+                    <label for="contract-address-input">Contract address</label>
+                    <input class="action-input mono" id="contract-address-input" type="text" data-contract-address-input placeholder="0x...">
+                </div>
+            </div>
+            <div class="field-group">
+                <label for="contract-abi-input">Contract ABI JSON</label>
+                <textarea class="action-input mono" id="contract-abi-input" data-contract-abi-input placeholder='Paste a JSON ABI array or an artifact object with an "abi" field'></textarea>
+            </div>
+            <div class="action-row">
+                <button class="action" type="button" data-use-connected-wallet>Use connected wallet</button>
+                <button class="action" type="button" data-load-contract-workspace>Load contract ABI</button>
+                <button class="action" type="button" data-clear-contract-workspace>Clear contract form</button>
+            </div>
+            <div class="wallet-status" data-contract-workspace-status data-tone="idle">
+                <strong>Contract workspace status</strong>
+                <div data-contract-workspace-status-text>Paste a wallet, contract address, and ABI to inspect withdraw-related methods.</div>
+            </div>
+            <div class="wallet-grid">
+                <article class="wallet-detail">
+                    <strong>Operator wallet</strong>
+                    <div class="mono" data-contract-wallet-output>Not set</div>
+                </article>
+                <article class="wallet-detail">
+                    <strong>Contract address</strong>
+                    <div class="mono" data-contract-address-output>Not set</div>
+                </article>
+                <article class="wallet-detail">
+                    <strong>ABI functions</strong>
+                    <div data-contract-function-count>0 parsed</div>
+                </article>
+                <article class="wallet-detail">
+                    <strong>Withdraw-style functions</strong>
+                    <div data-withdraw-function-count>0 detected</div>
+                </article>
+            </div>
+            <div class="list-card">
+                <h3>Detected withdraw actions</h3>
+                <ul class="method-list" data-withdraw-method-list>
+                    <li>No ABI loaded yet.</li>
+                </ul>
+            </div>
+            <div class="list-card">
+                <h3>All parsed contract functions</h3>
+                <ul class="method-list" data-contract-method-list>
+                    <li>No ABI loaded yet.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>DAO feature map</h2>
+            <p>Each feature is sourced from the checked-in governance document, contracts, and bundled protocol repos.</p>
+            <div class="grid" data-dao-features></div>
+        </section>
+
+        <section class="panel">
+            <h2>How the DAO operates</h2>
+            <p>These workflow cards explain how members, operators, and automations move through the current design.</p>
+            <div class="grid" data-dao-operations></div>
+        </section>
+
+        <section class="panel">
+            <h2>Verified public web links</h2>
+            <p>These are live external destinations referenced by the bundled web3 project documentation.</p>
+            <div class="grid" data-web3-links></div>
+        </section>
+
+        <section class="panel">
+            <h2>Repository entry points</h2>
+            <p>These local links open the repo docs and artifacts that back the web3 sites in this clone.</p>
+            <div class="grid" data-repo-links></div>
+        </section>
+
+        <section class="panel">
+            <h2>Governance coverage</h2>
+            <p>Governance is represented here by the repository authority document, the NGTT contract, and the bundled DAO suite.</p>
+            <div class="grid" data-governance-links></div>
+            <ul class="status-list" data-validation-summary></ul>
+            <div class="note">
+                Wallet-powered proposal and voting helpers remain available in <a href="./logical.js">logical.js</a>,
+                but on-chain actions still require real deployed contract addresses, ABIs, and a browser wallet.
+            </div>
+        </section>
+    </div>
+</main>
+<script src="./logical.js"></script>
+</body>
+</html>

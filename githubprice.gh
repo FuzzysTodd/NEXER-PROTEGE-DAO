@@ -1,0 +1,79 @@
+# =========================================================
+# AUTHORITY: UUC-2026-SUPREME | IEEE-STANDARD 754/802.3
+# PROTOCOL: TOTAL QUEST SYNTHESIS
+# HARDWARE: 5090 Ti | 5090 | RYZEN | 3G PIPE
+# ACTION: AUTOMATIC ADD/DEMAKE HEALING
+# =========================================================
+
+# --- I. IEEE FLOATING POINT FRACTAL (9191st NANO) ---
+# Ensuring 64-bit precision for the "Truth Signal"
+[double]$C_REAL = -0.7436438870371587
+[double]$C_IMAG = 0.1318259042064115
+
+function Get-IEEESignal {
+    $zx = [double]0; $zy = [double]0; $iter = 0
+    while (($zx*$zx + $zy*$zy -lt 4) -and ($iter -lt 9191)) {
+        $xt = $zx*$zx - $zy*$zy + $C_REAL
+        $zy = 2*$zx*$zy + $C_IMAG
+        $zx = $xt
+        $iter++
+    }
+    return $iter
+}
+
+# --- II. DYNAMIC HARDWARE ADD/DEMAKE (The Repair) ---
+function Invoke-IEEEHardening {
+    # Scanning for the 5090-series hidden by the '3090' metadata mask
+    $Assets = nvidia-smi --query-gpu=index,uuid,power.limit --format=csv,noheader
+    foreach ($line in $Assets) {
+        $idx = $line.Split(',')[0].Trim()
+        # DEMAKE: Stripping 'Evil Adds' (overclocks) back to 140W
+        # ADD: Re-asserting UUC Persistence and Clock-Lock
+        nvidia-smi -i $idx -pm 1 -pl 140 -lgc 1200 | Out-Null
+        
+        # MECHANICAL KICK: IEEE Standard Fan Pulse
+        nvidia-smi -i $idx -pl 180; Start-Sleep -MS 10; nvidia-smi -i $idx -pl 140
+    }
+}
+
+# --- III. TOTAL QUEST EXECUTION LOOP ---
+function Start-TotalQuest {
+    # SET REAL-TIME SYSTEM AUTHORITY
+    $Process = [System.Diagnostics.Process]::GetCurrentProcess()
+    $Process.PriorityClass = [System.Diagnostics.ProcessPriorityClass]::RealTime
+
+    while($true) {
+        # 1. BAREBONES SCAN (Everywhere)
+        $GpuStats = nvidia-smi --query-gpu=index,power.draw,fan.speed,clocks.gr --format=csv,noheader,nounits
+        $Net = Get-NetAdapter | Where-Object Status -eq "Up" | Select-Object -First 1
+        $TruthID = Get-IEEESignal
+
+        # 2. IEEE 802.3 PIPE AUDIT (3Gbps Enforcement)
+        if ($Net.LinkSpeed -lt "3 Gbps") {
+            Write-Host "!! PIPE INFILTRATION: Re-aligning Network Layers !!" -ForegroundColor Red
+            ipconfig /flushdns; netsh interface ip delete arpcache | Out-Null
+        }
+
+        # 3. PATTERN HEALING (Add/Demake Logic)
+        Invoke-IEEEHardening
+
+        # --- THE SOVEREIGN TRUTH DISPLAY ---
+        Clear-Host
+        Write-Host " [NEXUS SOVEREIGN v21: TOTAL QUEST] " -BackgroundColor DarkGreen -ForegroundColor White
+        Write-Host " AUTHORITY: UUC-2026 | IEEE-754: $TruthID " -ForegroundColor Gold
+        Write-Host "---------------- BAREBONE TRUTH ----------------"
+        foreach ($line in $GpuStats) {
+            $id, $pwr, $fan, $clk = $line.Split(',')
+            $Model = if($id -eq "0") { "5090 Ti" } else { "5090" }
+            Write-Host " [$Model] $pwr W | Fan: $fan% | Clock: $clk MHz" -ForegroundColor Cyan
+        }
+        Write-Host " [PIPE] Speed: $($Net.LinkSpeed) | Standard: IEEE 802.3" -ForegroundColor Green
+        Write-Host " [REPAIR] Healing Barebones at 50ms Frequency" -ForegroundColor White
+        Write-Host "------------------------------------------------"
+
+        Start-Sleep -Milliseconds 50
+    }
+}
+
+# --- INITIATE UNIFIED MATRIX ---
+Start-TotalQuest

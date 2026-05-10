@@ -1,0 +1,33 @@
+# Nexus Protocol DAO — CODEOWNERS
+#
+# These owners are automatically requested for review when their
+# paths are modified in a pull request.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# ── Global default ──────────────────────────────────────────────
+*                               @FuzzysTodd
+
+# ── Smart contracts ─────────────────────────────────────────────
+/contracts/                     @FuzzysTodd
+
+# ── GitHub infrastructure ───────────────────────────────────────
+/.github/                       @FuzzysTodd
+/.github/workflows/             @FuzzysTodd
+
+# ── MCP / AI agents ─────────────────────────────────────────────
+/mcp/                           @FuzzysTodd
+
+# ── Documentation ───────────────────────────────────────────────
+/docs/                          @FuzzysTodd
+GOVERNANCE.md                   @FuzzysTodd
+SECURITY.md                     @FuzzysTodd
+
+# ── Financial operations ────────────────────────────────────────
+financial-ops-rest-server.js    @FuzzysTodd
+nexus-signal-bus.js             @FuzzysTodd
+money-flow.js                   @FuzzysTodd
+
+# ── Frontend ────────────────────────────────────────────────────
+dashboard.html                  @FuzzysTodd
+governance.html                 @FuzzysTodd
+withdraw.html                   @FuzzysTodd

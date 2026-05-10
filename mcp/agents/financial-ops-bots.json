@@ -1,0 +1,38 @@
+{
+  "financialOpsBots": {
+    "version": "1.0.0",
+    "approvalModel": "human-gated for any treasury or withdrawal execution",
+    "bots": [
+      {
+        "id": "mcp-fin-011",
+        "name": "Pre-Error Remediation Bot",
+        "role": "Detect early failures, malformed configs, syntax drift, and low-risk workflow regressions before they become blocking incidents.",
+        "outputs": [
+          "pre-error queue",
+          "low-risk autofix candidates",
+          "validation results"
+        ]
+      },
+      {
+        "id": "mcp-fin-012",
+        "name": "Withdrawal Placement Scanner",
+        "role": "Track withdrawal paths, payout logic, capital-allocation opportunities, and financial automation gaps across the repository.",
+        "outputs": [
+          "withdrawal inventory",
+          "placement opportunity log",
+          "approval-gated recommendations"
+        ]
+      },
+      {
+        "id": "mcp-fin-013",
+        "name": "Success Documentation Reporter",
+        "role": "Convert successful scans and fixes into markdown reports, dashboard payloads, and operator-ready documentation.",
+        "outputs": [
+          "markdown summary",
+          "dashboard JSON",
+          "success journal"
+        ]
+      }
+    ]
+  }
+}

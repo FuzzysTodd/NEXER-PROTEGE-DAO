@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nexus Approval Service</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #07101b;
+            --panel: rgba(10, 20, 34, 0.9);
+            --panel-strong: rgba(10, 20, 34, 0.98);
+            --line: rgba(148, 163, 184, 0.18);
+            --text: #e5eef9;
+            --muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-soft: rgba(56, 189, 248, 0.14);
+            --success: #4ade80;
+            --success-soft: rgba(74, 222, 128, 0.14);
+            --warn: #fbbf24;
+            --warn-soft: rgba(251, 191, 36, 0.14);
+            --danger: #fb7185;
+            --danger-soft: rgba(251, 113, 133, 0.14);
+            --shadow: 0 24px 60px rgba(2, 6, 23, 0.48);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top right, rgba(56, 189, 248, 0.2), transparent 36%),
+                linear-gradient(180deg, #030712 0%, #07101b 48%, #102238 100%);
+            font-family: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+        }
+
+        main {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 32px 0 64px;
+        }
+
+        .hero,
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            background: var(--panel);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(16px);
+        }
+
+        .hero {
+            padding: 32px;
+            margin-bottom: 24px;
+            display: grid;
+            gap: 20px;
+            grid-template-columns: 1.35fr 0.65fr;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: #7dd3fc;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        h1, h2, h3, p { margin: 0; }
+
+        h1 {
+            margin-top: 12px;
+            font-size: clamp(2rem, 4vw, 3.6rem);
+            line-height: 1.02;
+        }
+
+        .hero p {
+            margin-top: 14px;
+            line-height: 1.65;
+            color: var(--muted);
+            max-width: 62ch;
+        }
+
+        .hero-links {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .chip-link,
+        .btn {
+            appearance: none;
+            border: 1px solid transparent;
+            border-radius: 14px;
+            font: inherit;
+            cursor: pointer;
+            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .chip-link {
+            text-decoration: none;
+            color: var(--text);
+            background: rgba(15, 23, 42, 0.7);
+            border-color: var(--line);
+            padding: 11px 16px;
+        }
+
+        .chip-link:hover,
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .hero-note {
+            padding: 18px;
+            border-radius: 18px;
+            background: var(--panel-strong);
+            border: 1px solid var(--line);
+            display: grid;
+            gap: 10px;
+        }
+
+        .hero-note strong {
+            color: #86efac;
+            font-size: 1.05rem;
+        }
+
+        .hero-note .meta {
+            display: grid;
+            gap: 8px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+        }
+
+        .hero-note .meta span {
+            color: var(--muted);
+        }
+
+        .grid {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            margin-bottom: 24px;
+        }
+
+        .metric {
+            padding: 22px;
+            border-radius: 22px;
+            background: var(--panel);
+            border: 1px solid var(--line);
+        }
+
+        .metric span {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        .metric strong {
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .metric.success strong { color: #86efac; }
+        .metric.warn strong { color: #fcd34d; }
+        .metric.info strong { color: #7dd3fc; }
+        .metric.danger strong { color: #fda4af; }
+
+        .layout {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: 1.1fr 0.9fr;
+        }
+
+        .stack {
+            display: grid;
+            gap: 20px;
+        }
+
+        .panel {
+            padding: 24px;
+        }
+
+        .panel h2 {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .field label {
+            color: #cbd5e1;
+            font-weight: 600;
+        }
+
+        .field input {
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: rgba(15, 23, 42, 0.72);
+            color: var(--text);
+            padding: 14px 16px;
+            font: inherit;
+        }
+
+        .field input:focus {
+            outline: none;
+            border-color: rgba(56, 189, 248, 0.6);
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.12);
+        }
+
+        .field small,
+        .helper,
+        .status-text {
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .btn {
+            padding: 12px 16px;
+            color: var(--text);
+            background: rgba(15, 23, 42, 0.72);
+            border-color: var(--line);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.24), rgba(74, 222, 128, 0.22));
+            border-color: rgba(56, 189, 248, 0.35);
+        }
+
+        .btn-success {
+            background: rgba(74, 222, 128, 0.14);
+            border-color: rgba(74, 222, 128, 0.34);
+        }
+
+        .btn-warning {
+            background: rgba(251, 191, 36, 0.14);
+            border-color: rgba(251, 191, 36, 0.34);
+        }
+
+        .status-bar {
+            display: none;
+            margin-top: 18px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+        }
+
+        .status-ok {
+            display: block;
+            background: rgba(74, 222, 128, 0.12);
+            border-color: rgba(74, 222, 128, 0.3);
+            color: #bbf7d0;
+        }
+
+        .status-error {
+            display: block;
+            background: rgba(251, 113, 133, 0.12);
+            border-color: rgba(251, 113, 133, 0.3);
+            color: #fecdd3;
+        }
+
+        .log-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .log-item {
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: rgba(15, 23, 42, 0.56);
+            border: 1px solid var(--line);
+        }
+
+        .log-item .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .pill.success { background: var(--success-soft); color: #86efac; }
+        .pill.info { background: var(--accent-soft); color: #7dd3fc; }
+        .pill.warn { background: var(--warn-soft); color: #fcd34d; }
+        .pill.danger { background: var(--danger-soft); color: #fda4af; }
+
+        code {
+            padding: 1px 6px;
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.85);
+            color: #fcd34d;
+        }
+
+        @media (max-width: 980px) {
+            .hero,
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            main { width: min(100%, calc(100% - 20px)); }
+            .hero,
+            .panel { padding: 18px; }
+            .grid { grid-template-columns: 1fr; }
+            .button-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <section class="hero">
+        <div>
+            <span class="eyebrow">API Approval Service</span>
+            <h1>Save a service URL, test it on demand, and export a readable audit trail.</h1>
+            <p>
+                This local operator surface is served from <code>localhost:8787</code> and keeps approval actions
+                auditable without relying on external infrastructure. Use it to store the current service target,
+                verify reachability, and export the latest audit log for review.
+            </p>
+            <div class="hero-links">
+                <a class="chip-link" href="/">Open Service Home</a>
+                <a class="chip-link" href="/withdraw.html#import-section">Withdrawal Manager</a>
+            </div>
+        </div>
+        <div class="hero-note">
+            <strong>Approval flow status</strong>
+            <span id="service-summary">Loading service state…</span>
+            <div class="meta">
+                <span id="service-url-summary">Service URL: loading…</span>
+                <span id="audit-count-summary">Audit entries: loading…</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="grid" aria-label="Approval metrics">
+        <div class="metric success">
+            <span>Saved URL</span>
+            <strong id="metric-saved-url">—</strong>
+        </div>
+        <div class="metric info">
+            <span>Last test</span>
+            <strong id="metric-last-test">—</strong>
+        </div>
+        <div class="metric warn">
+            <span>Audit entries</span>
+            <strong id="metric-audit-count">0</strong>
+        </div>
+        <div class="metric danger">
+            <span>Last error</span>
+            <strong id="metric-last-error">—</strong>
+        </div>
+    </section>
+
+    <section class="layout">
+        <div class="stack">
+            <section class="panel">
+                <h2>Service Configuration</h2>
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="service-url">Service URL</label>
+                        <input id="service-url" type="url" placeholder="http://localhost:8787" aria-label="Service URL">
+                        <small>Enter the approval service endpoint you want to save and test. Only <code>http</code> and <code>https</code> URLs are accepted.</small>
+                    </div>
+                    <div class="button-row">
+                        <button class="btn btn-primary" id="save-url-btn" type="button">Save URL</button>
+                        <button class="btn btn-success" id="test-service-btn" type="button">Test service</button>
+                        <button class="btn btn-warning" id="export-audit-btn" type="button">Export audit</button>
+                    </div>
+                    <div class="helper" id="runtime-helper">
+                        The saved URL is stored locally by the service and mirrored in the audit log.
+                    </div>
+                </div>
+                <div class="status-bar" id="status-bar" role="status" aria-live="polite"></div>
+            </section>
+
+            <section class="panel">
+                <h2>Action Log</h2>
+                <div class="log-list" id="audit-log">
+                    <div class="log-item">
+                        <div class="row">
+                            <strong>Waiting for audit data</strong>
+                            <span class="pill warn">loading</span>
+                        </div>
+                        <p class="helper" style="margin-top:8px;">Saved URLs, test runs, and exports will appear here once the service responds.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="stack">
+            <section class="panel">
+                <h2>Workflow Notes</h2>
+                <p class="helper">
+                    This page is intentionally simple: save a target, run a reachability test, then export an audit trail.
+                    It is designed to stay readable and easy to verify during approvals.
+                </p>
+            </section>
+
+            <section class="panel">
+                <h2>API Paths</h2>
+                <div class="log-list">
+                    <div class="log-item">
+                        <div class="row"><strong>GET /health</strong><span class="pill success">ok</span></div>
+                        <p class="helper" style="margin-top:8px;">Health probe used by the service test flow.</p>
+                    </div>
+                    <div class="log-item">
+                        <div class="row"><strong>POST /api/service-url</strong><span class="pill info">save</span></div>
+                        <p class="helper" style="margin-top:8px;">Stores the current service target and records the change.</p>
+                    </div>
+                    <div class="log-item">
+                        <div class="row"><strong>POST /api/test-service</strong><span class="pill warn">test</span></div>
+                        <p class="helper" style="margin-top:8px;">Performs a server-side fetch against the saved URL.</p>
+                    </div>
+                    <div class="log-item">
+                        <div class="row"><strong>GET /api/export-audit</strong><span class="pill danger">export</span></div>
+                        <p class="helper" style="margin-top:8px;">Downloads the latest audit log as markdown or JSON.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+</main>
+
+<script>
+(function () {
+    const state = {
+        audit: [],
+        serviceUrl: "http://localhost:8787",
+        lastTest: null,
+        lastError: null,
+    };
+
+    const elements = {
+        serviceUrl: document.getElementById("service-url"),
+        saveUrlBtn: document.getElementById("save-url-btn"),
+        testServiceBtn: document.getElementById("test-service-btn"),
+        exportAuditBtn: document.getElementById("export-audit-btn"),
+        statusBar: document.getElementById("status-bar"),
+        auditLog: document.getElementById("audit-log"),
+        serviceSummary: document.getElementById("service-summary"),
+        serviceUrlSummary: document.getElementById("service-url-summary"),
+        auditCountSummary: document.getElementById("audit-count-summary"),
+        savedUrlMetric: document.getElementById("metric-saved-url"),
+        lastTestMetric: document.getElementById("metric-last-test"),
+        auditCountMetric: document.getElementById("metric-audit-count"),
+        lastErrorMetric: document.getElementById("metric-last-error"),
+    };
+
+    function setStatus(message, kind) {
+        elements.statusBar.textContent = message;
+        elements.statusBar.className = "status-bar " + (kind === "error" ? "status-error" : "status-ok");
+        elements.statusBar.style.display = "block";
+        clearTimeout(elements.statusBar._timer);
+        elements.statusBar._timer = setTimeout(() => {
+            elements.statusBar.style.display = "none";
+        }, 6000);
+    }
+
+    function normalizeUrl(value) {
+        const trimmed = String(value || "").trim();
+        if (!trimmed) {
+            throw new Error("Enter a service URL first.");
+        }
+        const parsed = new URL(trimmed);
+        if (!/^https?:$/.test(parsed.protocol)) {
+            throw new Error("Only http and https URLs are supported.");
+        }
+        return parsed.toString().replace(/\/$/, "");
+    }
+
+    function formatTimestamp(value) {
+        if (!value) return "—";
+        try {
+            return new Date(value).toLocaleString();
+        } catch (_) {
+            return String(value);
+        }
+    }
+
+    function renderAudit() {
+        const audit = Array.isArray(state.audit) ? state.audit.slice().reverse() : [];
+
+        elements.serviceUrl.value = state.serviceUrl || "http://localhost:8787";
+        elements.serviceSummary.textContent = state.lastTest
+            ? (state.lastTest.ok ? "Last test passed." : "Last test failed.")
+            : "No test has been run yet.";
+        elements.serviceUrlSummary.textContent = "Service URL: " + (state.serviceUrl || "not saved");
+        elements.auditCountSummary.textContent = "Audit entries: " + audit.length;
+        elements.savedUrlMetric.textContent = state.serviceUrl ? state.serviceUrl : "—";
+        elements.lastTestMetric.textContent = state.lastTest
+            ? (state.lastTest.ok ? `OK ${state.lastTest.status || ""}`.trim() : `Fail ${state.lastTest.status || ""}`.trim())
+            : "—";
+        elements.auditCountMetric.textContent = String(audit.length);
+        elements.lastErrorMetric.textContent = state.lastError ? state.lastError.message : "—";
+
+        if (!audit.length) {
+            elements.auditLog.innerHTML = `
+                <div class="log-item">
+                    <div class="row">
+                        <strong>No audit entries yet</strong>
+                        <span class="pill warn">empty</span>
+                    </div>
+                    <p class="helper" style="margin-top:8px;">Save a URL or run a test to populate the audit trail.</p>
+                </div>
+            `;
+            return;
+        }
+
+        elements.auditLog.innerHTML = audit.map(entry => {
+            const kind = entry.action === "test-service" ? (entry.ok ? "success" : "danger") : (entry.action === "export-audit" ? "warn" : "info");
+            return `
+                <article class="log-item">
+                    <div class="row">
+                        <strong>${entry.action}</strong>
+                        <span class="pill ${kind}">${entry.ok === false ? "failed" : (entry.ok === true ? "ok" : "recorded")}</span>
+                    </div>
+                    <p class="helper" style="margin-top:8px;">${entry.message || "Recorded action."}</p>
+                    <p class="helper">URL: ${entry.serviceUrl || "—"} · Time: ${formatTimestamp(entry.timestamp)}</p>
+                </article>
+            `;
+        }).join("");
+    }
+
+    async function requestJson(path, body) {
+        const response = await fetch(path, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body || {})
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(payload.error || `Request failed with HTTP ${response.status}`);
+        }
+        return payload;
+    }
+
+    async function loadState() {
+        const response = await fetch("/api/state");
+        const payload = await response.json();
+        if (!response.ok) {
+            throw new Error(payload.error || `State request failed with HTTP ${response.status}`);
+        }
+        state.serviceUrl = payload.serviceUrl || "http://localhost:8787";
+        state.audit = Array.isArray(payload.audit) ? payload.audit : [];
+        state.lastTest = payload.lastTest || null;
+        state.lastError = payload.lastError || null;
+        renderAudit();
+    }
+
+    async function saveUrl() {
+        const serviceUrl = normalizeUrl(elements.serviceUrl.value);
+        elements.saveUrlBtn.disabled = true;
+        try {
+            const payload = await requestJson("/api/service-url", { serviceUrl });
+            state.serviceUrl = payload.serviceUrl || serviceUrl;
+            state.audit = Array.isArray(payload.audit) ? payload.audit : state.audit;
+            state.lastError = payload.lastError || null;
+            renderAudit();
+            setStatus(`Saved service URL: ${state.serviceUrl}`);
+        } catch (error) {
+            state.lastError = { message: error.message };
+            renderAudit();
+            setStatus(error.message, "error");
+        } finally {
+            elements.saveUrlBtn.disabled = false;
+        }
+    }
+
+    async function testService() {
+        const serviceUrl = normalizeUrl(elements.serviceUrl.value || state.serviceUrl);
+        elements.testServiceBtn.disabled = true;
+        setStatus(`Testing ${serviceUrl}…`);
+        try {
+            const payload = await requestJson("/api/test-service", { serviceUrl });
+            state.serviceUrl = payload.serviceUrl || serviceUrl;
+            state.lastTest = payload.lastTest || null;
+            state.audit = Array.isArray(payload.audit) ? payload.audit : state.audit;
+            state.lastError = payload.lastError || null;
+            renderAudit();
+            setStatus(payload.message || `Service responded with ${payload.lastTest && payload.lastTest.status ? payload.lastTest.status : "success"}`);
+        } catch (error) {
+            state.lastError = { message: error.message };
+            renderAudit();
+            setStatus(error.message, "error");
+        } finally {
+            elements.testServiceBtn.disabled = false;
+        }
+    }
+
+    async function exportAudit() {
+        try {
+            const response = await fetch("/api/export-audit?format=md");
+            if (!response.ok) {
+                const payload = await response.json().catch(() => ({}));
+                throw new Error(payload.error || `Export failed with HTTP ${response.status}`);
+            }
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = objectUrl;
+            link.download = "approval-service-audit.md";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(objectUrl);
+            setStatus("Audit export downloaded.");
+            await loadState();
+        } catch (error) {
+            state.lastError = { message: error.message };
+            renderAudit();
+            setStatus(error.message, "error");
+        }
+    }
+
+    elements.saveUrlBtn.addEventListener("click", saveUrl);
+    elements.testServiceBtn.addEventListener("click", testService);
+    elements.exportAuditBtn.addEventListener("click", exportAudit);
+    elements.serviceUrl.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            saveUrl();
+        }
+    });
+
+    loadState().catch(error => {
+        state.lastError = { message: error.message };
+        renderAudit();
+        setStatus(error.message, "error");
+    });
+})();
+</script>
+</body>
+</html>

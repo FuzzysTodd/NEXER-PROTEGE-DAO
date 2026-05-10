@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nexus Protocol – Crypto Expert Money Flow Dashboard</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #0a0e1a;
+            --panel: #111827;
+            --panel-alt: #1f2937;
+            --text: #e5e7eb;
+            --muted: #94a3b8;
+            --accent: #38bdf8;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --gold: #ffd700;
+            --border: rgba(148, 163, 184, 0.2);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(180deg, #020617 0%, var(--bg) 100%);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px 20px 64px;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(74, 222, 128, 0.15) 100%);
+            border: 2px solid var(--accent);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(56, 189, 248, 0.3);
+            padding: 40px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .hero-content { position: relative; z-index: 1; }
+
+        .hero h1 {
+            margin: 0 0 16px;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .tagline {
+            font-size: 1.2rem;
+            color: var(--success);
+            font-weight: 600;
+            margin: 0 0 20px;
+        }
+
+        .hero p {
+            color: var(--muted);
+            line-height: 1.7;
+            margin: 0 0 24px;
+            font-size: 1.05rem;
+        }
+
+        .badges {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 1px solid;
+        }
+
+        .badge-gold {
+            background: rgba(255, 215, 0, 0.15);
+            color: var(--gold);
+            border-color: var(--gold);
+        }
+
+        .badge-success {
+            background: rgba(74, 222, 128, 0.15);
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .badge-accent {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* Panel Styles */
+        .panel {
+            background: rgba(17, 24, 39, 0.95);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: 0 12px 32px rgba(2, 6, 23, 0.4);
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+
+        .panel h2 {
+            margin: 0 0 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel h3 {
+            margin: 24px 0 12px;
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+
+        .panel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        /* Revenue Cards */
+        .revenue-card {
+            background: var(--panel-alt);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .revenue-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(56, 189, 248, 0.2);
+            border-color: var(--accent);
+        }
+
+        .revenue-card h4 {
+            margin: 0 0 12px;
+            font-size: 1.1rem;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .revenue-card .type {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .revenue-card .apy {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 8px 0;
+        }
+
+        .revenue-card .description {
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 12px 0;
+        }
+
+        .revenue-card .metrics {
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .metric {
+            flex: 1;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 4px;
+        }
+
+        /* Calculator */
+        .calculator {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(74, 222, 128, 0.1));
+            border: 1px solid var(--accent);
+            border-radius: 14px;
+            padding: 24px;
+        }
+
+        .calc-input {
+            margin-bottom: 20px;
+        }
+
+        .calc-input label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input[type="number"],
+        select {
+            width: 100%;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            padding: 12px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .calc-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 2px solid var(--border);
+        }
+
+        .result-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .result-card .label {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .result-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        /* Strategy List */
+        .strategy-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .strategy-item {
+            background: var(--panel-alt);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .strategy-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            color: var(--bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .strategy-content {
+            flex: 1;
+        }
+
+        .strategy-content h4 {
+            margin: 0 0 8px;
+            color: var(--accent);
+        }
+
+        .strategy-content p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .risk-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .risk-low {
+            background: rgba(74, 222, 128, 0.2);
+            color: var(--success);
+        }
+
+        .risk-medium {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--warning);
+        }
+
+        .risk-high {
+            background: rgba(248, 113, 113, 0.2);
+            color: var(--danger);
+        }
+
+        /* Flow Diagram */
+        .flow-diagram {
+            background: var(--panel-alt);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            overflow-x: auto;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .flow-box {
+            background: var(--panel);
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            padding: 16px;
+            min-width: 180px;
+            text-align: center;
+        }
+
+        .flow-box.source {
+            border-color: var(--gold);
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .flow-box.destination {
+            border-color: var(--success);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .flow-arrow {
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .panel-grid { grid-template-columns: 1fr; }
+            .flow-row { flex-direction: column; }
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(56, 189, 248, 0.4);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: var(--bg);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(74, 222, 128, 0.4);
+        }
+
+        code {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .highlight {
+            background: rgba(255, 215, 0, 0.15);
+            color: var(--gold);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* Skip navigation link */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--accent);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 0 0 8px 0;
+            font-weight: bold;
+            z-index: 9999;
+            text-decoration: none;
+            transition: top 0.2s ease;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Focus-visible for buttons */
+        .btn:focus-visible {
+            outline: 3px solid var(--accent);
+            outline-offset: 3px;
+        }
+    </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<main id="main-content">
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>💎 Nexus Protocol Crypto Expert Dashboard</h1>
+            <p class="tagline">100% Expert-Level Money Flow Analysis & Revenue Optimization</p>
+            <p>
+                Welcome to the most comprehensive crypto revenue analysis system. This dashboard provides
+                expert-level insights into all <strong>10+ revenue streams</strong> built into the Nexus Protocol,
+                with real-time calculations, optimal strategies, and actionable paths to maximize your returns.
+            </p>
+            <div class="badges">
+                <span class="badge badge-gold">🏆 Expert Level Analysis</span>
+                <span class="badge badge-success">💰 10+ Revenue Streams</span>
+                <span class="badge badge-accent">🔬 Real-Time Calculations</span>
+                <span class="badge badge-gold">📈 Optimized Strategies</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Revenue Calculator -->
+    <section class="panel">
+        <h2>💵 Revenue Calculator</h2>
+        <div class="calculator">
+            <div class="calc-input">
+                <label for="investment">Initial Investment (USD)</label>
+                <input type="number" id="investment" value="10000" min="0" step="100">
+            </div>
+            <div class="calc-input">
+                <label for="timeframe">Timeframe</label>
+                <select id="timeframe">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly" selected>Monthly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </div>
+            <div class="calc-input">
+                <label for="strategy">Strategy Type</label>
+                <select id="strategy">
+                    <option value="conservative">Conservative (Low Risk)</option>
+                    <option value="balanced" selected>Balanced (Medium Risk)</option>
+                    <option value="aggressive">Aggressive (High Risk)</option>
+                    <option value="expert">Expert (Maximum Return)</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="calculateReturns()">Calculate Returns</button>
+            
+            <div class="calc-results" id="results" style="display: none;">
+                <div class="result-card">
+                    <div class="label">Total Return</div>
+                    <div class="value" id="total-return">$0</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">ROI</div>
+                    <div class="value" id="roi">0%</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">APY</div>
+                    <div class="value" id="apy">0%</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Passive Income</div>
+                    <div class="value" id="passive">$0</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Revenue Streams -->
+    <section class="panel">
+        <h2>🎯 10 Primary Revenue Streams</h2>
+        <div class="panel-grid">
+            <!-- Stream 1 -->
+            <div class="revenue-card">
+                <h4>
+                    <span class="type">Passive</span>
+                    Dividend Distributions
+                </h4>
+                <div class="apy">5-20% APY</div>
+                <div class="description">
+                    Automatic dividend payouts from transaction fees. 20% sell tax includes 5% rewards
+                    distributed to all holders. Zero effort required.
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-label">Risk</div>
+                        <div class="metric-value" style="color: var(--success)">Low</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Frequency</div>
+                        <div class="metric-value">Continuous</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stream 2 -->
+            <div class="revenue-card">
+                <h4>
+                    <span class="type">Active</span>
+                    Game-to-Earn Rewards
+                </h4>
+                <div class="apy">50-300% APY</div>
+                <div class="description">
+                    Complete games in 7 age categories to earn NGTT tokens. Base rewards multiplied
+                    by skill level (1% per point) + age group boosters up to 120%.
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-label">Risk</div>
+                        <div class="metric-value" style="color: var(--success)">Low</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Frequency</div>
+                        <div class="metric-value">Per Game</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stream 3 -->
+            <div class="revenue-card">
+                <h4>
+                    <span class="type">Passive</span>
+                    NFT Staking
+                </h4>
+                <div class="apy">15-40% APY</div>
+                <div class="description">
+                    Stake NFTs to generate daily NGTT rewards. Infinite reward supply with fixed
+                    daily payouts per NFT. Compound or withdraw anytime.
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-label">Risk</div>
+                        <div class="metric-value" style="color: var(--success)">Low</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Frequency</div>
+                        <div class="metric-value">Daily</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stream 4 -->
+            <div class="revenue-card">
+                <h4>
+                    <span class="type">Active</span>
+                    Liquidity Provision
+                </h4>
+                <div class="apy">30-120% APY</div>
+                <div class="description">
+                    Provide liquidity on Uniswap V3/V4, SushiSwap, or PancakeSwap. Earn trading fees
+                    + liquidity mining rewards + concentrated position bonuses.
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-label">Risk</div>
+                        <div class="metric-value" style="color: var(--warning)">Medium</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Frequency</div>
+                        <div class="metric-value">Per Swap</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stream 5 -->
+            <div class="revenue-card">
+                <h4>
+                    <span class="type">Passive</span>
+                    Reflection Fees
+                </h4>
+                <div class="apy">8-15% APY</div>
+                <div class="description">
+                    Buyback token mechanism: 8% reflection on all transactions automatically
+                    redistributed to holders. Tokens accumulate in your wallet continuously.
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-label">Risk</div>
+                        <div class="metric-value" style="color: var(--success)">Low</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Frequency</div>
+                        <div class="metric-value">Continuous</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stream 6 -->
+            <div class="revenue-card">
+                <h4>
+                    <span class="type">Active</span>
+                    Buyback & Burn Benefits
+                </h4>
+                <div class="apy">10-25% APY</div>
+                <div class="description">
+                    3% buyback fee triggers automated token purchases and burns, reducing supply
+                    and increasing scarcity. Your holdings become more valuable over time.
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-label">Risk</div>
+                        <div class="metric-value" style="color: var(--success)">Low</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Frequency</div>
+                        <div class="metric-value">Automated</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stream 7 -->
+            <div class="revenue-card">
+                <h4>
+                    <span class="type">Active</span>
+                    MCP Group Profits
+                </h4>
+                <div class="apy">20-100% APY</div>
+                <div class="description">
+                    Join Master Project Controller groups. Owner adds funds to profit pool which
+                    are distributed proportionally based on group activity and games played.
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-label">Risk</div>
+                        <div class="metric-value" style="color: var(--success)">Low</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Frequency</div>
+                        <div class="metric-value">Per Game</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stream 8 -->
+            <div class="revenue-card">
+                <h4>
+                    <span class="type">Expert</span>
+                    Arbitrage Trading
+                </h4>
+                <div class="apy">100-500% APY</div>
+                <div class="description">
+                    Exploit price differences across Uniswap, SushiSwap, PancakeSwap using 1Inch
+                    aggregation. Flash loans available for zero-capital arbitrage opportunities.
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-label">Risk</div>
+                        <div class="metric-value" style="color: var(--danger)">High</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Frequency</div>
+                        <div class="metric-value">Per Trade</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stream 9 -->
+            <div class="revenue-card">
+                <h4>
+                    <span class="type">Passive</span>
+                    Governance Rewards
+                </h4>
+                <div class="apy">5-15% APY</div>
+                <div class="description">
+                    Participate in DAO governance by voting on proposals. Earn rewards for active
+                    participation. Super delegates receive additional fast-track incentives.
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-label">Risk</div>
+                        <div class="metric-value" style="color: var(--success)">Low</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Frequency</div>
+                        <div class="metric-value">Per Vote</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stream 10 -->
+            <div class="revenue-card">
+                <h4>
+                    <span class="type">Expert</span>
+                    Lending & Borrowing
+                </h4>
+                <div class="apy">8-35% APY</div>
+                <div class="description">
+                    Supply NGTT to Aave V3 or Compound protocols. Earn interest on deposits or
+                    use as collateral for leveraged positions. Flash loans for advanced strategies.
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-label">Risk</div>
+                        <div class="metric-value" style="color: var(--warning)">Medium</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Frequency</div>
+                        <div class="metric-value">Continuous</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Money Flow Diagram -->
+    <section class="panel">
+        <h2>💸 Money Flow Architecture</h2>
+        <div class="flow-diagram">
+            <h3 style="margin-top: 0;">Transaction Flow</h3>
+            <div class="flow-row">
+                <div class="flow-box source">User Buy/Sell</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">2-20% Fee</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box destination">Multiple Destinations</div>
+            </div>
+
+            <h3>Fee Distribution Breakdown</h3>
+            <div class="flow-row">
+                <div class="flow-box">Buy (2%)</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box destination">Dev Wallet (2%)</div>
+            </div>
+            <div class="flow-row">
+                <div class="flow-box">Sell (20%)</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box destination">
+                    Rewards (5%)<br>
+                    Treasury (10%)<br>
+                    Liquidity (3%)<br>
+                    Dev (2%)
+                </div>
+            </div>
+
+            <h3>Passive Income Flow</h3>
+            <div class="flow-row">
+                <div class="flow-box source">Your Holdings</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">Reflection (8%)</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">Dividend (5%)</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box destination">Your Wallet</div>
+            </div>
+
+            <h3>Active Earnings Flow</h3>
+            <div class="flow-row">
+                <div class="flow-box source">Play Games</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">Base Reward</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">× Skill Multiplier</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">× Age Booster</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box destination">NGTT Tokens</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Expert Strategies -->
+    <section class="panel">
+        <h2>🎓 Expert-Level Strategies</h2>
+        <ul class="strategy-list">
+            <li class="strategy-item">
+                <div class="strategy-number">1</div>
+                <div class="strategy-content">
+                    <h4>The Compounding King Strategy</h4>
+                    <p>
+                        Start with dividends + reflections for passive income. Reinvest 100% back into NGTT
+                        holdings for 6 months. After critical mass (50k+ tokens), compound returns accelerate
+                        exponentially. Expected: <span class="highlight">200%+ yearly returns</span>.
+                    </p>
+                    <span class="risk-indicator risk-low">Low Risk</span>
+                </div>
+            </li>
+            <li class="strategy-item">
+                <div class="strategy-number">2</div>
+                <div class="strategy-content">
+                    <h4>The Game Theory Maximalist</h4>
+                    <p>
+                        Join MCP groups in all 7 age categories. Focus on high-skill multiplier games.
+                        Combine game rewards with profit pool distributions. Stack skill points to 100+
+                        for maximum multipliers. Expected: <span class="highlight">300%+ yearly returns</span>.
+                    </p>
+                    <span class="risk-indicator risk-low">Low Risk</span>
+                </div>
+            </li>
+            <li class="strategy-item">
+                <div class="strategy-number">3</div>
+                <div class="strategy-content">
+                    <h4>The NFT Staking Whale</h4>
+                    <p>
+                        Acquire multiple NFT collections. Stake 100% for daily NGTT rewards. Reinvest
+                        50% of rewards back into more NFTs, creating a snowball effect. Scale to 50+
+                        staked NFTs. Expected: <span class="highlight">150%+ yearly returns</span>.
+                    </p>
+                    <span class="risk-indicator risk-low">Low Risk</span>
+                </div>
+            </li>
+            <li class="strategy-item">
+                <div class="strategy-number">4</div>
+                <div class="strategy-content">
+                    <h4>The Liquidity Mining Expert</h4>
+                    <p>
+                        Provide concentrated liquidity on Uniswap V3 within tight price ranges (+/- 5%).
+                        Collect trading fees + liquidity rewards. Rebalance weekly for optimal APY.
+                        Use 3-5 different pools for diversification. Expected: <span class="highlight">100%+ yearly returns</span>.
+                    </p>
+                    <span class="risk-indicator risk-medium">Medium Risk</span>
+                </div>
+            </li>
+            <li class="strategy-item">
+                <div class="strategy-number">5</div>
+                <div class="strategy-content">
+                    <h4>The Flash Loan Arbitrageur</h4>
+                    <p>
+                        Monitor price discrepancies across DEXes using 1Inch API. Execute flash loan
+                        arbitrage trades with zero capital. Automate with smart contracts for 24/7
+                        operation. Requires coding skills. Expected: <span class="highlight">500%+ yearly returns</span>.
+                    </p>
+                    <span class="risk-indicator risk-high">High Risk</span>
+                </div>
+            </li>
+            <li class="strategy-item">
+                <div class="strategy-number">6</div>
+                <div class="strategy-content">
+                    <h4>The Leveraged Yield Farmer</h4>
+                    <p>
+                        Deposit NGTT as collateral on Aave. Borrow stablecoins at 5% APR. Use borrowed
+                        funds to buy more NGTT. Repeat 2-3x for leverage. Earn 3x dividends + reflections.
+                        Maintain safe health factor. Expected: <span class="highlight">400%+ yearly returns</span>.
+                    </p>
+                    <span class="risk-indicator risk-high">High Risk</span>
+                </div>
+            </li>
+            <li class="strategy-item">
+                <div class="strategy-number">7</div>
+                <div class="strategy-content">
+                    <h4>The Ultimate Hybrid Stack</h4>
+                    <p>
+                        Combine ALL strategies: Hold 40% for dividends/reflections, stake 20% in NFTs,
+                        provide 20% as liquidity, actively game with 10%, and keep 10% liquid for arbitrage
+                        opportunities. Rebalance quarterly. Expected: <span class="highlight">250%+ yearly returns</span>.
+                    </p>
+                    <span class="risk-indicator risk-medium">Medium Risk</span>
+                </div>
+            </li>
+            <li class="strategy-item">
+                <div class="strategy-number">8</div>
+                <div class="strategy-content">
+                    <h4>The Treasury Participation Plan</h4>
+                    <p>
+                        Become active in DAO governance. Vote on all proposals for participation rewards.
+                        Apply for Super Delegate status for 3x governance rewards. Propose new revenue
+                        initiatives. Expected: <span class="highlight">50%+ yearly returns</span> + influence.
+                    </p>
+                    <span class="risk-indicator risk-low">Low Risk</span>
+                </div>
+            </li>
+            <li class="strategy-item">
+                <div class="strategy-number">9</div>
+                <div class="strategy-content">
+                    <h4>The Whale Accumulation Strategy</h4>
+                    <p>
+                        Focus purely on accumulation during first 12 months. Buy all dips, reinvest all
+                        earnings. Reach whale status (1M+ tokens). Then switch to income mode, living
+                        purely off dividends/reflections. Expected: <span class="highlight">Infinite passive income</span>.
+                    </p>
+                    <span class="risk-indicator risk-low">Low Risk</span>
+                </div>
+            </li>
+            <li class="strategy-item">
+                <div class="strategy-number">10</div>
+                <div class="strategy-content">
+                    <h4>The Boost Multiplier Exploit</h4>
+                    <p>
+                        Wait for boost multiplier events (100-500x). Concentrate all gaming activity
+                        during these periods. Single game can yield 50,000+ NGTT tokens. Stake excess
+                        immediately for compounding. Expected: <span class="highlight">1000%+ during events</span>.
+                    </p>
+                    <span class="risk-indicator risk-low">Low Risk</span>
+                </div>
+            </li>
+        </ul>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="panel">
+        <h2>🚀 Quick Actions</h2>
+        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+            <a href="./withdraw.html" class="btn btn-primary">Withdraw Funds</a>
+            <a href="./chimera.html" class="btn btn-primary">Web3 Directory</a>
+            <a href="./GOVERNANCE.md" class="btn btn-success">DAO Governance</a>
+            <button class="btn btn-success" onclick="alert('Connect your wallet to start earning!')">Connect Wallet</button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <section class="panel" style="text-align: center;">
+        <p style="color: var(--muted); margin: 0;">
+            <strong>Nexus Protocol Token DAO</strong> – The Bitcoin-era supremacy token with 10+ revenue streams<br>
+            Owner: <code>@FuzzysTodd</code> | Authority: <code>0x33ffc308e693a5b49e0ee0241f41f03ccef495f2</code>
+        </p>
+    </section>
+</main>
+
+<script src="./money-flow.js"></script>
+</body>
+</html>

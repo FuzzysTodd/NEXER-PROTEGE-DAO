@@ -1,0 +1,106 @@
+name: "Release Automation"
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g. v1.0.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: "Create GitHub Release"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for changelog)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.11"
+
+      - name: Determine version tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate changelog from git log
+        id: changelog
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            LOG=$(git log "${PREV_TAG}..HEAD" --pretty=format:"- %s (%h)" --no-merges | head -80)
+          else
+            LOG=$(git log --pretty=format:"- %s (%h)" --no-merges | head -80)
+          fi
+          echo "changelog<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$LOG" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Collect contract artifacts
+        run: |
+          mkdir -p release-artifacts
+          cp contracts/*.sol release-artifacts/ 2>/dev/null || true
+          cp mcp/nexus-agent-registry.json release-artifacts/ 2>/dev/null || true
+          echo "Release artifacts:"
+          ls -lh release-artifacts/
+
+      - name: Create GitHub Release
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const tag = "${{ steps.tag.outputs.tag }}";
+            const changelog = `${{ steps.changelog.outputs.changelog }}`;
+            const body = [
+              "## Nexus Protocol DAO — " + tag,
+              "",
+              "### What's Changed",
+              changelog || "- Initial release",
+              "",
+              "### Contracts Included",
+              "- `NGTTGovernanceToken.sol` — ERC20Votes governance token",
+              "- `NexusDAOGovernor.sol` — On-chain Governor with bounded quorum (1–20%)",
+              "- `NexusDAOTimelock.sol` — 2-day timelock controller",
+              "- `NexusDAOTreasury.sol` — Multi-sig treasury (2-of-N for large transfers)",
+              "- `NexusGameTheoryToken.sol` — GameFi incentive token",
+              "- `NexusLPStaking.sol` — LP liquidity mining",
+              "- `NexusRWA.sol` — Real-world asset NFT (ERC-721)",
+              "- `NexusFractionalize.sol` — NFT fractionalization vault",
+              "- `NexusOptionsVault.sol` — Covered-call premium vault (ERC-4626 style)",
+              "- `NexusFractalVault.sol` — Fractal compounding vault (ERC-4626 style)",
+              "",
+              "### Services",
+              "- `nexus-signal-bus.js` — On-chain event → WebSocket broadcast bus",
+              "- `financial-ops-rest-server.js` — REST API with `/api/v1/member/:address`",
+              "",
+              "### Agent Registry",
+              "See `mcp/nexus-agent-registry.json` for all 10 specialized AI agent definitions.",
+              "",
+              "---",
+              "*Released by Nexus Protocol DAO — FuzzysTodd (owner)*",
+            ].join("\n");
+
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              tag_name: tag,
+              name: "Nexus Protocol DAO " + tag,
+              body,
+              draft: false,
+              prerelease: tag.includes("-"),
+            });
+            core.notice("Release created: " + tag);

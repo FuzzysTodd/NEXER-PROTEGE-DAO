@@ -1,0 +1,150 @@
+name: "Nexus CI — Lint, Test, and Validate"
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────
+  # Job 1: Python — flake8 lint + full pytest suite
+  # ─────────────────────────────────────────────────────────────────
+  python-lint-test:
+    name: "Python Lint & Test"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-3.11-${{ hashFiles('requirements*.txt') }}
+          restore-keys: ${{ runner.os }}-pip-3.11-
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Lint with flake8
+        run: python -m flake8 .
+
+      - name: Run pytest
+        run: python -m pytest -q --tb=short
+
+  # ─────────────────────────────────────────────────────────────────
+  # Job 2: JavaScript — node --check on all .js files
+  # ─────────────────────────────────────────────────────────────────
+  js-syntax-check:
+    name: "JavaScript Syntax Check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Setup Node 20
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "20"
+
+      - name: Check root-level JS files
+        run: |
+          find . -maxdepth 1 -name "*.js" -not -path "./.git/*" | while read f; do
+            echo "Checking $f"
+            node --check "$f"
+          done
+
+  # ─────────────────────────────────────────────────────────────────
+  # Job 3: JSON/YAML validation
+  # ─────────────────────────────────────────────────────────────────
+  config-validation:
+    name: "Config File Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.11"
+
+      - name: Install pyyaml
+        run: pip install pyyaml
+
+      - name: Validate JSON and YAML files
+        run: |
+          python - <<'PYTHON'
+          import json, sys
+          from pathlib import Path
+          import yaml
+
+          errors = []
+          root = Path(".")
+
+          for p in root.rglob("*.json"):
+              if any(part in {".git", "node_modules", "__pycache__", ".vs"} for part in p.parts):
+                  continue
+              try:
+                  json.loads(p.read_text(encoding="utf-8"))
+              except (json.JSONDecodeError, UnicodeDecodeError) as e:
+                  errors.append(f"JSON error in {p}: {e}")
+
+          for p in root.rglob("*.yml"):
+              if any(part in {".git", "node_modules", "__pycache__"} for part in p.parts):
+                  continue
+              try:
+                  yaml.safe_load(p.read_text(encoding="utf-8"))
+              except yaml.YAMLError as e:
+                  errors.append(f"YAML error in {p}: {e}")
+
+          if errors:
+              for err in errors:
+                  print(f"ERROR: {err}", file=sys.stderr)
+              sys.exit(1)
+          print(f"All JSON and YAML files are valid.")
+          PYTHON
+
+  # ─────────────────────────────────────────────────────────────────
+  # Job 4: HTML structure check
+  # ─────────────────────────────────────────────────────────────────
+  html-check:
+    name: "HTML Structure Check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Validate HTML files start with DOCTYPE
+        run: |
+          python3 - <<'PYTHON'
+          import sys
+          from pathlib import Path
+          errors = []
+          for p in Path(".").rglob("*.html"):
+              if any(part in {".git","node_modules","__pycache__",".vs"} for part in p.parts):
+                  continue
+              text = p.read_text(encoding="utf-8", errors="replace").lstrip().lower()
+              if not (text.startswith("<!doctype html>") or "<html" in text[:200]):
+                  errors.append(str(p))
+          if errors:
+              for e in errors:
+                  print(f"FAIL: {e} does not look like valid HTML", file=sys.stderr)
+              sys.exit(1)
+          print("All HTML files pass structure check.")
+          PYTHON

@@ -1,0 +1,25 @@
+{
+  "server": {
+    "baseURL": "http://localhost:3000",
+    "port": 3000
+  },
+  "automation": {
+    "slowMo": 1000,
+    "waitTimeout": 300000,
+    "headless": false,
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    }
+  },
+  "pages": {
+    "withdraw": "/withdraw.html",
+    "cryptoExpert": "/crypto-expert-guide.html",
+    "chimera": "/chimera.html"
+  },
+  "contracts": {
+    "autoHighlight": true,
+    "autoScreenshot": true,
+    "waitForConnection": true
+  }
+}

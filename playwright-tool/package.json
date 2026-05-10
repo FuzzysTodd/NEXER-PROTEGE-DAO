@@ -1,0 +1,35 @@
+{
+  "name": "nexus-playwright-tool",
+  "version": "1.0.0",
+  "description": "Easy-to-use Playwright automation tool for Nexus Protocol - reducing steps for maximum human interaction with Web3 contracts",
+  "main": "index.js",
+  "scripts": {
+    "install-browsers": "playwright install chromium",
+    "test": "playwright test",
+    "test-headed": "playwright test --headed",
+    "test-debug": "playwright test --debug",
+    "codegen": "playwright codegen http://localhost:3000",
+    "show-report": "playwright show-report",
+    "quick-start": "node scripts/quick-start.js",
+    "automate": "node scripts/automate.js",
+    "web3-automate": "node scripts/web3-automation.js"
+  },
+  "keywords": [
+    "playwright",
+    "automation",
+    "testing",
+    "nexus-protocol",
+    "web3",
+    "ethereum",
+    "metamask",
+    "contracts",
+    "withdraw",
+    "defi"
+  ],
+  "author": "Nexus Protocol",
+  "license": "MIT",
+  "dependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "devDependencies": {}
+}

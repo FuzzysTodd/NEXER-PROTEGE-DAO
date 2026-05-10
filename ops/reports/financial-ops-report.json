@@ -1,0 +1,444 @@
+{
+  "generatedAt": "2026-04-06T18:45:30+00:00",
+  "summary": {
+    "filesScanned": 3720,
+    "preErrorCount": 0,
+    "preErrorScope": "first-party automation, docs, mcp, nexus, ops, and top-level repo files",
+    "withdrawSignalCount": 2028,
+    "placementSignalCount": 2826,
+    "successDocsGenerated": 2,
+    "approvalGate": "required for any fund movement or treasury action"
+  },
+  "bots": [
+    {
+      "id": "mcp-fin-011",
+      "name": "Pre-Error Remediation Bot",
+      "role": "Detect early failures, malformed configs, syntax drift, and low-risk workflow regressions before they become blocking incidents.",
+      "outputs": [
+        "pre-error queue",
+        "low-risk autofix candidates",
+        "validation results"
+      ]
+    },
+    {
+      "id": "mcp-fin-012",
+      "name": "Withdrawal Placement Scanner",
+      "role": "Track withdrawal paths, payout logic, capital-allocation opportunities, and financial automation gaps across the repository.",
+      "outputs": [
+        "withdrawal inventory",
+        "placement opportunity log",
+        "approval-gated recommendations"
+      ]
+    },
+    {
+      "id": "mcp-fin-013",
+      "name": "Success Documentation Reporter",
+      "role": "Convert successful scans and fixes into markdown reports, dashboard payloads, and operator-ready documentation.",
+      "outputs": [
+        "markdown summary",
+        "dashboard JSON",
+        "success journal"
+      ]
+    }
+  ],
+  "preErrorFindings": [],
+  "withdrawSignals": [
+    {
+      "file": "Eigenlayer/src/contracts/core/StrategyManager.sol",
+      "count": 312,
+      "matches": [
+        "withdraw"
+      ]
+    },
+    {
+      "file": "Eigenlayer/src/contracts/pods/DelayedWithdrawalRouter.sol",
+      "count": 240,
+      "matches": [
+        "withdraw",
+        "claim"
+      ]
+    },
+    {
+      "file": "Eigenlayer/src/contracts/pods/EigenPod.sol",
+      "count": 197,
+      "matches": [
+        "withdraw",
+        "claim",
+        "redeem"
+      ]
+    },
+    {
+      "file": "ApeCoin/contracts/ApeCoinStaking.sol",
+      "count": 152,
+      "matches": [
+        "withdraw",
+        "claim"
+      ]
+    },
+    {
+      "file": "Lyra-Finance/contracts/LiquidityPool.sol",
+      "count": 114,
+      "matches": [
+        "withdraw",
+        "claim"
+      ]
+    },
+    {
+      "file": "Synthetix/contracts/FeePool.sol",
+      "count": 114,
+      "matches": [
+        "withdraw",
+        "claim"
+      ]
+    },
+    {
+      "file": "Eigenlayer/src/contracts/interfaces/IStrategyManager.sol",
+      "count": 99,
+      "matches": [
+        "withdraw"
+      ]
+    },
+    {
+      "file": "Compound/contracts/CToken.sol",
+      "count": 87,
+      "matches": [
+        "redeem"
+      ]
+    },
+    {
+      "file": "Compound/contracts/Comptroller.sol",
+      "count": 70,
+      "matches": [
+        "claim",
+        "redeem"
+      ]
+    },
+    {
+      "file": "Moonbirds-Core/@divergencetech/ethier/contracts/erc721/ERC721Redeemer.sol",
+      "count": 70,
+      "matches": [
+        "claim",
+        "redeem"
+      ]
+    },
+    {
+      "file": "Compound/contracts/ComptrollerG7.sol",
+      "count": 69,
+      "matches": [
+        "claim",
+        "redeem"
+      ]
+    },
+    {
+      "file": "Eigenlayer/src/contracts/libraries/BeaconChainProofs.sol",
+      "count": 65,
+      "matches": [
+        "withdraw",
+        "claim"
+      ]
+    },
+    {
+      "file": "nexus/test_withdraw_dashboard.py",
+      "count": 63,
+      "matches": [
+        "withdraw",
+        "release(",
+        "claim"
+      ]
+    },
+    {
+      "file": "Eigenlayer/src/contracts/interfaces/IDelayedWithdrawalRouter.sol",
+      "count": 62,
+      "matches": [
+        "withdraw",
+        "claim"
+      ]
+    },
+    {
+      "file": "Eigenlayer/src/contracts/interfaces/IEigenPod.sol",
+      "count": 59,
+      "matches": [
+        "withdraw",
+        "claim",
+        "redeem"
+      ]
+    },
+    {
+      "file": "Umbra-Cash/contracts/Umbra.sol",
+      "count": 56,
+      "matches": [
+        "withdraw"
+      ]
+    },
+    {
+      "file": "ops/reports/financial-ops-report.json",
+      "count": 55,
+      "matches": [
+        "withdraw",
+        "release(",
+        "claim",
+        "redeem",
+        "payout"
+      ]
+    },
+    {
+      "file": "Synthetix/contracts/Issuer.sol",
+      "count": 53,
+      "matches": [
+        "claim",
+        "redeem"
+      ]
+    },
+    {
+      "file": "GMX.io/staking/Vester.sol",
+      "count": 48,
+      "matches": [
+        "withdraw",
+        "claim"
+      ]
+    },
+    {
+      "file": "Lyra-Finance/contracts/interfaces/ILiquidityPool.sol",
+      "count": 43,
+      "matches": [
+        "withdraw",
+        "claim"
+      ]
+    }
+  ],
+  "placementSignals": [
+    {
+      "file": "Uniswap-V4/test/libraries/Hooks.t.sol",
+      "count": 323,
+      "matches": [
+        "liquidity"
+      ]
+    },
+    {
+      "file": "Uniswap-V4/test/PoolManager.t.sol",
+      "count": 313,
+      "matches": [
+        "liquidity"
+      ]
+    },
+    {
+      "file": "Uniswap-V4/test/libraries/StateLibrary.t.sol",
+      "count": 277,
+      "matches": [
+        "liquidity"
+      ]
+    },
+    {
+      "file": "Lyra-Finance/contracts/LiquidityPool.sol",
+      "count": 236,
+      "matches": [
+        "liquidity",
+        "profit"
+      ]
+    },
+    {
+      "file": "Uniswap-V4/test/pool-cl/CLPoolManager.t.sol",
+      "count": 168,
+      "matches": [
+        "liquidity"
+      ]
+    },
+    {
+      "file": "Uniswap-V4/test/Tick.t.sol",
+      "count": 150,
+      "matches": [
+        "liquidity"
+      ]
+    },
+    {
+      "file": "Uniswap-V4/src/libraries/Pool.sol",
+      "count": 137,
+      "matches": [
+        "liquidity"
+      ]
+    },
+    {
+      "file": "Uniswap-V4/test/pool-cl/libraries/Tick.t.sol",
+      "count": 118,
+      "matches": [
+        "liquidity"
+      ]
+    },
+    {
+      "file": "Uniswap-V4/test/ModifyLiquidity.t.sol",
+      "count": 116,
+      "matches": [
+        "liquidity"
+      ]
+    },
+    {
+      "file": "CRYPTO_REVENUE_GUIDE.md",
+      "count": 111,
+      "matches": [
+        "treasury",
+        "yield",
+        "apy",
+        "liquidity",
+        "staking",
+        "rebalance"
+      ]
+    },
+    {
+      "file": "0xSplits/SplitMain.sol",
+      "count": 101,
+      "matches": [
+        "allocation"
+      ]
+    },
+    {
+      "file": "on-chain-income-splitter-and-distributor/contracts/SplitMain.sol",
+      "count": 101,
+      "matches": [
+        "allocation"
+      ]
+    },
+    {
+      "file": "PancakeSwap-V3/contracts/PancakeV3Pool.sol",
+      "count": 95,
+      "matches": [
+        "liquidity"
+      ]
+    },
+    {
+      "file": "SushiSwap-V3/UniswapV3Pool.sol",
+      "count": 94,
+      "matches": [
+        "liquidity"
+      ]
+    },
+    {
+      "file": "Uniswap-V3/UniswapV3Pool.sol",
+      "count": 94,
+      "matches": [
+        "liquidity"
+      ]
+    },
+    {
+      "file": "Lyra-Finance/contracts/governance-wrapper/modules/LiquidityPoolGovernanceWrapper.sol",
+      "count": 90,
+      "matches": [
+        "liquidity"
+      ]
+    },
+    {
+      "file": "money-flow.js",
+      "count": 83,
+      "matches": [
+        "treasury",
+        "apy",
+        "liquidity",
+        "staking",
+        "revenue",
+        "profit"
+      ]
+    },
+    {
+      "file": "Uniswap-V4/src/test/Fuzzers.sol",
+      "count": 77,
+      "matches": [
+        "liquidity"
+      ]
+    },
+    {
+      "file": "Uniswap-V4/src/libraries/SqrtPriceMath.sol",
+      "count": 71,
+      "matches": [
+        "liquidity"
+      ]
+    },
+    {
+      "file": "crypto-expert-guide.html",
+      "count": 71,
+      "matches": [
+        "treasury",
+        "yield",
+        "apy",
+        "liquidity",
+        "staking",
+        "rebalance"
+      ]
+    }
+  ],
+  "riskPatterns": [
+    {
+      "pattern": "approve",
+      "count": 307,
+      "sampleFiles": [
+        "nexus/finance_ops_report.py",
+        "docs/ERC20.md",
+        "Azuki-ERC721A-ERC721ABurnable/IERC721A.sol",
+        "Azuki-ERC721A-ERC721ABurnable/ERC721A.sol",
+        "Uniswap-V3/UniswapV3Pool.sol",
+        "Uniswap-V3/UniswapV3Factory.sol",
+        "Uniswap-V3/NoDelegateCall.sol",
+        "0xSplits/SplitWallet.sol"
+      ]
+    },
+    {
+      "pattern": "delegatecall",
+      "count": 166,
+      "sampleFiles": [
+        "nexus/finance_ops_report.py",
+        "docs/ERC20.md",
+        "Azuki-ERC721A-ERC721ABurnable/IERC721A.sol",
+        "Azuki-ERC721A-ERC721ABurnable/ERC721A.sol",
+        "Uniswap-V3/UniswapV3Pool.sol",
+        "Uniswap-V3/UniswapV3Factory.sol",
+        "Uniswap-V3/NoDelegateCall.sol",
+        "0xSplits/SplitWallet.sol"
+      ]
+    },
+    {
+      "pattern": "tx.origin",
+      "count": 44,
+      "sampleFiles": [
+        "nexus/finance_ops_report.py",
+        "docs/ERC20.md",
+        "Azuki-ERC721A-ERC721ABurnable/IERC721A.sol",
+        "Azuki-ERC721A-ERC721ABurnable/ERC721A.sol",
+        "Uniswap-V3/UniswapV3Pool.sol",
+        "Uniswap-V3/UniswapV3Factory.sol",
+        "Uniswap-V3/NoDelegateCall.sol",
+        "0xSplits/SplitWallet.sol"
+      ]
+    },
+    {
+      "pattern": "selfdestruct",
+      "count": 23,
+      "sampleFiles": [
+        "nexus/finance_ops_report.py",
+        "docs/ERC20.md",
+        "Azuki-ERC721A-ERC721ABurnable/IERC721A.sol",
+        "Azuki-ERC721A-ERC721ABurnable/ERC721A.sol",
+        "Uniswap-V3/UniswapV3Pool.sol",
+        "Uniswap-V3/UniswapV3Factory.sol",
+        "Uniswap-V3/NoDelegateCall.sol",
+        "0xSplits/SplitWallet.sol"
+      ]
+    }
+  ],
+  "successLog": [
+    {
+      "time": "2026-04-06T18:45:30+00:00",
+      "title": "Financial ops scan completed",
+      "details": "Static repo scan finished and refreshed markdown plus dashboard payloads.",
+      "status": "success"
+    },
+    {
+      "time": "2026-04-06T18:45:30+00:00",
+      "title": "Approval gate enforced",
+      "details": "Automation remains advisory for withdrawals, treasury routing, and settlement changes.",
+      "status": "success"
+    }
+  ],
+  "recommendedActions": [
+    "Review the pre-error queue and clear malformed or duplicate repository-owned files first.",
+    "Use the Withdrawal Placement Scanner findings to rank payout and treasury code for human review.",
+    "Treat Ethereum and Base connectivity assumptions as separate operational checks before extending automation."
+  ]
+}
