@@ -1,5 +1,0 @@
-"scripts": {
-  "test": "hardhat test",
-  "compile": "hardhat compile",
-  "deploy": "hardhat run scripts/deploy.js --network sepolia"
-}

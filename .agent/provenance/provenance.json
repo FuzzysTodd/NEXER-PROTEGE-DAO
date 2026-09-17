@@ -1,0 +1,6 @@
+{
+  "created_at": "2026-08-23T22:55:17.104287+00:00",
+  "source": "local-mcp-bob-dev",
+  "gpu": "NVIDIA RTX 5060 Ti",
+  "cuda": "13.3"
+}
