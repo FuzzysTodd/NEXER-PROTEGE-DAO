@@ -7,4 +7,4 @@ which caused Python syntax errors during repo-wide scans.
 
 
 def placeholder() -> str:
-	return "legacy-agent-placeholder"
+    return "legacy-agent-placeholder"

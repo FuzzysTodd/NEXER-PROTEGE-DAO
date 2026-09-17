@@ -328,6 +328,129 @@
         }
         .bus-dot.live { background: var(--success); }
 
+        /* ── Agent cards ── */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .agent-card {
+            background: var(--panel-alt);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .agent-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .agent-icon {
+            width: 38px; height: 38px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .agent-icon.cve  { background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.35); }
+        .agent-icon.dbg  { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.35); }
+        .agent-icon.plan { background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.35); }
+        .agent-icon.dao  { background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.35); }
+
+        .agent-card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .agent-card-source {
+            font-size: 0.73rem;
+            color: var(--muted);
+            margin: 0;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+        }
+
+        .agent-card-desc {
+            font-size: 0.84rem;
+            color: var(--muted);
+            line-height: 1.55;
+            flex: 1;
+        }
+
+        .agent-policy {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-right: 4px;
+        }
+        .agent-policy.model { background: rgba(56,189,248,0.15); color: var(--accent); }
+        .agent-policy.user  { background: rgba(74,222,128,0.15); color: var(--success); }
+
+        .agent-tools-wrap {
+            display: flex; flex-wrap: wrap; gap: 5px;
+        }
+
+        .agent-tool-tag {
+            font-size: 0.72rem;
+            background: rgba(148,163,184,0.1);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 2px 7px;
+            color: var(--muted);
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+        }
+
+        .agent-handoff-wrap {
+            display: flex; flex-wrap: wrap; gap: 6px;
+            margin-top: 4px;
+        }
+
+        .agent-handoff {
+            font-size: 0.78rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            cursor: default;
+        }
+
+        .agent-registry-row {
+            display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;
+        }
+
+        .agent-count-badge {
+            background: var(--panel-alt);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 18px;
+            text-align: center;
+            min-width: 110px;
+        }
+
+        .agent-count-badge .count { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+        .agent-count-badge .count.green { color: var(--success); }
+        .agent-count-badge .count.warn  { color: var(--warning); }
+        .agent-count-badge .label { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+        .agent-section-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--muted);
+            margin: 20px 0 10px;
+        }
+
         /* ── Tab nav ── */
         .tab-nav {
             display: flex;
@@ -375,6 +498,7 @@
         <button class="tab-btn" data-tab="governance" aria-label="Governance tab">🗳️ Governance</button>
         <button class="tab-btn" data-tab="treasury" aria-label="Treasury tab">🏦 Treasury</button>
         <button class="tab-btn" data-tab="properties" aria-label="Properties tab">🏠 Properties</button>
+        <button class="tab-btn" data-tab="agents" aria-label="DAO Agents tab">🤖 Agents</button>
         <button class="tab-btn" data-tab="signals" aria-label="Live Signals tab">📡 Live Signals</button>
         <button class="tab-btn" data-tab="config" aria-label="Contract configuration tab">⚙️ Config</button>
     </nav>
@@ -558,6 +682,194 @@
                 <p style="margin:0;color:var(--muted);line-height:1.6;">Paste the deployed contract addresses above and click <strong>Save &amp; Apply</strong>. The dashboard will immediately use these addresses for all on-chain reads when you connect a wallet. The verified owner address is <code style="color:var(--accent)">0x33ffc308e693a5b49e0ee0241f41f03ccef495f2</code>.</p>
             </div>
         </section>
+    </div>
+
+    <!-- Tab: Agents -->
+    <div class="tab-panel" id="tab-agents">
+
+        <!-- Registry summary badges -->
+        <section class="panel">
+            <h2>🤖 DAO Agent Registry</h2>
+            <p style="color:var(--muted);font-size:0.84rem;margin:0 0 18px;">All Copilot agents, MIG network bots, and Nexus domain experts registered across both DAO repositories.</p>
+            <div class="agent-registry-row">
+                <div class="agent-count-badge"><div class="count">3</div><div class="label">Copilot Agents</div></div>
+                <div class="agent-count-badge"><div class="count green">13</div><div class="label">GitHub Agents</div></div>
+                <div class="agent-count-badge"><div class="count warn">10</div><div class="label">MIG Network</div></div>
+                <div class="agent-count-badge"><div class="count">11</div><div class="label">Domain Experts</div></div>
+                <div class="agent-count-badge"><div class="count">3</div><div class="label">Fin-Ops Bots</div></div>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+                <a class="btn btn-accent" href="./expert-registry.html" aria-label="Open expert registry">📋 Expert Registry</a>
+                <a class="btn btn-primary" href="./financial-ops-dashboard.html" aria-label="Open financial ops">📈 Fin-Ops Dashboard</a>
+            </div>
+        </section>
+
+        <!-- Copilot Agents (IntelliJ / VS Code) -->
+        <section class="panel">
+            <div class="agent-section-title">GitHub Copilot Agents — IntelliJ dist</div>
+            <div class="agent-grid">
+
+                <!-- CVE Remediator -->
+                <div class="agent-card">
+                    <div class="agent-card-header">
+                        <div class="agent-icon cve">🛡️</div>
+                        <div>
+                            <p class="agent-card-title">CVE Remediator</p>
+                            <p class="agent-card-source">CVE_Remediator.agent.md · invoke: model</p>
+                        </div>
+                    </div>
+                    <p class="agent-card-desc">Detects and fixes CVEs in project dependencies across any ecosystem while maintaining a working build. Runs a Validate → Fix → Build loop until zero actionable fixable CVEs remain.</p>
+                    <div>
+                        <span class="agent-policy model">invoke: model</span>
+                    </div>
+                    <div>
+                        <div class="agent-section-title" style="margin:6px 0 4px;">Workflow</div>
+                        <p style="font-size:0.8rem;color:var(--muted);margin:0;line-height:1.5;">
+                            Step 0: Detect ecosystem (Maven / npm / pip) →
+                            Step 1: Identify direct deps →
+                            Step 2: <code style="font-size:0.78rem;">validate_cves</code> remediation loop →
+                            Step 3: Build verification →
+                            Step 4: Final re-validate →
+                            Step 5: Report
+                        </p>
+                    </div>
+                    <div class="agent-section-title" style="margin:6px 0 4px;">Supported Ecosystems</div>
+                    <div class="agent-tools-wrap">
+                        <span class="agent-tool-tag">Maven</span>
+                        <span class="agent-tool-tag">npm</span>
+                        <span class="agent-tool-tag">pip</span>
+                        <span class="agent-tool-tag">validate_cves</span>
+                        <span class="agent-tool-tag">get_errors</span>
+                    </div>
+                </div>
+
+                <!-- Debugger -->
+                <div class="agent-card">
+                    <div class="agent-card-header">
+                        <div class="agent-icon dbg">🐛</div>
+                        <div>
+                            <p class="agent-card-title">Debugger</p>
+                            <p class="agent-card-source">Debugger.agent.md · Java + runtime</p>
+                        </div>
+                    </div>
+                    <p class="agent-card-desc">Expert debugging assistant. Investigates issues using Java runtime inspection and strategic breakpoints. Identifies root cause and recommends fixes — never implements them. Hands off to Agent for implementation.</p>
+                    <div class="agent-section-title" style="margin:6px 0 4px;">Tools</div>
+                    <div class="agent-tools-wrap">
+                        <span class="agent-tool-tag">java_debugger</span>
+                        <span class="agent-tool-tag">get_terminal_output</span>
+                        <span class="agent-tool-tag">grep_search</span>
+                        <span class="agent-tool-tag">get_errors</span>
+                        <span class="agent-tool-tag">semantic_search</span>
+                        <span class="agent-tool-tag">read_file</span>
+                        <span class="agent-tool-tag">run_in_terminal</span>
+                    </div>
+                    <div class="agent-section-title" style="margin:8px 0 4px;">Handoffs</div>
+                    <div class="agent-handoff-wrap">
+                        <span class="agent-handoff">→ Implement Fix</span>
+                        <span class="agent-handoff">→ Show Root Cause in Editor</span>
+                    </div>
+                </div>
+
+                <!-- Plan -->
+                <div class="agent-card">
+                    <div class="agent-card-header">
+                        <div class="agent-icon plan">📐</div>
+                        <div>
+                            <p class="agent-card-title">Plan</p>
+                            <p class="agent-card-source">Plan.agent.md · invoke: user</p>
+                        </div>
+                    </div>
+                    <p class="agent-card-desc">Researches and outlines multi-step plans from a goal or problem. Iteratively gathers context and drafts a concise, actionable plan with file links and symbol references. Never implements — hands off to Agent.</p>
+                    <div>
+                        <span class="agent-policy user">invoke: user</span>
+                    </div>
+                    <div class="agent-section-title" style="margin:6px 0 4px;">Tools</div>
+                    <div class="agent-tools-wrap">
+                        <span class="agent-tool-tag">read_file</span>
+                        <span class="agent-tool-tag">list_dir</span>
+                        <span class="agent-tool-tag">semantic_search</span>
+                        <span class="agent-tool-tag">grep_search</span>
+                        <span class="agent-tool-tag">file_search</span>
+                        <span class="agent-tool-tag">get_errors</span>
+                    </div>
+                    <div class="agent-section-title" style="margin:8px 0 4px;">Handoffs</div>
+                    <div class="agent-handoff-wrap">
+                        <span class="agent-handoff">→ Start Implementation</span>
+                        <span class="agent-handoff">→ Open in Editor</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- DAO GitHub Agents -->
+        <section class="panel">
+            <div class="agent-section-title">DAO GitHub Agents (.github/agents/)</div>
+            <div class="agent-grid">
+                <div class="agent-card">
+                    <div class="agent-card-header"><div class="agent-icon dao">🔧</div><div><p class="agent-card-title">Nexus Protocol Maintainer</p><p class="agent-card-source">nexus-protocol-maintainer.agent.md</p></div></div>
+                    <p class="agent-card-desc">Security-first smart contract reviewer. Checks reentrancy, authorization, unchecked calls, arithmetic. Keeps patches minimal and adds tests when behavior changes.</p>
+                    <div class="agent-tools-wrap"><span class="agent-tool-tag">Solidity</span><span class="agent-tool-tag">slither</span><span class="agent-tool-tag">echidna</span><span class="agent-tool-tag">CI</span></div>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-card-header"><div class="agent-icon cve">💸</div><div><p class="agent-card-title">Financial Rails Signal</p><p class="agent-card-source">financial-rails-signal.agent.md</p></div></div>
+                    <p class="agent-card-desc">Crypto/fiat transaction signal processing. Models ACH, wire, stablecoin, bridge, swap flows. Detects anomalies in volume, velocity, settlement failures. Coordinates MCP bot scan coverage for Ethereum and Base.</p>
+                    <div class="agent-tools-wrap"><span class="agent-tool-tag">ACH</span><span class="agent-tool-tag">stablecoin</span><span class="agent-tool-tag">bridge</span><span class="agent-tool-tag">MCP</span></div>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-card-header"><div class="agent-icon dbg">⚠️</div><div><p class="agent-card-title">Pre-Error Remediation Bot</p><p class="agent-card-source">preerror-remediation-bot.agent.md</p></div></div>
+                    <p class="agent-card-desc">Early-warning scanner. Detects syntax drift, invalid configs, broken agent frontmatter, workflow failures. Auto-fixes deterministic low-risk issues with validation.</p>
+                    <div class="agent-tools-wrap"><span class="agent-tool-tag">Python lint</span><span class="agent-tool-tag">JSON validate</span><span class="agent-tool-tag">CI</span></div>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-card-header"><div class="agent-icon dao">📊</div><div><p class="agent-card-title">Withdrawal Placement Scanner</p><p class="agent-card-source">withdrawal-placement-scanner.agent.md</p></div></div>
+                    <p class="agent-card-desc">Capital-flow analysis bot. Finds withdrawal paths, payout logic, treasury placement opportunities. Produces risk-ranked recommendations and approval-ready runbooks.</p>
+                    <div class="agent-tools-wrap"><span class="agent-tool-tag">treasury</span><span class="agent-tool-tag">yield</span><span class="agent-tool-tag">swap</span></div>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-card-header"><div class="agent-icon plan">📝</div><div><p class="agent-card-title">Success Documentation Reporter</p><p class="agent-card-source">success-documentation-reporter.agent.md</p></div></div>
+                    <p class="agent-card-desc">Converts successful automation runs into markdown reports, dashboard JSON payloads, and approval log entries. Keeps operator runbooks current.</p>
+                    <div class="agent-tools-wrap"><span class="agent-tool-tag">markdown</span><span class="agent-tool-tag">JSON</span><span class="agent-tool-tag">runbook</span></div>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-card-header"><div class="agent-icon dbg">☁️</div><div><p class="agent-card-title">Azure Ops</p><p class="agent-card-source">azure-ops.agent.md</p></div></div>
+                    <p class="agent-card-desc">Azure activity log analyst. Triages failures, cost signals, security-sensitive operations, and deployment errors. Read-only — never modifies Azure resources.</p>
+                    <div class="agent-tools-wrap"><span class="agent-tool-tag">azureResources_getAzureActivityLog</span><span class="agent-tool-tag">read</span><span class="agent-tool-tag">web</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MIG Network (GPU mesh) -->
+        <section class="panel">
+            <div class="agent-section-title">MIG Network Agents — RTX 5060 Ti GPU Mesh (mcp-001…mcp-010)</div>
+            <div id="mig-agent-list" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+                <!-- populated by JS -->
+            </div>
+        </section>
+
+        <!-- Nexus Domain Experts -->
+        <section class="panel">
+            <div class="agent-section-title">Nexus Domain Experts (nexus-agent-registry)</div>
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;font-size:0.83rem;">
+                    <thead>
+                        <tr style="border-bottom:1px solid var(--border);">
+                            <th style="text-align:left;padding:7px 10px;color:var(--muted);font-weight:600;">ID</th>
+                            <th style="text-align:left;padding:7px 10px;color:var(--muted);font-weight:600;">Domain</th>
+                            <th style="text-align:left;padding:7px 10px;color:var(--muted);font-weight:600;">Authority</th>
+                        </tr>
+                    </thead>
+                    <tbody id="nexus-expert-tbody">
+                        <tr><td colspan="3" style="padding:10px;color:var(--muted);font-size:0.82rem;">Loading from MCP server…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top:14px;">
+                <button class="btn btn-accent" id="load-agents-btn" aria-label="Load agent registry from MCP">🔄 Load Registry</button>
+                <span id="agents-load-msg" style="font-size:0.82rem;color:var(--muted);margin-left:12px;"></span>
+            </div>
+        </section>
+
     </div>
 
     <!-- Tab: Live Signals -->
@@ -856,6 +1168,97 @@
         feed.insertBefore(el, feed.firstChild);
         while (feed.children.length > 50) feed.removeChild(feed.lastChild);
     }
+    // ── Agents Tab — locally-runnable bot registry (start with nexus-dao-launcher.ps1) ──────────
+
+    var MIG_AGENTS = [
+        { id: "mcp-001", role: "Game Theory Coordinator",    load: "medium",    icon: "🎮", pri: "high"     },
+        { id: "mcp-002", role: "Token Economics Manager",    load: "low",       icon: "💰", pri: "critical" },
+        { id: "mcp-003", role: "DAO Governance Agent",       load: "low",       icon: "🗳️", pri: "high"     },
+        { id: "mcp-004", role: "AI Data Pipeline",           load: "very-high", icon: "🧠", pri: "high",     gpu: true },
+        { id: "mcp-005", role: "GPU Rendering Engine",       load: "very-high", icon: "🎨", pri: "critical", gpu: true },
+        { id: "mcp-006", role: "VPN Node Manager",           load: "medium",    icon: "🔐", pri: "high"     },
+        { id: "mcp-007", role: "NFT Minting & Trading",      load: "low",       icon: "🖼️", pri: "medium"   },
+        { id: "mcp-008", role: "Marketing & Promotion",      load: "low",       icon: "📣", pri: "high"     },
+        { id: "mcp-009", role: "Cloud-Local Sync Manager",   load: "medium",    icon: "☁️", pri: "critical" },
+        { id: "mcp-010", role: "Financial Analytics",        load: "medium",    icon: "📊", pri: "high"     },
+    ];
+
+    var NEXUS_EXPERTS = [
+        { id: "nexus-crypto-core",    domain: "EVM Cryptography",            authority: "analysis-and-draft" },
+        { id: "nexus-defi-architect", domain: "DeFi Protocol Design",        authority: "analysis-and-draft" },
+        { id: "nexus-dao-counsel",    domain: "DAO Governance",              authority: "analysis-and-draft" },
+        { id: "nexus-nft-studio",     domain: "NFT & RWA Tokenization",      authority: "analysis-and-draft" },
+        { id: "nexus-oracle-feed",    domain: "Price Oracles & Data Feeds",  authority: "analysis-and-draft" },
+        { id: "nexus-treasury-ops",   domain: "Treasury Management",         authority: "analysis-and-draft" },
+        { id: "nexus-security-audit", domain: "Smart Contract Security",     authority: "block-and-escalate" },
+        { id: "nexus-frontend-ux",    domain: "Web3 User Interface",         authority: "analysis-and-draft" },
+        { id: "nexus-signal-engine",  domain: "Transaction Signaling",       authority: "analysis-and-draft" },
+        { id: "nexus-forex-quant",    domain: "Forex & Quantitative Finance",authority: "analysis-and-draft" },
+        { id: "nexus-builder-fund",   domain: "Builder Micropayment",        authority: "analysis-and-draft" },
+    ];
+
+    function renderMigAgents() {
+        var container = document.getElementById("mig-agent-list");
+        if (!container) return;
+        container.innerHTML = MIG_AGENTS.map(function (a) {
+            var loadColor = a.load === "very-high" ? "var(--danger)"
+                          : a.load === "medium"    ? "var(--warning)"
+                          : "var(--muted)";
+            var priColor  = a.pri === "critical" ? "var(--danger)"
+                          : a.pri === "high"     ? "var(--warning)"
+                          : "var(--muted)";
+            return [
+                '<div style="background:var(--panel-alt);border:1px solid var(--border);border-radius:10px;padding:14px 16px;">',
+                '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">',
+                '<span style="font-size:1.2rem;">' + a.icon + '</span>',
+                '<span style="font-weight:700;font-size:0.88rem;">' + escapeHtml(a.id) + '</span>',
+                a.gpu ? '<span style="font-size:0.7rem;background:rgba(56,189,248,0.15);border:1px solid var(--accent);color:var(--accent);padding:1px 6px;border-radius:8px;margin-left:auto;">GPU</span>' : '',
+                '</div>',
+                '<p style="margin:0 0 8px;font-size:0.82rem;color:var(--text);">' + escapeHtml(a.role) + '</p>',
+                '<div style="display:flex;gap:8px;flex-wrap:wrap;">',
+                '<span style="font-size:0.72rem;color:' + loadColor + ';">load: ' + escapeHtml(a.load) + '</span>',
+                '<span style="font-size:0.72rem;color:' + priColor + ';">priority: ' + escapeHtml(a.pri) + '</span>',
+                '</div>',
+                '</div>',
+            ].join("");
+        }).join("");
+    }
+
+    function renderNexusExperts(experts) {
+        var tbody = document.getElementById("nexus-expert-tbody");
+        if (!tbody) return;
+        tbody.innerHTML = experts.map(function (e) {
+            var authColor = e.authority === "block-and-escalate" ? "var(--danger)" : "var(--success)";
+            return '<tr style="border-bottom:1px solid rgba(148,163,184,0.08);">'
+                + '<td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;color:var(--accent);">' + escapeHtml(e.id) + '</td>'
+                + '<td style="padding:6px 10px;font-size:0.82rem;">' + escapeHtml(e.domain) + '</td>'
+                + '<td style="padding:6px 10px;font-size:0.78rem;color:' + authColor + ';">' + escapeHtml(e.authority) + '</td>'
+                + '</tr>';
+        }).join("");
+    }
+
+    function initAgentsTab() {
+        renderMigAgents();
+        var msg = document.getElementById("agents-load-msg");
+        function loadFromServer() {
+            if (msg) msg.textContent = "Querying MCP server…";
+            fetch("http://localhost:8788/api/v1/status", { signal: AbortSignal.timeout(3000) })
+                .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)); })
+                .then(function () {
+                    renderNexusExperts(NEXUS_EXPERTS);
+                    if (msg) msg.textContent = "\u2705 Loaded (" + NEXUS_EXPERTS.length + " experts). MCP server online.";
+                })
+                .catch(function () {
+                    renderNexusExperts(NEXUS_EXPERTS);
+                    if (msg) msg.textContent = "Loaded from embedded registry. Run nexus-dao-launcher.ps1 for live data.";
+                });
+        }
+        loadFromServer();
+        var loadBtn = document.getElementById("load-agents-btn");
+        if (loadBtn) loadBtn.addEventListener("click", loadFromServer);
+    }
+
+    initAgentsTab();
 
     function setText(id, text) { var el = document.getElementById(id); if (el) el.textContent = text; }
 
