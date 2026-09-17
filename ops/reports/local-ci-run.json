@@ -1,0 +1,33 @@
+{
+  "timestamp": "2026-08-23T22:53:34.891744+00:00",
+  "run_type": "local-mcp",
+  "financial_ops": {
+    "rest_server_port": 8788,
+    "signal_bus_port": 8790,
+    "expert_registry_port": 8789,
+    "approval_service_port": 8787
+  },
+  "bot_inventory": {
+    "mig_network_agents": 10,
+    "domain_experts": 11,
+    "github_agents": 16,
+    "financial_ops_bots": 3,
+    "copilot_intellij_agents": 3,
+    "total": 43
+  },
+  "gpu": {
+    "model": "NVIDIA GeForce RTX 5060 Ti",
+    "memory_mib": 8151,
+    "cuda": "13.3",
+    "driver": "610.88",
+    "compute": "sm_120"
+  },
+  "workflows_local": {
+    "flake8": "PASS",
+    "node_check": "PASS",
+    "json_yaml_validation": "PASS",
+    "html_check": "PASS",
+    "mcp_gateway_init": "PASS",
+    "mcp_plan_agent_scan": "PASS"
+  }
+}
